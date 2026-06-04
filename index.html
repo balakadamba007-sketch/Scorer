@@ -6,251 +6,137 @@
 <title>Live Scorer</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   :root {
-    --bg: #0a0a0a;
-    --surface: #141414;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
-    --text: #f0f0f0;
-    --muted: #666;
-    --accent: #c8f135;
-    --accent-dim: rgba(200,241,53,0.12);
-    --red: #ff4d4d;
+    --bg: #0a0a0a; --surface: #141414; --surface2: #1c1c1c;
+    --border: #2a2a2a; --text: #f0f0f0; --muted: #555;
+    --accent: #c8f135; --accent-dim: rgba(200,241,53,0.1);
+    --red: #ff4d4d; --red-dim: rgba(255,77,77,0.1);
+    --orange: #ffaa33; --orange-dim: rgba(255,170,51,0.1);
     --blue: #4da6ff;
     --font-mono: 'IBM Plex Mono', monospace;
     --font-sans: 'IBM Plex Sans', sans-serif;
   }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; display: flex; flex-direction: column; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-sans);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* MODE TOGGLE */
-  .mode-bar {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .mode-tab {
-    flex: 1;
-    padding: 14px;
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    cursor: pointer;
-    border: none;
-    background: none;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-  .mode-tab.active {
-    color: var(--accent);
-    border-bottom: 2px solid var(--accent);
-    background: var(--accent-dim);
-  }
-
-  /* STATUS BAR */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-  }
-  .dot.live { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1.5s infinite; }
+  /* TOP BAR */
+  .mode-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .mode-tab { flex: 1; padding: 13px; text-align: center; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; border: none; background: none; transition: all 0.15s; text-transform: uppercase; }
+  .mode-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--accent-dim); }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .dot.live { background: var(--accent); box-shadow: 0 0 5px var(--accent); animation: pulse 1.5s infinite; }
   .dot.error { background: var(--red); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-  /* PANELS */
-  .panel { display: none; flex: 1; flex-direction: column; }
+  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
   .panel.active { display: flex; }
 
-  /* KEYPAD */
-  .keypad-wrap { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-  .last-press {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-family: var(--font-mono);
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .last-key {
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--accent);
-    min-width: 28px;
-  }
-  .last-meta { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  /* ── SCORER ── */
+  .scorer-wrap { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
 
-  .keypad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    flex: 1;
+  .ball-indicator {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
   }
+  .ball-id { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--orange); min-width: 48px; }
+  .ball-id-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+
+  .current-keys-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; min-height: 54px;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  }
+  .hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+  .k-chip {
+    background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.25);
+    border-radius: 5px; padding: 4px 10px;
+    font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--accent);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .k-chip .ms { font-size: 9px; color: var(--muted); font-weight: 400; }
+
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; flex: 1; }
   .key {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 24px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.08s, transform 0.08s, border-color 0.08s;
-    min-height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-user-select: none;
-    user-select: none;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: var(--font-mono); font-size: 24px; font-weight: 600;
+    cursor: pointer; transition: background 0.08s, transform 0.08s, border-color 0.08s;
+    min-height: 66px; display: flex; align-items: center; justify-content: center;
+    user-select: none; -webkit-user-select: none;
   }
-  .key:active, .key.flash {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: var(--accent);
-    transform: scale(0.95);
-  }
+  .key:active, .key.flash { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); transform: scale(0.95); }
+  .key.confirm { border-color: var(--orange); color: var(--orange); font-size: 16px; }
+  .key.confirm:active, .key.confirm.flash { background: var(--orange-dim); }
 
-  /* VIEWER */
-  .viewer-wrap { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  /* ── VIEWER ── */
+  .viewer-wrap { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
 
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    text-align: center;
-  }
-  .stat-val {
-    font-family: var(--font-mono);
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--accent);
-  }
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 2px;
-  }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; text-align: center; }
+  .stat-val { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
-  .feed-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
+  .feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-bottom: 4px; }
 
-  .feed {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-height: 0;
+  /* Over block */
+  .over-block { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .over-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 12px; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
   }
-  .feed-row {
-    display: grid;
-    grid-template-columns: 28px 1fr 70px 70px 60px;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    animation: slideIn 0.15s ease;
-  }
-  .feed-row.new-entry {
-    border-color: var(--accent);
-    background: var(--accent-dim);
-  }
-  @keyframes slideIn { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform: translateY(0); } }
-  .feed-key { font-size: 18px; font-weight: 600; color: var(--accent); text-align: center; }
-  .feed-time { color: var(--muted); font-size: 11px; }
-  .feed-dur { color: var(--blue); text-align: right; }
-  .feed-gap { color: var(--muted); text-align: right; }
-  .feed-idx { color: var(--muted); font-size: 10px; }
+  .over-title { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--orange); letter-spacing: 0.05em; }
+  .over-count { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
 
-  .feed-header {
-    display: grid;
-    grid-template-columns: 28px 1fr 70px 70px 60px;
-    gap: 8px;
-    padding: 4px 10px;
-    font-size: 10px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+  .ball-entry {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px; border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
   }
+  .ball-entry:last-child { border-bottom: none; }
+  .ball-entry.newest { background: var(--accent-dim); }
+  .ball-entry.edited { background: var(--orange-dim); }
+
+  .be-id { font-family: var(--font-mono); font-size: 11px; color: var(--orange); min-width: 28px; }
+  .be-keys { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+  .be-key { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.2); border-radius: 4px; padding: 1px 6px; }
+  .be-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 56px; text-align: right; }
+  .be-edited { font-size: 9px; color: var(--orange); font-family: var(--font-mono); }
+
+  .be-btns { display: flex; gap: 4px; }
+  .ib { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 12px; cursor: pointer; padding: 2px 7px; font-family: var(--font-mono); transition: all 0.1s; }
+  .ib:hover { border-color: var(--blue); color: var(--blue); }
+  .ib.del:hover { border-color: var(--red); color: var(--red); }
+
+  /* pending ball (in-progress) */
+  .pending-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    background: rgba(255,170,51,0.05);
+    border-top: 1px dashed rgba(255,170,51,0.3);
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+  }
+  .pending-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 1s infinite; }
 
   /* ACTIONS */
-  .actions {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .btn {
-    flex: 1;
-    padding: 11px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: none;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  .actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface); }
+  .btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em; }
   .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-  .btn.danger:hover { border-color: var(--red); color: var(--red); background: rgba(255,77,77,0.1); }
+  .btn.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+  .btn.save { border-color: var(--accent); color: var(--accent); }
 
-  .empty-feed {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .empty-feed { flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-title { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+  .modal input { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: var(--font-mono); font-size: 20px; padding: 10px 14px; width: 100%; outline: none; letter-spacing: 0.12em; }
+  .modal input:focus { border-color: var(--accent); }
+  .modal-hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); line-height: 1.5; }
+  .modal-btns { display: flex; gap: 8px; }
 </style>
 </head>
 <body>
@@ -259,18 +145,23 @@
   <button class="mode-tab active" id="tabScorer">⌨ Scorer</button>
   <button class="mode-tab" id="tabViewer">👁 Viewer</button>
 </div>
-
 <div class="status-bar">
   <div class="dot" id="statusDot"></div>
   <span id="statusText">Connecting...</span>
 </div>
 
-<!-- SCORER PANEL -->
+<!-- SCORER -->
 <div class="panel active" id="panelScorer">
-  <div class="keypad-wrap">
-    <div class="last-press" id="lastPress">
-      <span class="last-key" id="lastKey">—</span>
-      <span class="last-meta" id="lastMeta">Press a key to start scoring</span>
+  <div class="scorer-wrap">
+    <div class="ball-indicator">
+      <div>
+        <div class="ball-id-label">Delivery</div>
+        <div class="ball-id" id="scorerBallId">0.1</div>
+      </div>
+      <div style="flex:1; text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--muted)" id="scorerNextHint"></div>
+    </div>
+    <div class="current-keys-box" id="currentKeysBox">
+      <span class="hint">Press keys · # to confirm ball</span>
     </div>
     <div class="keypad" id="keypad"></div>
   </div>
@@ -280,17 +171,13 @@
   </div>
 </div>
 
-<!-- VIEWER PANEL -->
+<!-- VIEWER -->
 <div class="panel" id="panelViewer">
   <div class="viewer-wrap">
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total</div></div>
-      <div class="stat-card"><div class="stat-val" id="statLast">—</div><div class="stat-label">Last Key</div></div>
-      <div class="stat-card"><div class="stat-val" id="statAvgDur">—</div><div class="stat-label">Avg Hold</div></div>
-    </div>
-    <div class="feed-label">Live Feed</div>
-    <div class="feed-header">
-      <span>#</span><span>Time</span><span style="text-align:right">Hold</span><span style="text-align:right">Gap</span><span>Key</span>
+      <div class="stat-card"><div class="stat-val" id="statBalls">0</div><div class="stat-label">Balls</div></div>
+      <div class="stat-card"><div class="stat-val" id="statOvers">0.0</div><div class="stat-label">Overs</div></div>
+      <div class="stat-card"><div class="stat-val" id="statEdits">0</div><div class="stat-label">Edits</div></div>
     </div>
     <div class="feed" id="viewerFeed">
       <div class="empty-feed">Waiting for scorer...</div>
@@ -301,66 +188,82 @@
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit ball <span id="editBallLabel"></span></div>
+    <input type="text" id="editInput" placeholder="e.g. 5 0 0" maxlength="30" />
+    <div class="modal-hint">Enter keys space-separated.<br>Original timing data is preserved.</div>
+    <div class="modal-btns">
+      <button class="btn" id="btnCancelEdit">Cancel</button>
+      <button class="btn save" id="btnSaveEdit">Save</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, push, onValue, remove, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-  const firebaseConfig = {
-    databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/"
-  };
-
-  const app = initializeApp(firebaseConfig);
+  const app = initializeApp({ databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/" });
   const db = getDatabase(app);
-  const pressesRef = ref(db, 'presses');
+  const ballsRef = ref(db, 'balls2');
 
-  let allEntries = [];
+  let allBalls = {};        // fbKey -> ball object
+  let currentKeys = [];
+  let currentTimings = [];
   let pressStart = null;
-  let lastReleaseTime = null;
-  let currentMode = 'scorer';
-  let lastKnownKey = null;
+  let editingFbKey = null;
 
-  // Status
+  // ── STATUS ──
   function setStatus(state, msg) {
-    const dot = document.getElementById('statusDot');
-    const txt = document.getElementById('statusText');
-    dot.className = 'dot ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
-    txt.textContent = msg;
+    document.getElementById('statusDot').className = 'dot ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
+    document.getElementById('statusText').textContent = msg;
   }
 
-  // Wire up buttons inside module — avoids onclick scope issues
+  // ── MODE ──
   document.getElementById('tabScorer').addEventListener('click', () => setMode('scorer'));
   document.getElementById('tabViewer').addEventListener('click', () => setMode('viewer'));
-  document.getElementById('btnClear').addEventListener('click', () => {
-    if (!confirm('Delete all presses from Firebase? This clears for everyone.')) return;
-    remove(pressesRef);
-  });
-  document.getElementById('btnExport1').addEventListener('click', exportCSV);
-  document.getElementById('btnExport2').addEventListener('click', exportCSV);
-
-  // Mode switching
   function setMode(m) {
-    currentMode = m;
-    document.getElementById('panelScorer').classList.toggle('active', m === 'scorer');
-    document.getElementById('panelViewer').classList.toggle('active', m === 'viewer');
-    document.getElementById('tabScorer').classList.toggle('active', m === 'scorer');
-    document.getElementById('tabViewer').classList.toggle('active', m === 'viewer');
+    ['Scorer','Viewer'].forEach(x => {
+      document.getElementById('panel'+x).classList.toggle('active', m === x.toLowerCase());
+      document.getElementById('tab'+x).classList.toggle('active', m === x.toLowerCase());
+    });
   }
 
-  // Build keypad
+  // ── BALL COUNTER ──
+  // ball_seq is 1-based. Over = ceil(seq/6), ball_in_over = ((seq-1)%6)+1
+  // Display as over.ball e.g. seq=1 → "0.1", seq=7 → "1.1"
+  function seqToLabel(seq) {
+    const over = Math.floor((seq - 1) / 6);
+    const b = ((seq - 1) % 6) + 1;
+    return over + '.' + b;
+  }
+
+  function nextSeq() {
+    const seqs = Object.values(allBalls).map(b => b.seq || 0);
+    return seqs.length ? Math.max(...seqs) + 1 : 1;
+  }
+
+  function updateScorerBallId() {
+    const seq = nextSeq();
+    document.getElementById('scorerBallId').textContent = seqToLabel(seq);
+    const over = Math.floor((seq - 1) / 6);
+    const b = ((seq - 1) % 6) + 1;
+    document.getElementById('scorerNextHint').textContent = b === 1 ? 'Over ' + over + ' starting' : '';
+  }
+
+  // ── KEYPAD ──
   const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
   const kp = document.getElementById('keypad');
   KEYS.forEach(k => {
     const btn = document.createElement('button');
-    btn.className = 'key';
-    btn.textContent = k;
-
-    const down = (e) => { e.preventDefault(); keyDown(k, btn); };
-    const up = (e) => { e.preventDefault(); keyUp(k, btn); };
-
-    btn.addEventListener('touchstart', down, {passive:false});
-    btn.addEventListener('mousedown', down);
-    btn.addEventListener('touchend', up, {passive:false});
-    btn.addEventListener('mouseup', up);
+    btn.className = 'key' + (k === '#' ? ' confirm' : '');
+    btn.textContent = k === '#' ? '✓ #' : k;
+    btn.addEventListener('touchstart', e => { e.preventDefault(); keyDown(k, btn); }, {passive:false});
+    btn.addEventListener('mousedown', e => { e.preventDefault(); keyDown(k, btn); });
+    btn.addEventListener('touchend', e => { e.preventDefault(); keyUp(k, btn); }, {passive:false});
+    btn.addEventListener('mouseup', e => { e.preventDefault(); keyUp(k, btn); });
     kp.appendChild(btn);
   });
 
@@ -372,99 +275,187 @@
 
   function keyUp(k, btn) {
     if (pressStart === null) return;
-    const duration = Date.now() - pressStart;
-    const now = Date.now();
-    const gap = lastReleaseTime !== null ? now - lastReleaseTime : null;
-    lastReleaseTime = now;
+    const dur = Date.now() - pressStart;
     pressStart = null;
     btn.classList.remove('flash');
 
-    const entry = {
-      key: k,
-      time: new Date().toISOString(),
-      duration_ms: duration,
-      gap_from_prev_ms: gap !== null ? gap : -1
-    };
-
-    // Update local UI immediately
-    document.getElementById('lastKey').textContent = k;
-    document.getElementById('lastMeta').innerHTML =
-      `Hold: <span style="color:#4da6ff">${duration}ms</span>&nbsp;&nbsp;` +
-      (gap !== null ? `Gap: ${gap}ms` : 'First press');
-
-    // Push to Firebase
-    push(pressesRef, entry).catch(() => setStatus('error', 'Send failed — check connection'));
+    if (k === '#') {
+      if (currentKeys.length === 0) return;
+      commitBall();
+    } else {
+      currentKeys.push(k);
+      currentTimings.push({ key: k, duration_ms: dur, time: new Date().toISOString() });
+      renderCurrentKeys();
+    }
   }
 
-  // Listen to Firebase in real time
-  const liveQuery = query(pressesRef, orderByChild('time'), limitToLast(200));
-  onValue(liveQuery, (snapshot) => {
-    const data = snapshot.val();
-    allEntries = [];
-    if (data) {
-      Object.values(data).forEach(v => allEntries.push(v));
-      allEntries.sort((a, b) => a.time > b.time ? 1 : -1);
+  function renderCurrentKeys() {
+    const box = document.getElementById('currentKeysBox');
+    if (!currentKeys.length) {
+      box.innerHTML = '<span class="hint">Press keys · # to confirm ball</span>';
+      return;
     }
-    setStatus('live', `Connected · ${allEntries.length} press${allEntries.length !== 1 ? 'es' : ''}`);
-    renderViewer();
-  }, (err) => {
-    setStatus('error', 'Connection lost — retrying...');
-  });
+    box.innerHTML = currentTimings.map(t =>
+      `<div class="k-chip">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`
+    ).join('');
+  }
 
+  function commitBall() {
+    const seq = nextSeq();
+    const ball = {
+      seq,
+      label: seqToLabel(seq),
+      keys: currentKeys.join(' '),
+      timings: currentTimings,
+      confirmed_at: new Date().toISOString(),
+      edited: false
+    };
+    push(ballsRef, ball).catch(() => setStatus('error', 'Send failed'));
+    currentKeys = [];
+    currentTimings = [];
+    renderCurrentKeys();
+  }
+
+  // ── FIREBASE ──
+  onValue(query(ballsRef, orderByChild('seq')), snap => {
+    allBalls = snap.val() || {};
+    const count = Object.keys(allBalls).length;
+    const overs = Math.floor(count / 6);
+    const rem = count % 6;
+    setStatus('live', `Connected · ${seqToLabel(count + 1)} next`);
+    document.getElementById('statBalls').textContent = count;
+    document.getElementById('statOvers').textContent = overs + '.' + rem;
+    document.getElementById('statEdits').textContent = Object.values(allBalls).filter(b => b.edited).length;
+    updateScorerBallId();
+    renderViewer();
+  }, () => setStatus('error', 'Connection lost — retrying...'));
+
+  // ── RENDER VIEWER ──
   function renderViewer() {
     const feed = document.getElementById('viewerFeed');
-    if (!allEntries.length) {
+    const entries = Object.entries(allBalls).sort((a, b) => (a[1].seq || 0) - (b[1].seq || 0));
+
+    if (!entries.length) {
       feed.innerHTML = '<div class="empty-feed">Waiting for scorer...</div>';
-      document.getElementById('statTotal').textContent = '0';
-      document.getElementById('statLast').textContent = '—';
-      document.getElementById('statAvgDur').textContent = '—';
       return;
     }
 
-    const last = allEntries[allEntries.length - 1];
-    const avgDur = Math.round(allEntries.reduce((s, e) => s + e.duration_ms, 0) / allEntries.length);
+    // Group by over
+    const overs = {};
+    entries.forEach(([fbKey, ball]) => {
+      const over = Math.floor(((ball.seq || 1) - 1) / 6);
+      if (!overs[over]) overs[over] = [];
+      overs[over].push([fbKey, ball]);
+    });
 
-    document.getElementById('statTotal').textContent = allEntries.length;
-    document.getElementById('statLast').textContent = last.key;
-    document.getElementById('statAvgDur').textContent = avgDur + 'ms';
+    const newestFbKey = entries[entries.length - 1][0];
 
-    const isNew = last.key !== lastKnownKey;
-    lastKnownKey = last.key;
+    const html = Object.keys(overs).sort((a,b) => b - a).map(over => {
+      const balls = overs[over];
+      const ballRows = balls.slice().reverse().map(([fbKey, ball]) => {
+        const chips = (ball.keys || '').split(' ').filter(Boolean)
+          .map(k => `<span class="be-key">${k}</span>`).join('');
+        const t = ball.confirmed_at ? ball.confirmed_at.slice(11,19) : '';
+        const editedTag = ball.edited ? `<span class="be-edited">edited</span>` : '';
+        const isNewest = fbKey === newestFbKey;
+        return `<div class="ball-entry${isNewest ? ' newest' : ''}${ball.edited ? ' edited' : ''}">
+          <div class="be-id">${ball.label || ''}</div>
+          <div class="be-keys">${chips}${editedTag}</div>
+          <div class="be-time">${t}</div>
+          <div class="be-btns">
+            <button class="ib" data-edit="${fbKey}" data-label="${ball.label}" data-keys="${ball.keys || ''}">✏</button>
+            <button class="ib del" data-del="${fbKey}" data-label="${ball.label}">✕</button>
+          </div>
+        </div>`;
+      }).join('');
 
-    feed.innerHTML = [...allEntries].reverse().map((e, i) => {
-      const idx = allEntries.length - i;
-      const t = e.time.slice(11, 19);
-      const dur = e.duration_ms + 'ms';
-      const gap = e.gap_from_prev_ms > 0 ? '+' + e.gap_from_prev_ms + 'ms' : '—';
-      const isLatest = i === 0;
-      return `<div class="feed-row${isLatest && isNew ? ' new-entry' : ''}">
-        <span class="feed-key">${e.key}</span>
-        <span class="feed-time">${t}</span>
-        <span class="feed-dur">${dur}</span>
-        <span class="feed-gap">${gap}</span>
-        <span class="feed-idx">#${idx}</span>
+      return `<div class="over-block">
+        <div class="over-header">
+          <span class="over-title">Over ${over}</span>
+          <span class="over-count">${balls.length}/6 balls</span>
+        </div>
+        ${ballRows}
       </div>`;
     }).join('');
-  }
 
-  // Export CSV
-  function exportCSV() {
-    if (!allEntries.length) { alert('No data yet.'); return; }
-    const rows = [['index','key','timestamp','duration_ms','gap_from_prev_ms']];
-    allEntries.forEach((e, i) => {
-      rows.push([i + 1, e.key, e.time, e.duration_ms, e.gap_from_prev_ms > 0 ? e.gap_from_prev_ms : '']);
+    feed.innerHTML = html;
+
+    feed.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => openEdit(btn.dataset.edit, btn.dataset.label, btn.dataset.keys));
     });
-    const csv = rows.map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'scorer_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    feed.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => deleteBall(btn.dataset.del, btn.dataset.label));
+    });
   }
 
-  // Clear all - now handled by btnClear listener above
+  // ── EDIT ──
+  function openEdit(fbKey, label, keys) {
+    editingFbKey = fbKey;
+    document.getElementById('editBallLabel').textContent = label;
+    document.getElementById('editInput').value = keys;
+    document.getElementById('editModal').classList.add('open');
+    setTimeout(() => document.getElementById('editInput').focus(), 100);
+  }
+
+  document.getElementById('btnCancelEdit').addEventListener('click', closeEdit);
+  document.getElementById('btnSaveEdit').addEventListener('click', () => {
+    if (!editingFbKey) return;
+    const newKeys = document.getElementById('editInput').value.trim();
+    if (!newKeys) return;
+    const existing = allBalls[editingFbKey] || {};
+    set(ref(db, 'balls2/' + editingFbKey), {
+      ...existing,
+      keys: newKeys,
+      edited: true,
+      edited_at: new Date().toISOString()
+    });
+    closeEdit();
+  });
+
+  function closeEdit() {
+    document.getElementById('editModal').classList.remove('open');
+    editingFbKey = null;
+  }
+
+  function deleteBall(fbKey, label) {
+    if (!confirm(`Delete ball ${label}? This cannot be undone.`)) return;
+    remove(ref(db, 'balls2/' + fbKey));
+  }
+
+  // ── CLEAR ALL ──
+  document.getElementById('btnClear').addEventListener('click', () => {
+    if (!confirm('Delete ALL data? This clears for everyone.')) return;
+    remove(ballsRef);
+    currentKeys = []; currentTimings = [];
+    renderCurrentKeys();
+  });
+
+  // ── EXPORT CSV ──
+  function exportCSV() {
+    const entries = Object.entries(allBalls).sort((a, b) => (a[1].seq||0) - (b[1].seq||0));
+    if (!entries.length) { alert('No data yet.'); return; }
+    const rows = [['ball_num','over_ball','keys','confirmed_at','edited','edited_at','timings_json']];
+    entries.forEach(([, ball], i) => {
+      rows.push([
+        i + 1,
+        ball.label || '',
+        ball.keys || '',
+        ball.confirmed_at || '',
+        ball.edited ? 'yes' : 'no',
+        ball.edited_at || '',
+        ball.timings ? JSON.stringify(ball.timings) : ''
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'scorer_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btnExport1').addEventListener('click', exportCSV);
+  document.getElementById('btnExport2').addEventListener('click', exportCSV);
 </script>
 </body>
 </html>
