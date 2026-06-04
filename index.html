@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live Scorer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --accent: #c8f135;
+    --accent-dim: rgba(200,241,53,0.12);
+    --red: #ff4d4d;
+    --blue: #4da6ff;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* MODE TOGGLE */
+  .mode-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .mode-tab.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .dot.live { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1.5s infinite; }
+  .dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* PANELS */
+  .panel { display: none; flex: 1; flex-direction: column; }
+  .panel.active { display: flex; }
+
+  /* KEYPAD */
+  .keypad-wrap { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .last-press {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .last-key {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 28px;
+  }
+  .last-meta { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    flex: 1;
+  }
+  .key {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.08s, transform 0.08s, border-color 0.08s;
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .key:active, .key.flash {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(0.95);
+  }
+
+  /* VIEWER */
+  .viewer-wrap { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  .feed-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .feed {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 0;
+  }
+  .feed-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 70px 70px 60px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    animation: slideIn 0.15s ease;
+  }
+  .feed-row.new-entry {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform: translateY(0); } }
+  .feed-key { font-size: 18px; font-weight: 600; color: var(--accent); text-align: center; }
+  .feed-time { color: var(--muted); font-size: 11px; }
+  .feed-dur { color: var(--blue); text-align: right; }
+  .feed-gap { color: var(--muted); text-align: right; }
+  .feed-idx { color: var(--muted); font-size: 10px; }
+
+  .feed-header {
+    display: grid;
+    grid-template-columns: 28px 1fr 70px 70px 60px;
+    gap: 8px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ACTIONS */
+  .actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .btn {
+    flex: 1;
+    padding: 11px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: none;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .btn.danger:hover { border-color: var(--red); color: var(--red); background: rgba(255,77,77,0.1); }
+
+  .empty-feed {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="mode-bar">
+  <button class="mode-tab active" id="tabScorer">⌨ Scorer</button>
+  <button class="mode-tab" id="tabViewer">👁 Viewer</button>
+</div>
+
+<div class="status-bar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">Connecting...</span>
+</div>
+
+<!-- SCORER PANEL -->
+<div class="panel active" id="panelScorer">
+  <div class="keypad-wrap">
+    <div class="last-press" id="lastPress">
+      <span class="last-key" id="lastKey">—</span>
+      <span class="last-meta" id="lastMeta">Press a key to start scoring</span>
+    </div>
+    <div class="keypad" id="keypad"></div>
+  </div>
+  <div class="actions">
+    <button class="btn danger" id="btnClear">Clear All</button>
+    <button class="btn" id="btnExport1">Export CSV</button>
+  </div>
+</div>
+
+<!-- VIEWER PANEL -->
+<div class="panel" id="panelViewer">
+  <div class="viewer-wrap">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-val" id="statLast">—</div><div class="stat-label">Last Key</div></div>
+      <div class="stat-card"><div class="stat-val" id="statAvgDur">—</div><div class="stat-label">Avg Hold</div></div>
+    </div>
+    <div class="feed-label">Live Feed</div>
+    <div class="feed-header">
+      <span>#</span><span>Time</span><span style="text-align:right">Hold</span><span style="text-align:right">Gap</span><span>Key</span>
+    </div>
+    <div class="feed" id="viewerFeed">
+      <div class="empty-feed">Waiting for scorer...</div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="btnExport2">Export CSV</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, push, onValue, remove, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const pressesRef = ref(db, 'presses');
+
+  let allEntries = [];
+  let pressStart = null;
+  let lastReleaseTime = null;
+  let currentMode = 'scorer';
+  let lastKnownKey = null;
+
+  // Status
+  function setStatus(state, msg) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    dot.className = 'dot ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
+    txt.textContent = msg;
+  }
+
+  // Wire up buttons inside module — avoids onclick scope issues
+  document.getElementById('tabScorer').addEventListener('click', () => setMode('scorer'));
+  document.getElementById('tabViewer').addEventListener('click', () => setMode('viewer'));
+  document.getElementById('btnClear').addEventListener('click', () => {
+    if (!confirm('Delete all presses from Firebase? This clears for everyone.')) return;
+    remove(pressesRef);
+  });
+  document.getElementById('btnExport1').addEventListener('click', exportCSV);
+  document.getElementById('btnExport2').addEventListener('click', exportCSV);
+
+  // Mode switching
+  function setMode(m) {
+    currentMode = m;
+    document.getElementById('panelScorer').classList.toggle('active', m === 'scorer');
+    document.getElementById('panelViewer').classList.toggle('active', m === 'viewer');
+    document.getElementById('tabScorer').classList.toggle('active', m === 'scorer');
+    document.getElementById('tabViewer').classList.toggle('active', m === 'viewer');
+  }
+
+  // Build keypad
+  const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
+  const kp = document.getElementById('keypad');
+  KEYS.forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'key';
+    btn.textContent = k;
+
+    const down = (e) => { e.preventDefault(); keyDown(k, btn); };
+    const up = (e) => { e.preventDefault(); keyUp(k, btn); };
+
+    btn.addEventListener('touchstart', down, {passive:false});
+    btn.addEventListener('mousedown', down);
+    btn.addEventListener('touchend', up, {passive:false});
+    btn.addEventListener('mouseup', up);
+    kp.appendChild(btn);
+  });
+
+  function keyDown(k, btn) {
+    if (pressStart !== null) return;
+    pressStart = Date.now();
+    btn.classList.add('flash');
+  }
+
+  function keyUp(k, btn) {
+    if (pressStart === null) return;
+    const duration = Date.now() - pressStart;
+    const now = Date.now();
+    const gap = lastReleaseTime !== null ? now - lastReleaseTime : null;
+    lastReleaseTime = now;
+    pressStart = null;
+    btn.classList.remove('flash');
+
+    const entry = {
+      key: k,
+      time: new Date().toISOString(),
+      duration_ms: duration,
+      gap_from_prev_ms: gap !== null ? gap : -1
+    };
+
+    // Update local UI immediately
+    document.getElementById('lastKey').textContent = k;
+    document.getElementById('lastMeta').innerHTML =
+      `Hold: <span style="color:#4da6ff">${duration}ms</span>&nbsp;&nbsp;` +
+      (gap !== null ? `Gap: ${gap}ms` : 'First press');
+
+    // Push to Firebase
+    push(pressesRef, entry).catch(() => setStatus('error', 'Send failed — check connection'));
+  }
+
+  // Listen to Firebase in real time
+  const liveQuery = query(pressesRef, orderByChild('time'), limitToLast(200));
+  onValue(liveQuery, (snapshot) => {
+    const data = snapshot.val();
+    allEntries = [];
+    if (data) {
+      Object.values(data).forEach(v => allEntries.push(v));
+      allEntries.sort((a, b) => a.time > b.time ? 1 : -1);
+    }
+    setStatus('live', `Connected · ${allEntries.length} press${allEntries.length !== 1 ? 'es' : ''}`);
+    renderViewer();
+  }, (err) => {
+    setStatus('error', 'Connection lost — retrying...');
+  });
+
+  function renderViewer() {
+    const feed = document.getElementById('viewerFeed');
+    if (!allEntries.length) {
+      feed.innerHTML = '<div class="empty-feed">Waiting for scorer...</div>';
+      document.getElementById('statTotal').textContent = '0';
+      document.getElementById('statLast').textContent = '—';
+      document.getElementById('statAvgDur').textContent = '—';
+      return;
+    }
+
+    const last = allEntries[allEntries.length - 1];
+    const avgDur = Math.round(allEntries.reduce((s, e) => s + e.duration_ms, 0) / allEntries.length);
+
+    document.getElementById('statTotal').textContent = allEntries.length;
+    document.getElementById('statLast').textContent = last.key;
+    document.getElementById('statAvgDur').textContent = avgDur + 'ms';
+
+    const isNew = last.key !== lastKnownKey;
+    lastKnownKey = last.key;
+
+    feed.innerHTML = [...allEntries].reverse().map((e, i) => {
+      const idx = allEntries.length - i;
+      const t = e.time.slice(11, 19);
+      const dur = e.duration_ms + 'ms';
+      const gap = e.gap_from_prev_ms > 0 ? '+' + e.gap_from_prev_ms + 'ms' : '—';
+      const isLatest = i === 0;
+      return `<div class="feed-row${isLatest && isNew ? ' new-entry' : ''}">
+        <span class="feed-key">${e.key}</span>
+        <span class="feed-time">${t}</span>
+        <span class="feed-dur">${dur}</span>
+        <span class="feed-gap">${gap}</span>
+        <span class="feed-idx">#${idx}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Export CSV
+  function exportCSV() {
+    if (!allEntries.length) { alert('No data yet.'); return; }
+    const rows = [['index','key','timestamp','duration_ms','gap_from_prev_ms']];
+    allEntries.forEach((e, i) => {
+      rows.push([i + 1, e.key, e.time, e.duration_ms, e.gap_from_prev_ms > 0 ? e.gap_from_prev_ms : '']);
+    });
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'scorer_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Clear all - now handled by btnClear listener above
+</script>
+</body>
+</html>
