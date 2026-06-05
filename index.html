@@ -137,7 +137,10 @@
   }
   .scorer-stats.A { border-color: rgba(200,241,53,0.25); }
   .scorer-stats.B { border-color: rgba(77,166,255,0.25); }
-  .ss-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+  .ss-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .pres-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; display: inline-block; }
+  .pres-dot.online { background: var(--green); box-shadow: 0 0 5px var(--green); animation: pulse 1.5s infinite; }
+  .pres-label { font-size: 9px; color: var(--muted); font-weight: 400; margin-left: 2px; }
   .ss-name.A { color: var(--colA); }
   .ss-name.B { color: var(--colB); }
   .ss-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
@@ -263,13 +266,13 @@
     <div class="viewer-wrap">
       <div class="stats-grid">
         <div class="scorer-stats A">
-          <div class="ss-name A">Scorer A</div>
+          <div class="ss-name A"><span class="pres-dot" id="presDotA"></span>Scorer A <span class="pres-label" id="presLabelA">Offline</span></div>
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statABalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statAAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statAFirst">0</span></div>
         </div>
         <div class="scorer-stats B">
-          <div class="ss-name B">Scorer B</div>
+          <div class="ss-name B"><span class="pres-dot" id="presDotB"></span>Scorer B <span class="pres-label" id="presLabelB">Offline</span></div>
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statBBalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statBAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statBFirst">0</span></div>
@@ -306,7 +309,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   const app = initializeApp({ databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/" });
   const db = getDatabase(app);
@@ -320,8 +323,9 @@
   let currentTimings = [];
   let pressStart = null;
   let editingFbKey = null;
-  // Local immediate lock — does NOT wait for Firebase round-trip
   let mySubmittedSeqs = new Set();
+  // Unique ID for this browser tab (for presence)
+  const clientId = Math.random().toString(36).slice(2);
 
   // ── HELPERS ──
   function setStatus(state, msg) {
@@ -390,6 +394,14 @@
     document.getElementById('panelViewer').style.display = role === 'viewer' ? 'flex' : 'none';
     document.getElementById('panelViewer').style.flexDirection = 'column';
     if (role !== 'viewer') buildKeypad(role);
+    // ── PRESENCE ──
+    // Clear any old presence for either scorer on this device
+    ['A','B'].forEach(s => set(ref(db, 'comp/presence/' + s + '/devices/' + clientId), null));
+    if (role === 'A' || role === 'B') {
+      const myPresRef = ref(db, 'comp/presence/' + role + '/devices/' + clientId);
+      set(myPresRef, { online: true, since: new Date().toISOString() });
+      onDisconnect(myPresRef).remove();
+    }
     updateScorerUI();
   }
 
@@ -454,12 +466,17 @@
     currentKeys = []; currentTimings = [];
     renderCurrentKeys();
     updateScorerUI(); // greys out keypad instantly
+    // confirmed_at = timestamp of LAST KEY pressed (not #) — used for A First / B First
+    const lastKeyTime = timingsSnapshot.length > 0
+      ? timingsSnapshot[timingsSnapshot.length - 1].time
+      : new Date().toISOString();
     push(entriesRef, {
       scorer: myRole, seq,
       label: seqToLabel(seq),
       keys: keysSnapshot.join(' '),
       timings: timingsSnapshot,
-      confirmed_at: new Date().toISOString(),
+      confirmed_at: lastKeyTime,
+      hash_at: new Date().toISOString(),
       edited: false
     }).catch(() => {
       // If send fails, revert the lock so scorer can try again
@@ -507,6 +524,19 @@
   onValue(verdictsRef, snap => {
     allVerdicts = snap.val() || {};
     if (myRole === 'viewer') renderViewer();
+  }, () => {});
+
+  // ── PRESENCE LISTENER ──
+  onValue(ref(db, 'comp/presence'), snap => {
+    const data = snap.val() || {};
+    ['A','B'].forEach(s => {
+      const devices = data[s]?.devices || {};
+      const isOnline = Object.values(devices).some(d => d.online);
+      const dot = document.getElementById('presDot' + s);
+      const label = document.getElementById('presLabel' + s);
+      if (dot) dot.className = 'pres-dot' + (isOnline ? ' online' : '');
+      if (label) label.textContent = isOnline ? 'Online' : 'Offline';
+    });
   }, () => {});
 
   // ── RENDER VIEWER ──
