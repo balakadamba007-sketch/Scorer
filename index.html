@@ -320,6 +320,8 @@
   let currentTimings = [];
   let pressStart = null;
   let editingFbKey = null;
+  // Local immediate lock — does NOT wait for Firebase round-trip
+  let mySubmittedSeqs = new Set();
 
   // ── HELPERS ──
   function setStatus(state, msg) {
@@ -355,6 +357,9 @@
   function hasSubmittedCurrentBall() {
     if (!myRole || myRole === 'viewer') return false;
     const currentBall = getCurrentBall();
+    // Check local set first (instant, no Firebase delay)
+    if (mySubmittedSeqs.has(currentBall)) return true;
+    // Also check Firebase data (catches page reloads)
     return Object.values(allEntries).some(e => e.scorer === myRole && e.seq === currentBall);
   }
 
@@ -442,16 +447,26 @@
 
   function commitBall() {
     const seq = getCurrentBall();
+    const keysSnapshot = [...currentKeys];
+    const timingsSnapshot = [...currentTimings];
+    // Lock IMMEDIATELY — do not wait for Firebase round-trip
+    mySubmittedSeqs.add(seq);
+    currentKeys = []; currentTimings = [];
+    renderCurrentKeys();
+    updateScorerUI(); // greys out keypad instantly
     push(entriesRef, {
       scorer: myRole, seq,
       label: seqToLabel(seq),
-      keys: currentKeys.join(' '),
-      timings: currentTimings,
+      keys: keysSnapshot.join(' '),
+      timings: timingsSnapshot,
       confirmed_at: new Date().toISOString(),
       edited: false
-    }).catch(() => setStatus('error', 'Send failed — check connection'));
-    currentKeys = []; currentTimings = [];
-    renderCurrentKeys();
+    }).catch(() => {
+      // If send fails, revert the lock so scorer can try again
+      mySubmittedSeqs.delete(seq);
+      updateScorerUI();
+      setStatus('error', 'Send failed — check connection');
+    });
   }
 
   function updateScorerUI() {
@@ -482,6 +497,9 @@
     allEntries = snap.val() || {};
     const count = Object.keys(allEntries).length;
     setStatus('live', `Connected · ${count} entries`);
+    // Remove old seqs from local lock — keep only current ball and above
+    const cb = getCurrentBall();
+    mySubmittedSeqs = new Set([...mySubmittedSeqs].filter(s => s >= cb));
     updateScorerUI();
     if (myRole === 'viewer') renderViewer();
   }, () => setStatus('error', 'Connection lost — retrying...'));
