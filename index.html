@@ -170,7 +170,7 @@
   }
   .sr-key.A { color: var(--colA); background: var(--colA-dim); border: 1px solid rgba(200,241,53,0.2); }
   .sr-key.B { color: var(--colB); background: var(--colB-dim); border: 1px solid rgba(77,166,255,0.2); }
-  .sr-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 50px; text-align: right; }
+  .sr-time { font-family: var(--font-mono); font-size: 10px; color: #c8c8c8; min-width: 50px; text-align: right; }
   .sr-empty { font-family: var(--font-mono); font-size: 11px; color: var(--muted); flex: 1; font-style: italic; }
 
   /* Verdict buttons */
@@ -210,7 +210,7 @@
     color: var(--orange); text-transform: uppercase; letter-spacing: 0.07em;
     padding: 2px 4px;
   }
-  .sr-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 78px; text-align: right; }
+  .sr-time { font-family: var(--font-mono); font-size: 10px; color: #c8c8c8; min-width: 78px; text-align: right; }
 
   /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
@@ -290,6 +290,8 @@
       </div>
     </div>
     <div class="actions">
+      <button class="btn danger" id="btnResetAll">Reset All</button>
+      <button class="btn" id="btnResetOver">Reset Last Over</button>
       <button class="btn" id="btnExportViewer">Export CSV</button>
     </div>
   </div>
@@ -620,11 +622,45 @@
     editingFbKey = null;
   });
 
-  // ── CLEAR ALL ──
+  // ── CLEAR ALL (scorer side) ──
   document.getElementById('btnClear').addEventListener('click', () => {
     if (!confirm('Delete ALL data? Clears for everyone.')) return;
     remove(entriesRef); remove(verdictsRef);
     currentKeys = []; currentTimings = []; renderCurrentKeys();
+  });
+
+  // ── VIEWER RESETS ──
+  document.getElementById('btnResetAll').addEventListener('click', () => {
+    if (!confirm('Reset ALL data? This clears everything for everyone.')) return;
+    remove(entriesRef); remove(verdictsRef);
+  });
+
+  document.getElementById('btnResetOver').addEventListener('click', () => {
+    // Find the highest over number and delete all entries in it
+    const allSeqs = [
+      ...Object.values(allEntries).filter(e => e.scorer === 'A').map(e => e.seq||0),
+      ...Object.values(allEntries).filter(e => e.scorer === 'B').map(e => e.seq||0)
+    ];
+    if (!allSeqs.length) { alert('Nothing to reset.'); return; }
+    const maxSeq = Math.max(...allSeqs);
+    const currentOver = Math.floor((maxSeq - 1) / 6) + 1;
+    const overStart = (currentOver - 1) * 6 + 1;
+    const overEnd = currentOver * 6;
+    if (!confirm(`Reset Over ${currentOver} (balls ${seqToLabel(overStart)} – ${seqToLabel(overEnd)})? This deletes it for everyone.`)) return;
+    // Delete entries in this over for both scorers
+    Object.entries(allEntries).forEach(([fbKey, entry]) => {
+      const seq = entry.seq || 0;
+      if (seq >= overStart && seq <= overEnd) {
+        remove(ref(db, 'comp/entries/' + fbKey));
+      }
+    });
+    // Delete verdicts for this over
+    Object.entries(allVerdicts).forEach(([vKey, v]) => {
+      const seq = v.seq || 0;
+      if (seq >= overStart && seq <= overEnd) {
+        remove(ref(db, 'comp/verdicts/' + vKey));
+      }
+    });
   });
 
   // ── EXPORT CSV ──
