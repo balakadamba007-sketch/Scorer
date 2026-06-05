@@ -266,13 +266,13 @@
     <div class="viewer-wrap">
       <div class="stats-grid">
         <div class="scorer-stats A">
-          <div class="ss-name A"><span class="pres-dot" id="presDotA"></span>Scorer A <span class="pres-label" id="presLabelA">Offline</span></div>
+          <div class="ss-name A">Scorer A</div>
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statABalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statAAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statAFirst">0</span></div>
         </div>
         <div class="scorer-stats B">
-          <div class="ss-name B"><span class="pres-dot" id="presDotB"></span>Scorer B <span class="pres-label" id="presLabelB">Offline</span></div>
+          <div class="ss-name B">Scorer B</div>
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statBBalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statBAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statBFirst">0</span></div>
@@ -309,7 +309,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   const app = initializeApp({ databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/" });
   const db = getDatabase(app);
@@ -324,8 +324,6 @@
   let pressStart = null;
   let editingFbKey = null;
   let mySubmittedSeqs = new Set();
-  // Unique ID for this browser tab (for presence)
-  const clientId = Math.random().toString(36).slice(2);
 
   // ── HELPERS ──
   function setStatus(state, msg) {
@@ -383,6 +381,8 @@
 
   function activateRole(role) {
     myRole = role;
+    mySubmittedSeqs = new Set(); // clear on every role switch
+    currentKeys = []; currentTimings = [];
     localStorage.setItem('scorer_role_v2', role);
     document.getElementById('roleScreen').style.display = 'none';
     document.getElementById('mainApp').classList.add('visible');
@@ -394,14 +394,6 @@
     document.getElementById('panelViewer').style.display = role === 'viewer' ? 'flex' : 'none';
     document.getElementById('panelViewer').style.flexDirection = 'column';
     if (role !== 'viewer') buildKeypad(role);
-    // ── PRESENCE ──
-    // Clear any old presence for either scorer on this device
-    ['A','B'].forEach(s => set(ref(db, 'comp/presence/' + s + '/devices/' + clientId), null));
-    if (role === 'A' || role === 'B') {
-      const myPresRef = ref(db, 'comp/presence/' + role + '/devices/' + clientId);
-      set(myPresRef, { online: true, since: new Date().toISOString() });
-      onDisconnect(myPresRef).remove();
-    }
     updateScorerUI();
   }
 
@@ -524,19 +516,6 @@
   onValue(verdictsRef, snap => {
     allVerdicts = snap.val() || {};
     if (myRole === 'viewer') renderViewer();
-  }, () => {});
-
-  // ── PRESENCE LISTENER ──
-  onValue(ref(db, 'comp/presence'), snap => {
-    const data = snap.val() || {};
-    ['A','B'].forEach(s => {
-      const devices = data[s]?.devices || {};
-      const isOnline = Object.values(devices).some(d => d.online);
-      const dot = document.getElementById('presDot' + s);
-      const label = document.getElementById('presLabel' + s);
-      if (dot) dot.className = 'pres-dot' + (isOnline ? ' online' : '');
-      if (label) label.textContent = isOnline ? 'Online' : 'Offline';
-    });
   }, () => {});
 
   // ── RENDER VIEWER ──
