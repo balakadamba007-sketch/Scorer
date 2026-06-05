@@ -13,35 +13,80 @@
     --accent: #c8f135; --accent-dim: rgba(200,241,53,0.1);
     --red: #ff4d4d; --red-dim: rgba(255,77,77,0.1);
     --orange: #ffaa33; --orange-dim: rgba(255,170,51,0.1);
-    --blue: #4da6ff;
+    --blue: #4da6ff; --blue-dim: rgba(77,166,255,0.1);
+    --green: #33ff99; --green-dim: rgba(51,255,153,0.1);
+    --colA: #c8f135; --colA-dim: rgba(200,241,53,0.1);
+    --colB: #4da6ff; --colB-dim: rgba(77,166,255,0.1);
     --font-mono: 'IBM Plex Mono', monospace;
     --font-sans: 'IBM Plex Sans', sans-serif;
   }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; display: flex; flex-direction: column; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* TOP BAR */
-  .mode-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
-  .mode-tab { flex: 1; padding: 13px; text-align: center; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--muted); cursor: pointer; border: none; background: none; transition: all 0.15s; text-transform: uppercase; }
-  .mode-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--accent-dim); }
-  .status-bar { display: flex; align-items: center; gap: 8px; padding: 7px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface); }
+  /* ── ROLE SCREEN ── */
+  #roleScreen {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 24px; padding: 32px;
+  }
+  .role-title { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .role-subtitle { font-size: 13px; color: var(--muted); text-align: center; font-family: var(--font-mono); }
+  .role-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; }
+  .role-btn {
+    padding: 18px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-family: var(--font-mono);
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .role-btn:hover { transform: translateY(-1px); }
+  .role-btn.a { border-color: var(--colA); color: var(--colA); }
+  .role-btn.a:hover { background: var(--colA-dim); }
+  .role-btn.b { border-color: var(--colB); color: var(--colB); }
+  .role-btn.b:hover { background: var(--colB-dim); }
+  .role-btn.v { border-color: var(--orange); color: var(--orange); }
+  .role-btn.v:hover { background: var(--orange-dim); }
+  .role-icon { font-size: 20px; }
+
+  /* ── MAIN APP ── */
+  #mainApp { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+  #mainApp.visible { display: flex; }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .role-badge {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 5px; letter-spacing: 0.06em;
+  }
+  .role-badge.A { background: var(--colA-dim); color: var(--colA); border: 1px solid rgba(200,241,53,0.3); }
+  .role-badge.B { background: var(--colB-dim); color: var(--colB); border: 1px solid rgba(77,166,255,0.3); }
+  .role-badge.viewer { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(255,170,51,0.3); }
+  .change-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; border: none; background: none; padding: 4px 8px; }
+  .change-role:hover { color: var(--text); }
+
+  .status-bar {
+    display: flex; align-items: center; gap: 8px; padding: 6px 14px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+    border-bottom: 1px solid var(--border); background: var(--surface);
+  }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
   .dot.live { background: var(--accent); box-shadow: 0 0 5px var(--accent); animation: pulse 1.5s infinite; }
   .dot.error { background: var(--red); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-  .panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-  .panel.active { display: flex; }
-
-  /* ── SCORER ── */
+  /* ── SCORER PANEL ── */
+  #panelScorer { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
   .scorer-wrap { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
 
   .ball-indicator {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; justify-content: space-between;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 14px;
   }
-  .ball-id { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--orange); min-width: 48px; }
-  .ball-id-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+  .ball-id { font-family: var(--font-mono); font-size: 26px; font-weight: 600; }
+  .ball-id.A { color: var(--colA); }
+  .ball-id.B { color: var(--colB); }
+  .ball-id-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; margin-bottom: 2px; }
+  .submitted-count { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
 
   .current-keys-box {
     background: var(--surface); border: 1px solid var(--border);
@@ -50,11 +95,12 @@
   }
   .hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
   .k-chip {
-    background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.25);
     border-radius: 5px; padding: 4px 10px;
-    font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--accent);
+    font-family: var(--font-mono); font-size: 18px; font-weight: 600;
     display: flex; flex-direction: column; align-items: center;
   }
+  .k-chip.A { background: var(--colA-dim); border: 1px solid rgba(200,241,53,0.25); color: var(--colA); }
+  .k-chip.B { background: var(--colB-dim); border: 1px solid rgba(77,166,255,0.25); color: var(--colB); }
   .k-chip .ms { font-size: 9px; color: var(--muted); font-weight: 400; }
 
   .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; flex: 1; }
@@ -62,138 +108,199 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
     color: var(--text); font-family: var(--font-mono); font-size: 24px; font-weight: 600;
     cursor: pointer; transition: background 0.08s, transform 0.08s, border-color 0.08s;
-    min-height: 66px; display: flex; align-items: center; justify-content: center;
+    min-height: 64px; display: flex; align-items: center; justify-content: center;
     user-select: none; -webkit-user-select: none;
   }
-  .key:active, .key.flash { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); transform: scale(0.95); }
-  .key.confirm { border-color: var(--orange); color: var(--orange); font-size: 16px; }
-  .key.confirm:active, .key.confirm.flash { background: var(--orange-dim); }
+  .key.flash-A { background: var(--colA-dim); border-color: var(--colA); color: var(--colA); transform: scale(0.95); }
+  .key.flash-B { background: var(--colB-dim); border-color: var(--colB); color: var(--colB); transform: scale(0.95); }
+  .key.confirm { border-color: var(--orange); color: var(--orange); font-size: 15px; }
+  .key.confirm.flash-A, .key.confirm.flash-B { background: var(--orange-dim); }
 
-  /* ── VIEWER ── */
+  /* ── VIEWER PANEL ── */
+  #panelViewer { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
   .viewer-wrap { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
 
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; text-align: center; }
-  .stat-val { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--accent); }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .scorer-stats {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .scorer-stats.A { border-color: rgba(200,241,53,0.25); }
+  .scorer-stats.B { border-color: rgba(77,166,255,0.25); }
+  .ss-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+  .ss-name.A { color: var(--colA); }
+  .ss-name.B { color: var(--colB); }
+  .ss-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
+  .ss-val { color: var(--text); font-weight: 600; }
+  .ss-label { color: var(--muted); }
 
   .feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-bottom: 4px; }
 
-  /* Over block */
-  .over-block { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
-  .over-header {
+  /* Ball comparison card */
+  .ball-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 9px; overflow: hidden;
+  }
+  .ball-card-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 12px; border-bottom: 1px solid var(--border);
-    background: var(--surface2);
+    padding: 6px 12px; background: var(--surface2); border-bottom: 1px solid var(--border);
   }
-  .over-title { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--orange); letter-spacing: 0.05em; }
-  .over-count { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+  .ball-card-label { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--orange); }
+  .first-badge {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em;
+  }
+  .first-badge.A { background: var(--colA-dim); color: var(--colA); border: 1px solid rgba(200,241,53,0.3); }
+  .first-badge.B { background: var(--colB-dim); color: var(--colB); border: 1px solid rgba(77,166,255,0.3); }
+  .first-badge.tie { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(255,170,51,0.3); }
+  .first-badge.pending { background: none; color: var(--muted); border: 1px solid var(--border); }
 
-  .ball-entry {
+  .scorer-row {
     display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px; border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
   }
-  .ball-entry:last-child { border-bottom: none; }
-  .ball-entry.newest { background: var(--accent-dim); }
-  .ball-entry.edited { background: var(--orange-dim); }
+  .scorer-row:last-child { border-bottom: none; }
+  .sr-who { font-family: var(--font-mono); font-size: 11px; font-weight: 600; min-width: 14px; }
+  .sr-who.A { color: var(--colA); }
+  .sr-who.B { color: var(--colB); }
+  .sr-keys { display: flex; gap: 3px; flex-wrap: wrap; flex: 1; }
+  .sr-key {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+    border-radius: 4px; padding: 1px 5px;
+  }
+  .sr-key.A { color: var(--colA); background: var(--colA-dim); border: 1px solid rgba(200,241,53,0.2); }
+  .sr-key.B { color: var(--colB); background: var(--colB-dim); border: 1px solid rgba(77,166,255,0.2); }
+  .sr-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 50px; text-align: right; }
+  .sr-empty { font-family: var(--font-mono); font-size: 11px; color: var(--muted); flex: 1; font-style: italic; }
 
-  .be-id { font-family: var(--font-mono); font-size: 11px; color: var(--orange); min-width: 28px; }
-  .be-keys { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
-  .be-key { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.2); border-radius: 4px; padding: 1px 6px; }
-  .be-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 56px; text-align: right; }
-  .be-edited { font-size: 9px; color: var(--orange); font-family: var(--font-mono); }
+  /* Verdict buttons */
+  .verdict-btns { display: flex; gap: 4px; }
+  .vb {
+    border-radius: 5px; border: 1px solid var(--border); background: none;
+    font-family: var(--font-mono); font-size: 11px; cursor: pointer;
+    padding: 3px 8px; transition: all 0.12s; color: var(--muted);
+    white-space: nowrap;
+  }
+  .vb:hover { border-color: var(--text); color: var(--text); }
+  .vb.active-right { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .vb.active-wrong { background: var(--red-dim); border-color: var(--red); color: var(--red); }
 
-  .be-btns { display: flex; gap: 4px; }
-  .ib { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 12px; cursor: pointer; padding: 2px 7px; font-family: var(--font-mono); transition: all 0.1s; }
+  /* Edit */
+  .ib { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 11px; cursor: pointer; padding: 2px 6px; font-family: var(--font-mono); transition: all 0.1s; }
   .ib:hover { border-color: var(--blue); color: var(--blue); }
   .ib.del:hover { border-color: var(--red); color: var(--red); }
 
-  /* pending ball (in-progress) */
-  .pending-row {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px;
-    background: rgba(255,170,51,0.05);
-    border-top: 1px dashed rgba(255,170,51,0.3);
-    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
-  }
-  .pending-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 1s infinite; }
+  /* waiting row */
+  .sr-waiting { padding: 7px 12px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .mini-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: pulse 1.2s infinite; }
 
   /* ACTIONS */
   .actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface); }
-  .btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.04em; }
   .btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
   .btn.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
   .btn.save { border-color: var(--accent); color: var(--accent); }
 
   .empty-feed { flex: 1; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 
+  /* Over grouping */
+  .over-section { display: flex; flex-direction: column; gap: 5px; }
+  .over-section-label {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    color: var(--orange); text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 2px 4px;
+  }
+  .sr-time { font-family: var(--font-mono); font-size: 10px; color: var(--muted); min-width: 78px; text-align: right; }
+
   /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal { background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 14px; }
+  .modal { background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 14px; }
   .modal-title { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
   .modal input { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: var(--font-mono); font-size: 20px; padding: 10px 14px; width: 100%; outline: none; letter-spacing: 0.12em; }
   .modal input:focus { border-color: var(--accent); }
-  .modal-hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); line-height: 1.5; }
+  .modal-hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
   .modal-btns { display: flex; gap: 8px; }
 </style>
 </head>
 <body>
 
-<div class="mode-bar">
-  <button class="mode-tab active" id="tabScorer">⌨ Scorer</button>
-  <button class="mode-tab" id="tabViewer">👁 Viewer</button>
-</div>
-<div class="status-bar">
-  <div class="dot" id="statusDot"></div>
-  <span id="statusText">Connecting...</span>
+<!-- ROLE SELECTION -->
+<div id="roleScreen">
+  <div class="role-title">Live Scorer — Choose Role</div>
+  <div class="role-subtitle">Each person picks their role.<br>All stay in sync via Firebase.</div>
+  <div class="role-btns">
+    <button class="role-btn a" data-role="A"><span class="role-icon">⌨</span> Scorer A</button>
+    <button class="role-btn b" data-role="B"><span class="role-icon">⌨</span> Scorer B</button>
+    <button class="role-btn v" data-role="viewer"><span class="role-icon">👁</span> Viewer</button>
+  </div>
 </div>
 
-<!-- SCORER -->
-<div class="panel active" id="panelScorer">
-  <div class="scorer-wrap">
-    <div class="ball-indicator">
-      <div>
-        <div class="ball-id-label">Delivery</div>
-        <div class="ball-id" id="scorerBallId">0.1</div>
+<!-- MAIN APP -->
+<div id="mainApp">
+  <div class="top-bar">
+    <div class="role-badge" id="roleBadge"></div>
+    <button class="change-role" id="btnChangeRole">Change Role</button>
+  </div>
+  <div class="status-bar">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+
+  <!-- SCORER PANEL -->
+  <div id="panelScorer">
+    <div class="scorer-wrap">
+      <div class="ball-indicator">
+        <div>
+          <div class="ball-id-label">Your delivery</div>
+          <div class="ball-id" id="scorerBallId">1.1</div>
+        </div>
+        <div class="submitted-count" id="submittedCount"></div>
       </div>
-      <div style="flex:1; text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--muted)" id="scorerNextHint"></div>
+      <div class="current-keys-box" id="currentKeysBox">
+        <span class="hint">Press keys · # to confirm ball</span>
+      </div>
+      <div class="keypad" id="keypad"></div>
     </div>
-    <div class="current-keys-box" id="currentKeysBox">
-      <span class="hint">Press keys · # to confirm ball</span>
+    <div class="actions">
+      <button class="btn danger" id="btnClear">Clear All</button>
+      <button class="btn" id="btnExportScorer">Export CSV</button>
     </div>
-    <div class="keypad" id="keypad"></div>
   </div>
-  <div class="actions">
-    <button class="btn danger" id="btnClear">Clear All</button>
-    <button class="btn" id="btnExport1">Export CSV</button>
-  </div>
-</div>
 
-<!-- VIEWER -->
-<div class="panel" id="panelViewer">
-  <div class="viewer-wrap">
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-val" id="statBalls">0</div><div class="stat-label">Balls</div></div>
-      <div class="stat-card"><div class="stat-val" id="statOvers">0.0</div><div class="stat-label">Overs</div></div>
-      <div class="stat-card"><div class="stat-val" id="statEdits">0</div><div class="stat-label">Edits</div></div>
+  <!-- VIEWER PANEL -->
+  <div id="panelViewer" style="display:none">
+    <div class="viewer-wrap">
+      <div class="stats-grid">
+        <div class="scorer-stats A">
+          <div class="ss-name A">Scorer A</div>
+          <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statABalls">0</span></div>
+          <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statAAcc">—</span></div>
+          <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statAFirst">0</span></div>
+        </div>
+        <div class="scorer-stats B">
+          <div class="ss-name B">Scorer B</div>
+          <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statBBalls">0</span></div>
+          <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statBAcc">—</span></div>
+          <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statBFirst">0</span></div>
+        </div>
+      </div>
+      <div class="feed" id="viewerFeed">
+        <div class="empty-feed">Waiting for scorers...</div>
+      </div>
     </div>
-    <div class="feed" id="viewerFeed">
-      <div class="empty-feed">Waiting for scorer...</div>
+    <div class="actions">
+      <button class="btn" id="btnExportViewer">Export CSV</button>
     </div>
-  </div>
-  <div class="actions">
-    <button class="btn" id="btnExport2">Export CSV</button>
   </div>
 </div>
 
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
-    <div class="modal-title">Edit ball <span id="editBallLabel"></span></div>
+    <div class="modal-title">Edit · <span id="editLabel"></span></div>
     <input type="text" id="editInput" placeholder="e.g. 5 0 0" maxlength="30" />
-    <div class="modal-hint">Enter keys space-separated.<br>Original timing data is preserved.</div>
+    <div class="modal-hint">Space-separated keys. Original timings preserved.</div>
     <div class="modal-btns">
       <button class="btn" id="btnCancelEdit">Cancel</button>
       <button class="btn save" id="btnSaveEdit">Save</button>
@@ -207,9 +314,13 @@
 
   const app = initializeApp({ databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/" });
   const db = getDatabase(app);
-  const ballsRef = ref(db, 'balls2');
+  const entriesRef = ref(db, 'comp/entries');
+  const verdictsRef = ref(db, 'comp/verdicts');
 
-  let allBalls = {};        // fbKey -> ball object
+  // ── STATE ──
+  let myRole = null;           // 'A' | 'B' | 'viewer'
+  let allEntries = {};         // fbKey -> entry
+  let allVerdicts = {};        // verdictKey -> verdict object
   let currentKeys = [];
   let currentTimings = [];
   let pressStart = null;
@@ -221,64 +332,93 @@
     document.getElementById('statusText').textContent = msg;
   }
 
-  // ── MODE ──
-  document.getElementById('tabScorer').addEventListener('click', () => setMode('scorer'));
-  document.getElementById('tabViewer').addEventListener('click', () => setMode('viewer'));
-  function setMode(m) {
-    ['Scorer','Viewer'].forEach(x => {
-      document.getElementById('panel'+x).classList.toggle('active', m === x.toLowerCase());
-      document.getElementById('tab'+x).classList.toggle('active', m === x.toLowerCase());
-    });
+  // ── ROLE MANAGEMENT ──
+  const saved = localStorage.getItem('scorer_role');
+  if (saved) activateRole(saved);
+
+  document.querySelectorAll('[data-role]').forEach(btn => {
+    btn.addEventListener('click', () => activateRole(btn.dataset.role));
+  });
+  document.getElementById('btnChangeRole').addEventListener('click', () => {
+    localStorage.removeItem('scorer_role');
+    document.getElementById('roleScreen').style.display = 'flex';
+    document.getElementById('mainApp').classList.remove('visible');
+    myRole = null;
+  });
+
+  function activateRole(role) {
+    myRole = role;
+    localStorage.setItem('scorer_role', role);
+    document.getElementById('roleScreen').style.display = 'none';
+    document.getElementById('mainApp').classList.add('visible');
+
+    const badge = document.getElementById('roleBadge');
+    badge.className = 'role-badge ' + role;
+    badge.textContent = role === 'viewer' ? '👁 Viewer' : '⌨ Scorer ' + role;
+
+    document.getElementById('panelScorer').style.display = role !== 'viewer' ? 'flex' : 'none';
+    document.getElementById('panelViewer').style.display = role === 'viewer' ? 'flex' : 'none';
+    document.getElementById('panelScorer').style.flexDirection = 'column';
+
+    if (role !== 'viewer') buildKeypad(role);
+    updateScorerUI();
   }
 
   // ── BALL COUNTER ──
-  // ball_seq is 1-based. Over = ceil(seq/6), ball_in_over = ((seq-1)%6)+1
-  // Display as over.ball e.g. seq=1 → "0.1", seq=7 → "1.1"
   function seqToLabel(seq) {
-    const over = Math.floor((seq - 1) / 6);
+    const over = Math.floor((seq - 1) / 6) + 1;
     const b = ((seq - 1) % 6) + 1;
     return over + '.' + b;
   }
 
-  function nextSeq() {
-    const seqs = Object.values(allBalls).map(b => b.seq || 0);
-    return seqs.length ? Math.max(...seqs) + 1 : 1;
+  // ── UK TIME WITH MILLISECONDS (BST in June = UTC+1) ──
+  function formatUKTime(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    const ms = String(d.getMilliseconds()).padStart(3, '0');
+    const time = d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour12: false });
+    return time + '.' + ms;
   }
 
-  function updateScorerBallId() {
-    const seq = nextSeq();
-    document.getElementById('scorerBallId').textContent = seqToLabel(seq);
-    const over = Math.floor((seq - 1) / 6);
-    const b = ((seq - 1) % 6) + 1;
-    document.getElementById('scorerNextHint').textContent = b === 1 ? 'Over ' + over + ' starting' : '';
+  function myNextSeq() {
+    if (!myRole || myRole === 'viewer') return 1;
+    const mine = Object.values(allEntries).filter(e => e.scorer === myRole);
+    return mine.length + 1;
+  }
+
+  function updateScorerUI() {
+    if (!myRole || myRole === 'viewer') return;
+    const seq = myNextSeq();
+    const el = document.getElementById('scorerBallId');
+    el.textContent = seqToLabel(seq);
+    el.className = 'ball-id ' + myRole;
+    const mine = Object.values(allEntries).filter(e => e.scorer === myRole).length;
+    document.getElementById('submittedCount').textContent = mine + ' submitted';
   }
 
   // ── KEYPAD ──
   const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
-  const kp = document.getElementById('keypad');
-  KEYS.forEach(k => {
-    const btn = document.createElement('button');
-    btn.className = 'key' + (k === '#' ? ' confirm' : '');
-    btn.textContent = k === '#' ? '✓ #' : k;
-    btn.addEventListener('touchstart', e => { e.preventDefault(); keyDown(k, btn); }, {passive:false});
-    btn.addEventListener('mousedown', e => { e.preventDefault(); keyDown(k, btn); });
-    btn.addEventListener('touchend', e => { e.preventDefault(); keyUp(k, btn); }, {passive:false});
-    btn.addEventListener('mouseup', e => { e.preventDefault(); keyUp(k, btn); });
-    kp.appendChild(btn);
-  });
-
-  function keyDown(k, btn) {
-    if (pressStart !== null) return;
-    pressStart = Date.now();
-    btn.classList.add('flash');
+  function buildKeypad(role) {
+    const kp = document.getElementById('keypad');
+    kp.innerHTML = '';
+    KEYS.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'key' + (k === '#' ? ' confirm' : '');
+      btn.textContent = k === '#' ? '✓ #' : k;
+      const flashClass = 'flash-' + role;
+      btn.addEventListener('touchstart', e => { e.preventDefault(); if (pressStart !== null) return; pressStart = Date.now(); btn.classList.add(flashClass); }, {passive:false});
+      btn.addEventListener('mousedown', e => { e.preventDefault(); if (pressStart !== null) return; pressStart = Date.now(); btn.classList.add(flashClass); });
+      btn.addEventListener('touchend', e => { e.preventDefault(); doKeyUp(k, btn, flashClass); }, {passive:false});
+      btn.addEventListener('mouseup', e => { e.preventDefault(); doKeyUp(k, btn, flashClass); });
+      kp.appendChild(btn);
+    });
   }
 
-  function keyUp(k, btn) {
+  function doKeyUp(k, btn, flashClass) {
     if (pressStart === null) return;
     const dur = Date.now() - pressStart;
     pressStart = null;
-    btn.classList.remove('flash');
-
+    btn.classList.remove(flashClass);
     if (k === '#') {
       if (currentKeys.length === 0) return;
       commitBall();
@@ -296,155 +436,209 @@
       return;
     }
     box.innerHTML = currentTimings.map(t =>
-      `<div class="k-chip">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`
+      `<div class="k-chip ${myRole}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`
     ).join('');
   }
 
   function commitBall() {
-    const seq = nextSeq();
-    const ball = {
+    const seq = myNextSeq();
+    push(entriesRef, {
+      scorer: myRole,
       seq,
       label: seqToLabel(seq),
       keys: currentKeys.join(' '),
       timings: currentTimings,
       confirmed_at: new Date().toISOString(),
       edited: false
-    };
-    push(ballsRef, ball).catch(() => setStatus('error', 'Send failed'));
-    currentKeys = [];
-    currentTimings = [];
+    }).catch(() => setStatus('error', 'Send failed'));
+    currentKeys = []; currentTimings = [];
     renderCurrentKeys();
   }
 
-  // ── FIREBASE ──
-  onValue(query(ballsRef, orderByChild('seq')), snap => {
-    allBalls = snap.val() || {};
-    const count = Object.keys(allBalls).length;
-    const overs = Math.floor(count / 6);
-    const rem = count % 6;
-    setStatus('live', `Connected · ${seqToLabel(count + 1)} next`);
-    document.getElementById('statBalls').textContent = count;
-    document.getElementById('statOvers').textContent = overs + '.' + rem;
-    document.getElementById('statEdits').textContent = Object.values(allBalls).filter(b => b.edited).length;
-    updateScorerBallId();
-    renderViewer();
+  // ── FIREBASE LISTENERS ──
+  onValue(query(entriesRef, orderByChild('confirmed_at')), snap => {
+    allEntries = snap.val() || {};
+    const count = Object.keys(allEntries).length;
+    setStatus('live', `Connected · ${count} entries`);
+    updateScorerUI();
+    if (myRole === 'viewer') renderViewer();
   }, () => setStatus('error', 'Connection lost — retrying...'));
+
+  onValue(verdictsRef, snap => {
+    allVerdicts = snap.val() || {};
+    if (myRole === 'viewer') renderViewer();
+  }, () => {});
 
   // ── RENDER VIEWER ──
   function renderViewer() {
     const feed = document.getElementById('viewerFeed');
-    const entries = Object.entries(allBalls).sort((a, b) => (a[1].seq || 0) - (b[1].seq || 0));
 
-    if (!entries.length) {
-      feed.innerHTML = '<div class="empty-feed">Waiting for scorer...</div>';
+    const aEntries = Object.entries(allEntries).filter(([,e]) => e.scorer === 'A').sort((a,b) => (a[1].seq||0)-(b[1].seq||0));
+    const bEntries = Object.entries(allEntries).filter(([,e]) => e.scorer === 'B').sort((a,b) => (a[1].seq||0)-(b[1].seq||0));
+
+    // Stats
+    document.getElementById('statABalls').textContent = aEntries.length;
+    document.getElementById('statBBalls').textContent = bEntries.length;
+
+    const maxSeq = Math.max(aEntries.length, bEntries.length, 0);
+
+    // Count "firsts" from verdicts that have both entries
+    let aFirst = 0, bFirst = 0;
+    for (let i = 0; i < Math.min(aEntries.length, bEntries.length); i++) {
+      const at = aEntries[i][1].confirmed_at;
+      const bt = bEntries[i][1].confirmed_at;
+      if (at < bt) aFirst++;
+      else if (bt < at) bFirst++;
+    }
+    document.getElementById('statAFirst').textContent = aFirst;
+    document.getElementById('statBFirst').textContent = bFirst;
+
+    // Accuracy from verdicts
+    function calcAcc(scorer) {
+      const myVerdicts = Object.values(allVerdicts).filter(v => v.scorer === scorer);
+      if (!myVerdicts.length) return '—';
+      const rights = myVerdicts.filter(v => v.verdict === 'right').length;
+      return Math.round(rights / myVerdicts.length * 100) + '%';
+    }
+    document.getElementById('statAAcc').textContent = calcAcc('A');
+    document.getElementById('statBAcc').textContent = calcAcc('B');
+
+    if (!maxSeq) {
+      feed.innerHTML = '<div class="empty-feed">Waiting for scorers...</div>';
       return;
     }
 
-    // Group by over
-    const overs = {};
-    entries.forEach(([fbKey, ball]) => {
-      const over = Math.floor(((ball.seq || 1) - 1) / 6);
-      if (!overs[over]) overs[over] = [];
-      overs[over].push([fbKey, ball]);
-    });
+    // Group seqs by over — overs newest first, balls ascending (1.1 → 1.6) within each over
+    const overGroups = {};
+    for (let seq = 1; seq <= maxSeq; seq++) {
+      const over = Math.floor((seq - 1) / 6) + 1;
+      if (!overGroups[over]) overGroups[over] = [];
+      overGroups[over].push(seq);
+    }
 
-    const newestFbKey = entries[entries.length - 1][0];
+    function verdictBtns(scorer, seq, v) {
+      const vKey = `${seq}_${scorer}`;
+      return `<div class="verdict-btns">
+        <button class="vb${v==='right'?' active-right':''}" data-verdict="right" data-key="${vKey}" data-scorer="${scorer}" data-seq="${seq}">✓</button>
+        <button class="vb${v==='wrong'?' active-wrong':''}" data-verdict="wrong" data-key="${vKey}" data-scorer="${scorer}" data-seq="${seq}">✗</button>
+      </div>`;
+    }
 
-    const html = Object.keys(overs).sort((a,b) => b - a).map(over => {
-      const balls = overs[over];
-      const ballRows = balls.slice().reverse().map(([fbKey, ball]) => {
-        const chips = (ball.keys || '').split(' ').filter(Boolean)
-          .map(k => `<span class="be-key">${k}</span>`).join('');
-        const t = ball.confirmed_at ? ball.confirmed_at.slice(11,19) : '';
-        const editedTag = ball.edited ? `<span class="be-edited">edited</span>` : '';
-        const isNewest = fbKey === newestFbKey;
-        return `<div class="ball-entry${isNewest ? ' newest' : ''}${ball.edited ? ' edited' : ''}">
-          <div class="be-id">${ball.label || ''}</div>
-          <div class="be-keys">${chips}${editedTag}</div>
-          <div class="be-time">${t}</div>
-          <div class="be-btns">
-            <button class="ib" data-edit="${fbKey}" data-label="${ball.label}" data-keys="${ball.keys || ''}">✏</button>
-            <button class="ib del" data-del="${fbKey}" data-label="${ball.label}">✕</button>
+    function scorerRow(entry, scorer, seq, verdict) {
+      if (!entry) return `<div class="sr-waiting"><div class="mini-dot"></div>${scorer} waiting...</div>`;
+      const [fbKey, ball] = entry;
+      const chips = (ball.keys||'').split(' ').filter(Boolean).map(k => `<span class="sr-key ${scorer}">${k}</span>`).join('');
+      const t = formatUKTime(ball.confirmed_at);
+      const editedTag = ball.edited ? `<span style="color:var(--orange);font-size:9px;margin-left:3px">edited</span>` : '';
+      return `<div class="scorer-row">
+        <div class="sr-who ${scorer}">${scorer}</div>
+        <div class="sr-keys">${chips}${editedTag}</div>
+        <div class="sr-time">${t}</div>
+        ${verdictBtns(scorer, seq, verdict)}
+        <button class="ib" data-edit="${fbKey}" data-label="${ball.label}" data-keys="${ball.keys||''}">✏</button>
+      </div>`;
+    }
+
+    let html = '';
+    Object.keys(overGroups).map(Number).sort((a,b) => b - a).forEach(over => {
+      const seqs = overGroups[over]; // ascending: e.g. [1,2,3,4,5,6]
+      const ballsHtml = seqs.map(seq => {
+        const aE = aEntries.find(([,e]) => e.seq === seq);
+        const bE = bEntries.find(([,e]) => e.seq === seq);
+        const label = seqToLabel(seq);
+
+        let firstBadge = `<span class="first-badge pending">Waiting</span>`;
+        if (aE && bE) {
+          const at = aE[1].confirmed_at, bt = bE[1].confirmed_at;
+          if (at < bt) firstBadge = `<span class="first-badge A">A First</span>`;
+          else if (bt < at) firstBadge = `<span class="first-badge B">B First</span>`;
+          else firstBadge = `<span class="first-badge tie">Tied</span>`;
+        } else if (aE) {
+          firstBadge = `<span class="first-badge A">A only</span>`;
+        } else if (bE) {
+          firstBadge = `<span class="first-badge B">B only</span>`;
+        }
+
+        const vA = allVerdicts[`${seq}_A`] ? allVerdicts[`${seq}_A`].verdict : null;
+        const vB = allVerdicts[`${seq}_B`] ? allVerdicts[`${seq}_B`].verdict : null;
+
+        return `<div class="ball-card">
+          <div class="ball-card-header">
+            <span class="ball-card-label">${label}</span>
+            ${firstBadge}
           </div>
+          ${scorerRow(aE, 'A', seq, vA)}
+          ${scorerRow(bE, 'B', seq, vB)}
         </div>`;
       }).join('');
 
-      return `<div class="over-block">
-        <div class="over-header">
-          <span class="over-title">Over ${over}</span>
-          <span class="over-count">${balls.length}/6 balls</span>
-        </div>
-        ${ballRows}
+      html += `<div class="over-section">
+        <div class="over-section-label">Over ${over} <span style="color:var(--muted);font-size:10px">${seqs.length}/6 balls</span></div>
+        ${ballsHtml}
       </div>`;
-    }).join('');
+    });
 
     feed.innerHTML = html;
 
+    // Wire verdict buttons
+    feed.querySelectorAll('[data-verdict]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const { key, scorer, seq, verdict } = btn.dataset;
+        set(ref(db, 'comp/verdicts/' + key), {
+          scorer, seq: parseInt(seq), verdict, set_at: new Date().toISOString()
+        });
+      });
+    });
+
+    // Wire edit buttons
     feed.querySelectorAll('[data-edit]').forEach(btn => {
       btn.addEventListener('click', () => openEdit(btn.dataset.edit, btn.dataset.label, btn.dataset.keys));
-    });
-    feed.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', () => deleteBall(btn.dataset.del, btn.dataset.label));
     });
   }
 
   // ── EDIT ──
   function openEdit(fbKey, label, keys) {
     editingFbKey = fbKey;
-    document.getElementById('editBallLabel').textContent = label;
+    document.getElementById('editLabel').textContent = label;
     document.getElementById('editInput').value = keys;
     document.getElementById('editModal').classList.add('open');
-    setTimeout(() => document.getElementById('editInput').focus(), 100);
+    setTimeout(() => document.getElementById('editInput').focus(), 80);
   }
-
-  document.getElementById('btnCancelEdit').addEventListener('click', closeEdit);
+  document.getElementById('btnCancelEdit').addEventListener('click', () => {
+    document.getElementById('editModal').classList.remove('open');
+    editingFbKey = null;
+  });
   document.getElementById('btnSaveEdit').addEventListener('click', () => {
     if (!editingFbKey) return;
     const newKeys = document.getElementById('editInput').value.trim();
     if (!newKeys) return;
-    const existing = allBalls[editingFbKey] || {};
-    set(ref(db, 'balls2/' + editingFbKey), {
-      ...existing,
-      keys: newKeys,
-      edited: true,
-      edited_at: new Date().toISOString()
+    const existing = allEntries[editingFbKey] || {};
+    set(ref(db, 'comp/entries/' + editingFbKey), {
+      ...existing, keys: newKeys, edited: true, edited_at: new Date().toISOString()
     });
-    closeEdit();
-  });
-
-  function closeEdit() {
     document.getElementById('editModal').classList.remove('open');
     editingFbKey = null;
-  }
-
-  function deleteBall(fbKey, label) {
-    if (!confirm(`Delete ball ${label}? This cannot be undone.`)) return;
-    remove(ref(db, 'balls2/' + fbKey));
-  }
+  });
 
   // ── CLEAR ALL ──
   document.getElementById('btnClear').addEventListener('click', () => {
-    if (!confirm('Delete ALL data? This clears for everyone.')) return;
-    remove(ballsRef);
-    currentKeys = []; currentTimings = [];
-    renderCurrentKeys();
+    if (!confirm('Delete ALL data? Clears for everyone.')) return;
+    remove(entriesRef); remove(verdictsRef);
+    currentKeys = []; currentTimings = []; renderCurrentKeys();
   });
 
   // ── EXPORT CSV ──
   function exportCSV() {
-    const entries = Object.entries(allBalls).sort((a, b) => (a[1].seq||0) - (b[1].seq||0));
+    const entries = Object.entries(allEntries).sort((a,b) => {
+      if (a[1].scorer !== b[1].scorer) return a[1].scorer < b[1].scorer ? -1 : 1;
+      return (a[1].seq||0) - (b[1].seq||0);
+    });
     if (!entries.length) { alert('No data yet.'); return; }
-    const rows = [['ball_num','over_ball','keys','confirmed_at','edited','edited_at','timings_json']];
-    entries.forEach(([, ball], i) => {
-      rows.push([
-        i + 1,
-        ball.label || '',
-        ball.keys || '',
-        ball.confirmed_at || '',
-        ball.edited ? 'yes' : 'no',
-        ball.edited_at || '',
-        ball.timings ? JSON.stringify(ball.timings) : ''
-      ]);
+    const rows = [['scorer','ball_num','over_ball','keys','confirmed_at','edited','verdict']];
+    entries.forEach(([,ball]) => {
+      const vKey = `${ball.seq}_${ball.scorer}`;
+      const v = allVerdicts[vKey] ? allVerdicts[vKey].verdict : '';
+      rows.push([ball.scorer, ball.seq||'', ball.label||'', ball.keys||'', ball.confirmed_at||'', ball.edited?'yes':'no', v]);
     });
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], {type:'text/csv'});
@@ -453,9 +647,8 @@
     a.download = 'scorer_' + new Date().toISOString().slice(0,10) + '.csv';
     a.click(); URL.revokeObjectURL(url);
   }
-
-  document.getElementById('btnExport1').addEventListener('click', exportCSV);
-  document.getElementById('btnExport2').addEventListener('click', exportCSV);
+  document.getElementById('btnExportScorer').addEventListener('click', exportCSV);
+  document.getElementById('btnExportViewer').addEventListener('click', exportCSV);
 </script>
 </body>
 </html>
