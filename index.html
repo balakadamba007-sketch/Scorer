@@ -5,226 +5,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Live Scorer</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #0a0a0a; --surface: #141414; --surface2: #1c1c1c;
-    --border: #2a2a2a; --text: #f0f0f0; --muted: #555;
-    --accent: #c8f135; --accent-dim: rgba(200,241,53,0.1);
-    --red: #ff4d4d; --red-dim: rgba(255,77,77,0.1);
-    --orange: #ffaa33; --orange-dim: rgba(255,170,51,0.1);
-    --blue: #4da6ff; --blue-dim: rgba(77,166,255,0.1);
-    --green: #33ff99; --green-dim: rgba(51,255,153,0.1);
-    --colA: #c8f135; --colA-dim: rgba(200,241,53,0.1);
-    --colB: #4da6ff; --colB-dim: rgba(77,166,255,0.1);
-    --font-mono: 'IBM Plex Mono', monospace;
-    --font-sans: 'IBM Plex Sans', sans-serif;
-  }
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
+  --border:#2a2a2a; --text:#f0f0f0; --muted:#555;
+  --accent:#c8f135; --accent-dim:rgba(200,241,53,0.1);
+  --red:#ff4d4d; --red-dim:rgba(255,77,77,0.1);
+  --orange:#ffaa33; --orange-dim:rgba(255,170,51,0.1);
+  --blue:#4da6ff; --blue-dim:rgba(77,166,255,0.1);
+  --green:#33ff99; --green-dim:rgba(51,255,153,0.1);
+  --colA:#c8f135; --colA-dim:rgba(200,241,53,0.1);
+  --colB:#4da6ff; --colB-dim:rgba(77,166,255,0.1);
+  --colJ:#ff6eb5; --colJ-dim:rgba(255,110,181,0.1);
+  --font-mono:'IBM Plex Mono',monospace; --font-sans:'IBM Plex Sans',sans-serif;
+}
+html,body { height:100%; height:100dvh; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font-sans); }
+body { display:flex; flex-direction:column; }
 
-  /* Fit entire app in viewport — no page scroll ever */
-  html, body {
-    height: 100%; height: 100dvh;
-    overflow: hidden;
-    background: var(--bg); color: var(--text);
-    font-family: var(--font-sans);
-  }
-  body { display: flex; flex-direction: column; }
+/* ROLE SCREEN */
+#roleScreen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:28px; }
+.role-title { font-family:var(--font-mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+.role-subtitle { font-size:12px; color:var(--muted); text-align:center; font-family:var(--font-mono); line-height:1.6; }
+.role-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:280px; }
+.role-btn { padding:16px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:var(--font-mono); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; text-align:center; }
+.role-btn.a { border-color:var(--colA); color:var(--colA); }
+.role-btn.a:active { background:var(--colA-dim); }
+.role-btn.b { border-color:var(--colB); color:var(--colB); }
+.role-btn.b:active { background:var(--colB-dim); }
+.role-btn.j { border-color:var(--colJ); color:var(--colJ); }
+.role-btn.j:active { background:var(--colJ-dim); }
+.role-btn.v { border-color:var(--orange); color:var(--orange); }
+.role-btn.v:active { background:var(--orange-dim); }
 
-  /* ── ROLE SCREEN ── */
-  #roleScreen {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 20px; padding: 32px;
-  }
-  .role-title { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-  .role-subtitle { font-size: 12px; color: var(--muted); text-align: center; font-family: var(--font-mono); line-height: 1.6; }
-  .role-btns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 280px; }
-  .role-btn {
-    padding: 16px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); font-family: var(--font-mono);
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .role-btn.a { border-color: var(--colA); color: var(--colA); }
-  .role-btn.a:hover, .role-btn.a:active { background: var(--colA-dim); }
-  .role-btn.b { border-color: var(--colB); color: var(--colB); }
-  .role-btn.b:hover, .role-btn.b:active { background: var(--colB-dim); }
-  .role-btn.v { border-color: var(--orange); color: var(--orange); }
-  .role-btn.v:hover, .role-btn.v:active { background: var(--orange-dim); }
+/* MAIN APP */
+#mainApp { flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0; }
+#mainApp.visible { display:flex; }
+.top-bar { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; }
+.role-badge { font-family:var(--font-mono); font-size:12px; font-weight:600; padding:4px 10px; border-radius:5px; letter-spacing:0.06em; }
+.role-badge.A { background:var(--colA-dim); color:var(--colA); border:1px solid rgba(200,241,53,0.3); }
+.role-badge.B { background:var(--colB-dim); color:var(--colB); border:1px solid rgba(77,166,255,0.3); }
+.role-badge.judge { background:var(--colJ-dim); color:var(--colJ); border:1px solid rgba(255,110,181,0.3); }
+.role-badge.viewer { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(255,170,51,0.3); }
+.change-role { font-family:var(--font-mono); font-size:10px; color:var(--muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.06em; border:none; background:none; padding:4px 8px; }
+.status-bar { display:flex; align-items:center; gap:8px; padding:6px 14px; font-family:var(--font-mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+.dot.live { background:var(--accent); box-shadow:0 0 5px var(--accent); animation:pulse 1.5s infinite; }
+.dot.error { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-  /* ── MAIN APP ── */
-  #mainApp { flex: 1; display: none; flex-direction: column; overflow: hidden; min-height: 0; }
-  #mainApp.visible { display: flex; }
+/* PANEL BASE */
+.panel { flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0; }
+.panel.active { display:flex; }
 
-  .top-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 9px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .role-badge { font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 5px; letter-spacing: 0.06em; }
-  .role-badge.A { background: var(--colA-dim); color: var(--colA); border: 1px solid rgba(200,241,53,0.3); }
-  .role-badge.B { background: var(--colB-dim); color: var(--colB); border: 1px solid rgba(77,166,255,0.3); }
-  .role-badge.viewer { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(255,170,51,0.3); }
-  .change-role { font-family: var(--font-mono); font-size: 10px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.06em; border: none; background: none; padding: 4px 8px; }
+/* SCORER PANEL */
+.scorer-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; min-height:0; }
+.ball-indicator { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; flex-shrink:0; }
+.ball-id { font-family:var(--font-mono); font-size:26px; font-weight:600; }
+.ball-id.A { color:var(--colA); }
+.ball-id.B { color:var(--colB); }
+.ball-id-label { font-size:10px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-bottom:2px; }
+.ball-status { font-family:var(--font-mono); font-size:11px; text-align:right; max-width:160px; }
+.ball-status.ready { color:var(--muted); }
+.ball-status.confirmed-state { color:var(--accent); }
+.ball-status.waiting { color:var(--orange); }
+.current-keys-box { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:5px; flex-shrink:0; }
+.hint { font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+.k-chip { border-radius:5px; padding:3px 9px; font-family:var(--font-mono); font-size:17px; font-weight:600; display:flex; flex-direction:column; align-items:center; }
+.k-chip.A { background:var(--colA-dim); border:1px solid rgba(200,241,53,0.25); color:var(--colA); }
+.k-chip.B { background:var(--colB-dim); border:1px solid rgba(77,166,255,0.25); color:var(--colB); }
+.k-chip.J { background:var(--colJ-dim); border:1px solid rgba(255,110,181,0.25); color:var(--colJ); }
+.k-chip.confirmed-chip { border-width:2px !important; }
+.k-chip .ms { font-size:9px; color:var(--muted); font-weight:400; }
+.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; flex:1; min-height:0; }
+.key { background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--font-mono); font-size:22px; font-weight:600; cursor:pointer; transition:background 0.08s,transform 0.08s,border-color 0.08s; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; min-height:0; }
+.key.flash-A { background:var(--colA-dim); border-color:var(--colA); color:var(--colA); transform:scale(0.95); }
+.key.flash-B { background:var(--colB-dim); border-color:var(--colB); color:var(--colB); transform:scale(0.95); }
+.key.flash-J { background:var(--colJ-dim); border-color:var(--colJ); color:var(--colJ); transform:scale(0.95); }
+.key.confirm { border-color:var(--orange); color:var(--orange); font-size:14px; }
+.key.confirm.advance { border-color:var(--accent) !important; color:var(--accent) !important; animation:pulse 1.2s infinite; font-size:13px; }
+/* Keypad states */
+.keypad.confirmed-state .key { opacity:0.2; pointer-events:none; }
+.keypad.confirmed-state .key.confirm { opacity:1; pointer-events:all; border-color:var(--accent); color:var(--accent); font-size:13px; }
+.keypad.submitted .key { opacity:0.3; pointer-events:none; }
+.keypad.submitted .key.confirm { opacity:1; pointer-events:none; border-color:var(--muted); color:var(--muted); }
 
-  .status-bar {
-    display: flex; align-items: center; gap: 8px; padding: 6px 14px;
-    font-family: var(--font-mono); font-size: 11px; color: var(--muted);
-    border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
-  }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-  .dot.live { background: var(--accent); box-shadow: 0 0 5px var(--accent); animation: pulse 1.5s infinite; }
-  .dot.error { background: var(--red); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+/* JUDGE PANEL */
+.judge-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; min-height:0; overflow:hidden; }
+.judge-ball-bar { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid rgba(255,110,181,0.25); border-radius:8px; padding:8px 14px; flex-shrink:0; }
+.judge-ball-id { font-family:var(--font-mono); font-size:26px; font-weight:600; color:var(--colJ); }
+.judge-queue-count { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.scorer-submissions { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; }
+.sub-row { display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px; }
+.sub-who { font-weight:600; min-width:14px; }
+.sub-who.A { color:var(--colA); }
+.sub-who.B { color:var(--colB); }
+.sub-keys { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
+.sub-key { font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; }
+.sub-key.A { color:var(--colA); background:var(--colA-dim); border:1px solid rgba(200,241,53,0.2); }
+.sub-key.B { color:var(--colB); background:var(--colB-dim); border:1px solid rgba(77,166,255,0.2); }
+.sub-time { font-size:10px; color:#c8c8c8; }
+.sub-empty { font-size:11px; color:var(--muted); font-style:italic; }
+.judge-feed { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; min-height:0; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+.judge-feed-row { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11px; }
+.judge-feed-row.overturned { border-color:var(--orange); background:var(--orange-dim); }
+.jf-label { color:var(--colJ); font-weight:600; min-width:36px; }
+.jf-keys { display:flex; gap:3px; flex:1; flex-wrap:wrap; }
+.jf-key { font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; color:var(--colJ); background:var(--colJ-dim); border:1px solid rgba(255,110,181,0.2); }
+.jf-ovr { font-size:9px; color:var(--orange); }
 
-  /* ── SCORER PANEL — no scroll, fits in screen ── */
-  #panelScorer { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .scorer-wrap { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-
-  .ball-indicator {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 14px; flex-shrink: 0;
-  }
-  .ball-id { font-family: var(--font-mono); font-size: 26px; font-weight: 600; }
-  .ball-id.A { color: var(--colA); }
-  .ball-id.B { color: var(--colB); }
-  .ball-id-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; margin-bottom: 2px; }
-  .ball-status { font-family: var(--font-mono); font-size: 11px; text-align: right; }
-  .ball-status.waiting { color: var(--orange); }
-  .ball-status.ready { color: var(--muted); }
-
-  .current-keys-box {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 14px; min-height: 48px;
-    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
-    flex-shrink: 0;
-  }
-  .hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
-  .k-chip {
-    border-radius: 5px; padding: 3px 9px;
-    font-family: var(--font-mono); font-size: 17px; font-weight: 600;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .k-chip.A { background: var(--colA-dim); border: 1px solid rgba(200,241,53,0.25); color: var(--colA); }
-  .k-chip.B { background: var(--colB-dim); border: 1px solid rgba(77,166,255,0.25); color: var(--colB); }
-  .k-chip .ms { font-size: 9px; color: var(--muted); font-weight: 400; }
-
-  /* Keypad fills all remaining space — never scrolls */
-  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex: 1; min-height: 0; }
-  .key {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text); font-family: var(--font-mono); font-size: 22px; font-weight: 600;
-    cursor: pointer; transition: background 0.08s, transform 0.08s, border-color 0.08s;
-    display: flex; align-items: center; justify-content: center;
-    user-select: none; -webkit-user-select: none; min-height: 0;
-  }
-  .key.flash-A { background: var(--colA-dim); border-color: var(--colA); color: var(--colA); transform: scale(0.95); }
-  .key.flash-B { background: var(--colB-dim); border-color: var(--colB); color: var(--colB); transform: scale(0.95); }
-  .key.confirm { border-color: var(--orange); color: var(--orange); font-size: 14px; }
-  .key.confirm.flash-A, .key.confirm.flash-B { background: var(--orange-dim); }
-  /* Waiting state — already submitted for this ball */
-  .keypad.submitted .key { opacity: 0.3; pointer-events: none; }
-  .keypad.submitted .key.confirm { opacity: 1; pointer-events: none; border-color: var(--green); color: var(--green); font-size: 13px; }
-
-  /* ── VIEWER PANEL — feed scrolls internally ── */
-  #panelViewer { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .viewer-wrap { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; min-height: 0; }
-
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; }
-  .scorer-stats {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 9px;
-    padding: 9px 12px; display: flex; flex-direction: column; gap: 5px;
-  }
-  .scorer-stats.A { border-color: rgba(200,241,53,0.25); }
-  .scorer-stats.B { border-color: rgba(77,166,255,0.25); }
-  .ss-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-  .pres-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; display: inline-block; }
-  .pres-dot.online { background: var(--green); box-shadow: 0 0 5px var(--green); animation: pulse 1.5s infinite; }
-  .pres-label { font-size: 9px; color: var(--muted); font-weight: 400; margin-left: 2px; }
-  .ss-name.A { color: var(--colA); }
-  .ss-name.B { color: var(--colB); }
-  .ss-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; }
-  .ss-val { color: var(--text); font-weight: 600; }
-  .ss-label { color: var(--muted); }
-
-  .current-ball-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 8px 14px; flex-shrink: 0; font-family: var(--font-mono);
-  }
-  .cb-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
-  .cb-val { font-size: 18px; font-weight: 600; color: var(--orange); }
-  .cb-status { font-size: 11px; color: var(--muted); text-align: right; }
-
-  /* Feed scrolls — this is the only scrollable area */
-  .feed { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
-
-  .over-section { display: flex; flex-direction: column; gap: 5px; }
-  .over-section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--orange); text-transform: uppercase; letter-spacing: 0.07em; padding: 2px 4px; flex-shrink: 0; }
-
-  .ball-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
-  .ball-card-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 5px 12px; background: var(--surface2); border-bottom: 1px solid var(--border);
-  }
-  .ball-card-label { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--orange); }
-  .first-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em; }
-  .first-badge.A { background: var(--colA-dim); color: var(--colA); border: 1px solid rgba(200,241,53,0.3); }
-  .first-badge.B { background: var(--colB-dim); color: var(--colB); border: 1px solid rgba(77,166,255,0.3); }
-  .first-badge.tie { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(255,170,51,0.3); }
-  .first-badge.pending { color: var(--muted); border: 1px solid var(--border); }
-
-  .scorer-row { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--border); }
-  .scorer-row:last-child { border-bottom: none; }
-  .sr-who { font-family: var(--font-mono); font-size: 11px; font-weight: 600; min-width: 14px; }
-  .sr-who.A { color: var(--colA); }
-  .sr-who.B { color: var(--colB); }
-  .sr-keys { display: flex; gap: 3px; flex-wrap: wrap; flex: 1; }
-  .sr-key { font-family: var(--font-mono); font-size: 13px; font-weight: 600; border-radius: 4px; padding: 1px 5px; }
-  .sr-key.A { color: var(--colA); background: var(--colA-dim); border: 1px solid rgba(200,241,53,0.2); }
-  .sr-key.B { color: var(--colB); background: var(--colB-dim); border: 1px solid rgba(77,166,255,0.2); }
-  .sr-time { font-family: var(--font-mono); font-size: 10px; color: #c8c8c8; min-width: 78px; text-align: right; }
-  .sr-waiting { padding: 7px 12px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .mini-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: pulse 1.2s infinite; }
-
-  .verdict-btns { display: flex; gap: 4px; }
-  .vb { border-radius: 5px; border: 1px solid var(--border); background: none; font-family: var(--font-mono); font-size: 11px; cursor: pointer; padding: 3px 8px; transition: all 0.12s; color: var(--muted); white-space: nowrap; }
-  .vb:hover { border-color: var(--text); color: var(--text); }
-  .vb.active-right { background: var(--green-dim); border-color: var(--green); color: var(--green); }
-  .vb.active-wrong { background: var(--red-dim); border-color: var(--red); color: var(--red); }
-
-  .ib { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 11px; cursor: pointer; padding: 2px 6px; font-family: var(--font-mono); transition: all 0.1s; }
-  .ib:hover { border-color: var(--blue); color: var(--blue); }
-
-  .empty-feed { display: flex; align-items: center; justify-content: center; padding: 40px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
-
-  /* ACTIONS */
-  .actions { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
-  .btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: none; color: var(--muted); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.04em; }
-  .btn:hover, .btn:active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-  .btn.danger:hover, .btn.danger:active { border-color: var(--red); color: var(--red); background: var(--red-dim); }
-  .btn.save { border-color: var(--accent); color: var(--accent); }
-
-  /* MODAL */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 14px; }
-  .modal-title { font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
-  .modal input { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: var(--font-mono); font-size: 20px; padding: 10px 14px; width: 100%; outline: none; letter-spacing: 0.12em; }
-  .modal input:focus { border-color: var(--accent); }
-  .modal-hint { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
-  .modal-btns { display: flex; gap: 8px; }
+/* VIEWER PANEL */
+.viewer-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden; min-height:0; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; flex-shrink:0; }
+.scorer-stats { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:9px 12px; display:flex; flex-direction:column; gap:4px; }
+.scorer-stats.A { border-color:rgba(200,241,53,0.25); }
+.scorer-stats.B { border-color:rgba(77,166,255,0.25); }
+.ss-name { font-family:var(--font-mono); font-size:11px; font-weight:600; }
+.ss-name.A { color:var(--colA); }
+.ss-name.B { color:var(--colB); }
+.ss-row { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px; }
+.ss-val { color:var(--text); font-weight:600; }
+.ss-val.pos { color:var(--green); }
+.ss-val.neg { color:var(--red); }
+.ss-label { color:var(--muted); }
+.current-ball-bar { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; flex-shrink:0; font-family:var(--font-mono); }
+.cb-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; }
+.cb-val { font-size:18px; font-weight:600; color:var(--orange); }
+.cb-status { font-size:11px; color:var(--muted); }
+.feed { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
+.over-section { display:flex; flex-direction:column; gap:5px; }
+.over-section-label { font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--orange); text-transform:uppercase; letter-spacing:0.07em; padding:2px 4px; }
+.ball-card { background:var(--surface); border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+.ball-card-header { display:flex; align-items:center; gap:8px; padding:5px 12px; background:var(--surface2); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.ball-card-label { font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--orange); }
+.first-badge { font-family:var(--font-mono); font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; letter-spacing:0.05em; }
+.first-badge.A { background:var(--colA-dim); color:var(--colA); border:1px solid rgba(200,241,53,0.3); }
+.first-badge.B { background:var(--colB-dim); color:var(--colB); border:1px solid rgba(77,166,255,0.3); }
+.first-badge.tie { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(255,170,51,0.3); }
+.first-badge.pending { color:var(--muted); border:1px solid var(--border); }
+.judge-badge { font-family:var(--font-mono); font-size:10px; padding:2px 8px; border-radius:4px; background:var(--colJ-dim); color:var(--colJ); border:1px solid rgba(255,110,181,0.3); margin-left:auto; }
+.scorer-row { display:flex; align-items:center; gap:6px; padding:7px 12px; border-bottom:1px solid var(--border); }
+.scorer-row:last-child { border-bottom:none; }
+.sr-who { font-family:var(--font-mono); font-size:11px; font-weight:600; min-width:14px; }
+.sr-who.A { color:var(--colA); }
+.sr-who.B { color:var(--colB); }
+.sr-keys { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
+.sr-key { font-family:var(--font-mono); font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; }
+.sr-key.A { color:var(--colA); background:var(--colA-dim); border:1px solid rgba(200,241,53,0.2); }
+.sr-key.B { color:var(--colB); background:var(--colB-dim); border:1px solid rgba(77,166,255,0.2); }
+.sr-time { font-family:var(--font-mono); font-size:10px; color:#c8c8c8; min-width:78px; text-align:right; }
+.sr-penalty { font-family:var(--font-mono); font-size:11px; font-weight:600; min-width:36px; text-align:right; }
+.sr-penalty.pos { color:var(--green); }
+.sr-penalty.neg { color:var(--red); }
+.sr-penalty.pending { color:var(--muted); }
+.sr-waiting { padding:7px 12px; font-family:var(--font-mono); font-size:10px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.mini-dot { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:pulse 1.2s infinite; }
+.ib { background:none; border:1px solid var(--border); border-radius:5px; color:var(--muted); font-size:11px; cursor:pointer; padding:2px 6px; font-family:var(--font-mono); transition:all 0.1s; }
+.ib:hover { border-color:var(--blue); color:var(--blue); }
+.empty-feed { display:flex; align-items:center; justify-content:center; padding:40px; font-family:var(--font-mono); font-size:12px; color:var(--muted); }
+.actions { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+.btn { flex:1; padding:10px; border:1px solid var(--border); border-radius:8px; background:none; color:var(--muted); font-family:var(--font-mono); font-size:11px; cursor:pointer; transition:all 0.15s; text-transform:uppercase; letter-spacing:0.04em; }
+.btn:hover,.btn:active { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.btn.danger:hover,.btn.danger:active { border-color:var(--red); color:var(--red); background:var(--red-dim); }
+.btn.save { border-color:var(--accent); color:var(--accent); }
+.btn.solo-on { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal { background:#1a1a1a; border:1px solid var(--border); border-radius:12px; padding:20px; width:100%; max-width:300px; display:flex; flex-direction:column; gap:14px; }
+.modal-title { font-family:var(--font-mono); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; }
+.modal input { background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--text); font-family:var(--font-mono); font-size:20px; padding:10px 14px; width:100%; outline:none; letter-spacing:0.12em; }
+.modal input:focus { border-color:var(--accent); }
+.modal-hint { font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+.modal-btns { display:flex; gap:8px; }
+.warning-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:8px 18px; border-radius:8px; font-family:var(--font-mono); font-size:12px; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:200; white-space:nowrap; }
+.warning-toast.visible { opacity:1; }
 </style>
 </head>
 <body>
 
-<!-- ROLE SELECTION -->
+<!-- ROLE SCREEN -->
 <div id="roleScreen">
   <div class="role-title">Live Scorer</div>
-  <div class="role-subtitle">Pick your role.<br>Ball advances when both A &amp; B submit.</div>
+  <div class="role-subtitle">Pick your role · Double press to confirm · # to advance</div>
   <div class="role-btns">
     <button class="role-btn a" data-role="A">⌨ Scorer A</button>
     <button class="role-btn b" data-role="B">⌨ Scorer B</button>
+    <button class="role-btn j" data-role="judge">⚖ Judge</button>
     <button class="role-btn v" data-role="viewer">👁 Viewer</button>
   </div>
 </div>
@@ -241,18 +207,13 @@
   </div>
 
   <!-- SCORER PANEL -->
-  <div id="panelScorer">
+  <div class="panel" id="panelScorer">
     <div class="scorer-wrap">
       <div class="ball-indicator">
-        <div>
-          <div class="ball-id-label">Delivery</div>
-          <div class="ball-id" id="scorerBallId">1.1</div>
-        </div>
-        <div class="ball-status ready" id="ballStatus">Press keys · # to confirm</div>
+        <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="scorerBallId">1.1</div></div>
+        <div class="ball-status ready" id="ballStatus">Double press to confirm</div>
       </div>
-      <div class="current-keys-box" id="currentKeysBox">
-        <span class="hint">Press keys · # to confirm ball</span>
-      </div>
+      <div class="current-keys-box" id="currentKeysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
       <div class="keypad" id="keypad"></div>
     </div>
     <div class="actions">
@@ -261,8 +222,27 @@
     </div>
   </div>
 
+  <!-- JUDGE PANEL -->
+  <div class="panel" id="panelJudge">
+    <div class="judge-wrap">
+      <div class="judge-ball-bar">
+        <div><div class="ball-id-label">Judging</div><div class="judge-ball-id" id="judgeBallId">1.1</div></div>
+        <div class="judge-queue-count" id="judgeQueueCount">0 to judge</div>
+      </div>
+      <div class="scorer-submissions" id="scorerSubmissions">
+        <div class="sub-empty">Waiting for scorer submissions...</div>
+      </div>
+      <div class="current-keys-box" id="judgeKeysBox"><span class="hint">Double press to confirm · # to advance</span></div>
+      <div class="keypad" id="judgeKeypad"></div>
+      <div class="judge-feed" id="judgeFeed"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnExportJudge">Export CSV</button>
+    </div>
+  </div>
+
   <!-- VIEWER PANEL -->
-  <div id="panelViewer" style="display:none">
+  <div class="panel" id="panelViewer">
     <div class="viewer-wrap">
       <div class="stats-grid">
         <div class="scorer-stats A">
@@ -270,25 +250,26 @@
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statABalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statAAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statAFirst">0</span></div>
+          <div class="ss-row"><span class="ss-label">Score</span><span class="ss-val" id="statAScore">0</span></div>
         </div>
         <div class="scorer-stats B">
           <div class="ss-name B">Scorer B</div>
           <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statBBalls">0</span></div>
           <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statBAcc">—</span></div>
           <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statBFirst">0</span></div>
+          <div class="ss-row"><span class="ss-label">Score</span><span class="ss-val" id="statBScore">0</span></div>
         </div>
       </div>
       <div class="current-ball-bar">
         <div><div class="cb-label">Current delivery</div><div class="cb-val" id="viewerCurrentBall">1.1</div></div>
-        <div class="cb-status" id="viewerBallStatus">Waiting for scorers</div>
+        <div class="cb-status" id="viewerBallStatus">Waiting</div>
       </div>
-      <div class="feed" id="viewerFeed">
-        <div class="empty-feed">Waiting for scorers...</div>
-      </div>
+      <div class="feed" id="viewerFeed"><div class="empty-feed">Waiting for scorers...</div></div>
     </div>
     <div class="actions">
+      <button class="btn" id="btnSoloToggle">Solo: Off</button>
       <button class="btn danger" id="btnResetAll">Reset All</button>
-      <button class="btn" id="btnResetOver">Reset Last Over</button>
+      <button class="btn" id="btnResetOver">Reset Over</button>
       <button class="btn" id="btnExportViewer">Export CSV</button>
     </div>
   </div>
@@ -297,9 +278,9 @@
 <!-- EDIT MODAL -->
 <div class="modal-overlay" id="editModal">
   <div class="modal">
-    <div class="modal-title">Edit · <span id="editLabel"></span></div>
-    <input type="text" id="editInput" placeholder="e.g. 5 0 0" maxlength="30" />
-    <div class="modal-hint">Space-separated keys. Original timings preserved.</div>
+    <div class="modal-title" id="editModalTitle">Edit entry</div>
+    <input type="text" id="editInput" placeholder="e.g. 5 6 6" maxlength="30"/>
+    <div class="modal-hint">Space-separated keys. Timings preserved.</div>
     <div class="modal-btns">
       <button class="btn" id="btnCancelEdit">Cancel</button>
       <button class="btn save" id="btnSaveEdit">Save</button>
@@ -307,400 +288,609 @@
   </div>
 </div>
 
+<!-- WARNING TOAST -->
+<div class="warning-toast" id="warningToast"></div>
+
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-  const app = initializeApp({ databaseURL: "https://scorer-b9fd6-default-rtdb.firebaseio.com/" });
-  const db = getDatabase(app);
-  const entriesRef = ref(db, 'comp/entries');
-  const verdictsRef = ref(db, 'comp/verdicts');
+const app = initializeApp({ databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/' });
+const db  = getDatabase(app);
+const entriesRef = ref(db, 'comp/entries');
+const judgeRef   = ref(db, 'comp/judge');
+const stateRef   = ref(db, 'comp/state');
 
-  let myRole = null;
-  let allEntries = {};
-  let allVerdicts = {};
-  let currentKeys = [];
-  let currentTimings = [];
-  let pressStart = null;
-  let editingFbKey = null;
-  let mySubmittedSeqs = new Set();
+// ── STATE ────────────────────────────────────────────
+let myRole = null;
+let allEntries = {}, allJudge = {}, soloMode = false;
+let mySubmittedSeqs = new Set();
+// Scorer
+let currentKeys = [], currentTimings = [], pressStart = null;
+let ballConfirmed = false, confirmedKey = null, confirmedConfidence = null, confirmedAt = null;
+// Judge
+let currentJudgeKeys = [], currentJudgeTimings = [], judgePressStart = null;
+let judgeBallConfirmed = false, judgeConfirmedKey = null, judgeConfirmedConfidence = null, judgeConfirmedAt = null;
+// Edit modal
+let editFbKey = null, editPath = null;
 
-  // ── HELPERS ──
-  function setStatus(state, msg) {
-    document.getElementById('statusDot').className = 'dot ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
-    document.getElementById('statusText').textContent = msg;
+const RESULT_KEYS = new Set(['0','1','2','3','4','6','7','9','*']);
+
+// ── HELPERS ──────────────────────────────────────────
+function setStatus(state, msg) {
+  document.getElementById('statusDot').className = 'dot '+(state==='live'?'live':state==='error'?'error':'');
+  document.getElementById('statusText').textContent = msg;
+}
+
+function formatUKTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const ms = String(d.getMilliseconds()).padStart(3,'0');
+  return d.toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour12:false})+'.'+ms;
+}
+
+function showWarning(msg) {
+  const t = document.getElementById('warningToast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(()=>t.classList.remove('visible'), 2000);
+}
+
+// Outcome from confirmed key for penalty calc
+function getOutcome(k) {
+  if (k==='*') return 'WICKET';
+  if (k==='7') return 'WIDE';
+  if (k==='9') return 'NOBALL';
+  if (['0','1','2','3','4','6'].includes(k)) return parseInt(k);
+  return null;
+}
+
+function calculatePenalty(scorerKey, judgeKey, confidence) {
+  const sO = getOutcome(scorerKey), jO = getOutcome(judgeKey);
+  if (sO===null||jO===null) return null;
+  if (sO===jO) return confidence==='certain'?5:3;
+  const sW=sO==='WICKET', jW=jO==='WICKET';
+  const sE=(sO==='WIDE'||sO==='NOBALL'), jE=(jO==='WIDE'||jO==='NOBALL');
+  let base=0;
+  if (sW||jW) { const runs=typeof(sW?jO:sO)==='number'?(sW?jO:sO):0; base=-10-(2*runs); }
+  else if (sE||jE) { base=-4; }
+  else { base=-2*Math.abs(sO-jO); }
+  return base*(confidence==='certain'?2.0:1.5);
+}
+
+function formatPenalty(p) {
+  if (p===null) return '—';
+  const r=Math.round(p*10)/10;
+  return r>0?`+${r}`:`${r}`;
+}
+
+function formatPenaltyClass(p) {
+  if (p===null) return 'pending';
+  return p>0?'pos':'neg';
+}
+
+// ── LABEL CALCULATION ────────────────────────────────
+function getLegalCount(scorer) {
+  return Object.values(allEntries).filter(e=>e.scorer===scorer&&!e.is_wide&&!e.is_noball).length;
+}
+
+function getCurrentLabelForScorer() {
+  if (!myRole||myRole==='viewer'||myRole==='judge') return '1.1';
+  const n=getLegalCount(myRole);
+  return `${Math.floor(n/6)+1}.${(n%6)+1}`;
+}
+
+function getNextLabelForSubmit(isWide,isNoBall) {
+  const base=getCurrentLabelForScorer();
+  return isWide?base+'w':isNoBall?base+'nb':base;
+}
+
+function getJudgeLabelForSeq(seq) {
+  const e=Object.values(allEntries).find(en=>en.seq===seq);
+  if (e&&e.label) return e.label;
+  const n=Object.values(allJudge).filter(j=>j.seq<seq&&!j.is_wide&&!j.is_noball).length;
+  return `${Math.floor(n/6)+1}.${(n%6)+1}`;
+}
+
+// ── SYNC ─────────────────────────────────────────────
+function getCurrentBall() {
+  const aSeqs=new Set(Object.values(allEntries).filter(e=>e.scorer==='A').map(e=>e.seq));
+  const bSeqs=new Set(Object.values(allEntries).filter(e=>e.scorer==='B').map(e=>e.seq));
+  if (soloMode) {
+    const all=new Set([...aSeqs,...bSeqs]); let b=1; while(all.has(b)) b++; return b;
   }
+  let b=1; while(aSeqs.has(b)&&bSeqs.has(b)) b++; return b;
+}
 
-  function seqToLabel(seq) {
-    const over = Math.floor((seq - 1) / 6) + 1;
-    const b = ((seq - 1) % 6) + 1;
-    return over + '.' + b;
+function hasSubmittedCurrentBall() {
+  if (!myRole||myRole==='viewer'||myRole==='judge') return false;
+  const cb=getCurrentBall();
+  if (mySubmittedSeqs.has(cb)) return true;
+  return Object.values(allEntries).some(e=>e.scorer===myRole&&e.seq===cb);
+}
+
+function getNextJudgeBall() {
+  const judged=new Set(Object.values(allJudge).map(j=>j.seq));
+  const scored=[...new Set(Object.values(allEntries).map(e=>e.seq))].sort((a,b)=>a-b);
+  for (const s of scored) { if (!judged.has(s)) return s; }
+  return scored.length>0?scored[scored.length-1]+1:1;
+}
+
+function seqToSimpleLabel(seq) {
+  const over=Math.floor((seq-1)/6)+1, b=((seq-1)%6)+1;
+  return `${over}.${b}`;
+}
+
+// ── DOUBLE PRESS DETECTION ───────────────────────────
+function getConsecutiveTrailing(arr, val) {
+  let n=0; for(let i=arr.length-1;i>=0;i--) { if(arr[i]===val) n++; else break; } return n;
+}
+
+function checkConfirmation(keys) {
+  if (keys.length<2) return null;
+  const last=keys[keys.length-1];
+  if (!RESULT_KEYS.has(last)) return null;
+  if (last==='*') {
+    return getConsecutiveTrailing(keys,'*')>=3 ? {key:'*',confidence:'certain'} : null;
   }
+  if (keys[keys.length-2]===last) return {key:last,confidence:'confirmed'};
+  return null;
+}
 
-  function formatUKTime(isoStr) {
-    if (!isoStr) return '';
-    const d = new Date(isoStr);
-    const ms = String(d.getMilliseconds()).padStart(3, '0');
-    const time = d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour12: false });
-    return time + '.' + ms;
-  }
+// ── ROLE MANAGEMENT ──────────────────────────────────
+const savedRole=localStorage.getItem('scorer_role_v3');
+if (savedRole) activateRole(savedRole);
 
-  // ── SYNC BALL LOGIC ──
-  // Current ball = lowest seq where NOT BOTH A and B have submitted
-  // This means ball only advances when both have submitted — no button needed
-  function getCurrentBall() {
-    const aSeqs = new Set(Object.values(allEntries).filter(e => e.scorer === 'A').map(e => e.seq));
-    const bSeqs = new Set(Object.values(allEntries).filter(e => e.scorer === 'B').map(e => e.seq));
-    let ball = 1;
-    while (aSeqs.has(ball) && bSeqs.has(ball)) ball++;
-    return ball;
-  }
+document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>activateRole(btn.dataset.role)));
+document.getElementById('btnChangeRole').addEventListener('click',()=>{
+  localStorage.removeItem('scorer_role_v3');
+  document.getElementById('roleScreen').style.display='flex';
+  document.getElementById('mainApp').classList.remove('visible');
+  myRole=null;
+});
 
-  function hasSubmittedCurrentBall() {
-    if (!myRole || myRole === 'viewer') return false;
-    const currentBall = getCurrentBall();
-    // Check local set first (instant, no Firebase delay)
-    if (mySubmittedSeqs.has(currentBall)) return true;
-    // Also check Firebase data (catches page reloads)
-    return Object.values(allEntries).some(e => e.scorer === myRole && e.seq === currentBall);
-  }
-
-  // ── ROLE MANAGEMENT ──
-  const saved = localStorage.getItem('scorer_role_v2');
-  if (saved) activateRole(saved);
-
-  document.querySelectorAll('[data-role]').forEach(btn => {
-    btn.addEventListener('click', () => activateRole(btn.dataset.role));
+function activateRole(role) {
+  myRole=role;
+  mySubmittedSeqs=new Set();
+  currentKeys=[]; currentTimings=[];
+  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
+  currentJudgeKeys=[]; currentJudgeTimings=[];
+  judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
+  localStorage.setItem('scorer_role_v3',role);
+  document.getElementById('roleScreen').style.display='none';
+  document.getElementById('mainApp').classList.add('visible');
+  const badge=document.getElementById('roleBadge');
+  badge.className='role-badge '+role;
+  badge.textContent=role==='viewer'?'👁 Viewer':role==='judge'?'⚖ Judge':'⌨ Scorer '+role;
+  ['Scorer','Judge','Viewer'].forEach(p=>{
+    const el=document.getElementById('panel'+p);
+    if(el) { el.classList.remove('active'); }
   });
-  document.getElementById('btnChangeRole').addEventListener('click', () => {
-    localStorage.removeItem('scorer_role_v2');
-    document.getElementById('roleScreen').style.display = 'flex';
-    document.getElementById('mainApp').classList.remove('visible');
-    myRole = null;
-  });
+  if (role==='A'||role==='B') { document.getElementById('panelScorer').classList.add('active'); buildKeypad(role); }
+  else if (role==='judge')    { document.getElementById('panelJudge').classList.add('active'); buildJudgeKeypad(); }
+  else if (role==='viewer')   { document.getElementById('panelViewer').classList.add('active'); renderViewer(); }
+  updateScorerUI();
+  updateJudgeUI();
+  updateSoloBtn();
+}
 
-  function activateRole(role) {
-    myRole = role;
-    mySubmittedSeqs = new Set(); // clear on every role switch
-    currentKeys = []; currentTimings = [];
-    localStorage.setItem('scorer_role_v2', role);
-    document.getElementById('roleScreen').style.display = 'none';
-    document.getElementById('mainApp').classList.add('visible');
-    const badge = document.getElementById('roleBadge');
-    badge.className = 'role-badge ' + role;
-    badge.textContent = role === 'viewer' ? '👁 Viewer' : '⌨ Scorer ' + role;
-    document.getElementById('panelScorer').style.display = role !== 'viewer' ? 'flex' : 'none';
-    document.getElementById('panelScorer').style.flexDirection = 'column';
-    document.getElementById('panelViewer').style.display = role === 'viewer' ? 'flex' : 'none';
-    document.getElementById('panelViewer').style.flexDirection = 'column';
-    if (role !== 'viewer') buildKeypad(role);
+// ── SCORER KEYPAD ────────────────────────────────────
+const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
+function buildKeypad(role) {
+  const kp=document.getElementById('keypad'); kp.innerHTML='';
+  const fc='flash-'+role;
+  KEYS.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='key'+(k==='#'?' confirm':'');
+    btn.textContent=k==='#'?'# ▶':k;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();scorerKeyDown(k,btn,fc);},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();scorerKeyDown(k,btn,fc);});
+    btn.addEventListener('touchend',e=>{e.preventDefault();scorerKeyUp(k,btn,fc);},{passive:false});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();scorerKeyUp(k,btn,fc);});
+    kp.appendChild(btn);
+  });
+}
+
+function scorerKeyDown(k,btn,fc) {
+  if (pressStart!==null) return;
+  pressStart=Date.now(); btn.classList.add(fc);
+}
+
+function scorerKeyUp(k,btn,fc) {
+  if (pressStart===null) return;
+  const dur=Date.now()-pressStart; pressStart=null; btn.classList.remove(fc);
+  if (k==='#') {
+    if (!ballConfirmed) { showWarning('Double press a key first!'); return; }
+    if (hasSubmittedCurrentBall()) return;
+    commitBall(); return;
+  }
+  if (ballConfirmed||hasSubmittedCurrentBall()) return;
+  currentKeys.push(k);
+  currentTimings.push({key:k,duration_ms:dur,time:new Date().toISOString()});
+  const conf=checkConfirmation(currentKeys);
+  if (conf) {
+    ballConfirmed=true; confirmedKey=conf.key;
+    confirmedConfidence=conf.confidence; confirmedAt=new Date().toISOString();
     updateScorerUI();
   }
+  renderCurrentKeys();
+}
 
-  // ── KEYPAD ──
-  const KEYS = ['1','2','3','4','5','6','7','8','9','*','0','#'];
-  function buildKeypad(role) {
-    const kp = document.getElementById('keypad');
-    kp.innerHTML = '';
-    const flashClass = 'flash-' + role;
-    KEYS.forEach(k => {
-      const btn = document.createElement('button');
-      btn.className = 'key' + (k === '#' ? ' confirm' : '');
-      btn.textContent = k === '#' ? '✓ #' : k;
-      btn.addEventListener('touchstart', e => { e.preventDefault(); onKeyDown(k, btn, flashClass); }, {passive:false});
-      btn.addEventListener('mousedown', e => { e.preventDefault(); onKeyDown(k, btn, flashClass); });
-      btn.addEventListener('touchend', e => { e.preventDefault(); onKeyUp(k, btn, flashClass); }, {passive:false});
-      btn.addEventListener('mouseup', e => { e.preventDefault(); onKeyUp(k, btn, flashClass); });
-      kp.appendChild(btn);
+function renderCurrentKeys() {
+  const box=document.getElementById('currentKeysBox');
+  if (!currentKeys.length) { box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>'; return; }
+  box.innerHTML=currentTimings.map((t,i)=>{
+    const isLast=i===currentTimings.length-1;
+    const confirmed=ballConfirmed&&isLast;
+    return `<div class="k-chip ${myRole}${confirmed?' confirmed-chip':''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`;
+  }).join('');
+}
+
+function commitBall() {
+  const seq=getCurrentBall();
+  const keysSnap=[...currentKeys], timingsSnap=[...currentTimings];
+  const keySnap=confirmedKey, confSnap=confirmedConfidence, atSnap=confirmedAt;
+  const isWide=keySnap==='7', isNoBall=keySnap==='9';
+  const label=getNextLabelForSubmit(isWide,isNoBall);
+  mySubmittedSeqs.add(seq);
+  currentKeys=[]; currentTimings=[];
+  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
+  renderCurrentKeys(); updateScorerUI();
+  push(entriesRef,{
+    scorer:myRole,seq,label,keys:keysSnap.join(' '),
+    confirmed_key:keySnap,confidence:confSnap,
+    is_wide:isWide,is_noball:isNoBall,
+    confirmed_at:atSnap,hash_at:new Date().toISOString(),edited:false
+  }).catch(()=>{ mySubmittedSeqs.delete(seq); updateScorerUI(); setStatus('error','Send failed'); });
+}
+
+function updateScorerUI() {
+  if (!myRole||myRole==='viewer'||myRole==='judge') return;
+  const el=document.getElementById('scorerBallId');
+  el.textContent=getCurrentLabelForScorer(); el.className='ball-id '+myRole;
+  const kp=document.getElementById('keypad');
+  const stat=document.getElementById('ballStatus');
+  const confirmBtn=kp?kp.querySelector('.confirm'):null;
+  if (hasSubmittedCurrentBall()) {
+    if(kp)kp.className='keypad submitted';
+    if(confirmBtn)confirmBtn.textContent='⏳ Wait';
+    stat.textContent='Submitted — waiting for other scorer';
+    stat.className='ball-status waiting';
+  } else if (ballConfirmed) {
+    if(kp)kp.className='keypad confirmed-state';
+    if(confirmBtn){confirmBtn.textContent='# ▶ Next'; confirmBtn.classList.add('advance');}
+    stat.textContent=`Confirmed ${confirmedKey==='*'?'wicket':'['+confirmedKey+']'} — press # to advance`;
+    stat.className='ball-status confirmed-state';
+  } else {
+    if(kp)kp.className='keypad';
+    if(confirmBtn){confirmBtn.textContent='# ▶'; confirmBtn.classList.remove('advance');}
+    stat.textContent='Double press to confirm';
+    stat.className='ball-status ready';
+  }
+}
+
+// ── JUDGE KEYPAD ─────────────────────────────────────
+function buildJudgeKeypad() {
+  const kp=document.getElementById('judgeKeypad'); kp.innerHTML='';
+  KEYS.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='key'+(k==='#'?' confirm':'');
+    btn.textContent=k==='#'?'# ▶':k;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();judgeKeyDown(k,btn);},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();judgeKeyDown(k,btn);});
+    btn.addEventListener('touchend',e=>{e.preventDefault();judgeKeyUp(k,btn);},{passive:false});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();judgeKeyUp(k,btn);});
+    kp.appendChild(btn);
+  });
+}
+
+function judgeKeyDown(k,btn) {
+  if (judgePressStart!==null) return;
+  judgePressStart=Date.now(); btn.classList.add('flash-J');
+}
+
+function judgeKeyUp(k,btn) {
+  if (judgePressStart===null) return;
+  const dur=Date.now()-judgePressStart; judgePressStart=null; btn.classList.remove('flash-J');
+  if (k==='#') {
+    if (!judgeBallConfirmed) { showWarning('Double press a key first!'); return; }
+    commitJudge(); return;
+  }
+  if (judgeBallConfirmed) return;
+  currentJudgeKeys.push(k);
+  currentJudgeTimings.push({key:k,duration_ms:dur,time:new Date().toISOString()});
+  const conf=checkConfirmation(currentJudgeKeys);
+  if (conf) {
+    judgeBallConfirmed=true; judgeConfirmedKey=conf.key;
+    judgeConfirmedConfidence=conf.confidence; judgeConfirmedAt=new Date().toISOString();
+    updateJudgeUI();
+  }
+  renderJudgeCurrentKeys();
+}
+
+function renderJudgeCurrentKeys() {
+  const box=document.getElementById('judgeKeysBox');
+  if (!currentJudgeKeys.length) { box.innerHTML='<span class="hint">Double press to confirm · # to advance</span>'; return; }
+  box.innerHTML=currentJudgeTimings.map((t,i)=>{
+    const isLast=i===currentJudgeTimings.length-1;
+    return `<div class="k-chip J${judgeBallConfirmed&&isLast?' confirmed-chip':''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`;
+  }).join('');
+}
+
+function commitJudge() {
+  const seq=getNextJudgeBall();
+  const keysSnap=[...currentJudgeKeys];
+  const keySnap=judgeConfirmedKey, confSnap=judgeConfirmedConfidence, atSnap=judgeConfirmedAt;
+  const isWide=keySnap==='7', isNoBall=keySnap==='9';
+  currentJudgeKeys=[]; currentJudgeTimings=[];
+  judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
+  renderJudgeCurrentKeys(); updateJudgeUI();
+  push(judgeRef,{
+    seq,label:getJudgeLabelForSeq(seq),keys:keysSnap.join(' '),
+    confirmed_key:keySnap,confidence:confSnap,
+    is_wide:isWide,is_noball:isNoBall,
+    confirmed_at:atSnap,overturned:false,overturn_from:null,overturn_at:null
+  });
+}
+
+function updateJudgeUI() {
+  if (myRole!=='judge') return;
+  const seq=getNextJudgeBall();
+  const label=getJudgeLabelForSeq(seq);
+  document.getElementById('judgeBallId').textContent=label;
+  const judged=Object.values(allJudge).length;
+  const total=new Set(Object.values(allEntries).map(e=>e.seq)).size;
+  const toJudge=Math.max(0,total-judged);
+  document.getElementById('judgeQueueCount').textContent=`${toJudge} to judge`;
+  // Show scorer submissions for current seq
+  const sub=document.getElementById('scorerSubmissions');
+  const aEntry=Object.values(allEntries).find(e=>e.scorer==='A'&&e.seq===seq);
+  const bEntry=Object.values(allEntries).find(e=>e.scorer==='B'&&e.seq===seq);
+  if (!aEntry&&!bEntry) { sub.innerHTML='<div class="sub-empty">Waiting for scorer submissions...</div>'; }
+  else {
+    sub.innerHTML=[['A',aEntry],['B',bEntry]].map(([s,e])=>{
+      if (!e) return `<div class="sub-row"><span class="sub-who ${s}">${s}</span><span class="sub-empty">not submitted</span></div>`;
+      const chips=(e.keys||'').split(' ').filter(Boolean).map(k=>`<span class="sub-key ${s}">${k}</span>`).join('');
+      return `<div class="sub-row"><span class="sub-who ${s}">${s}</span><div class="sub-keys">${chips}</div><span class="sub-time">${formatUKTime(e.confirmed_at)}</span></div>`;
+    }).join('');
+  }
+  // Judge keypad state
+  const kp=document.getElementById('judgeKeypad');
+  const confirmBtn=kp?kp.querySelector('.confirm'):null;
+  if (judgeBallConfirmed) {
+    if(kp)kp.className='keypad confirmed-state';
+    if(confirmBtn){confirmBtn.textContent='# ▶ Next';confirmBtn.classList.add('advance');}
+  } else {
+    if(kp)kp.className='keypad';
+    if(confirmBtn){confirmBtn.textContent='# ▶';confirmBtn.classList.remove('advance');}
+  }
+  // Recent judge feed
+  const feed=document.getElementById('judgeFeed');
+  const judgeEntries=Object.entries(allJudge).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  if (!judgeEntries.length) { feed.innerHTML=''; return; }
+  feed.innerHTML=[...judgeEntries].reverse().slice(0,8).map(([fbKey,j])=>{
+    const chips=(j.keys||'').split(' ').filter(Boolean).map(k=>`<span class="jf-key">${k}</span>`).join('');
+    const ovrTag=j.overturned?`<span class="jf-ovr">OVR</span>`:'';
+    return `<div class="judge-feed-row${j.overturned?' overturned':''}">
+      <span class="jf-label">${j.label||''}</span>
+      <div class="jf-keys">${chips}${ovrTag}</div>
+      <button class="ib" data-overturn="${fbKey}" data-label="${j.label}" data-keys="${j.keys||''}">✏</button>
+    </div>`;
+  }).join('');
+  feed.querySelectorAll('[data-overturn]').forEach(btn=>{
+    btn.addEventListener('click',()=>openEdit(btn.dataset.overturn,'judge',btn.dataset.label,btn.dataset.keys));
+  });
+}
+
+// ── FIREBASE LISTENERS ───────────────────────────────
+onValue(query(entriesRef,orderByChild('confirmed_at')),snap=>{
+  allEntries=snap.val()||{};
+  const count=Object.keys(allEntries).length;
+  setStatus('live',`Connected · ${count} entries`);
+  const cb=getCurrentBall();
+  mySubmittedSeqs=new Set([...mySubmittedSeqs].filter(s=>s>=cb));
+  updateScorerUI(); updateJudgeUI();
+  if (myRole==='viewer') renderViewer();
+},()=>setStatus('error','Connection lost — retrying...'));
+
+onValue(judgeRef,snap=>{
+  allJudge=snap.val()||{};
+  updateJudgeUI();
+  if (myRole==='viewer') renderViewer();
+},()=>{});
+
+onValue(stateRef,snap=>{
+  const s=snap.val()||{};
+  soloMode=s.soloMode||false;
+  updateSoloBtn();
+  updateScorerUI();
+  if (myRole==='viewer') renderViewer();
+},()=>{});
+
+// ── VIEWER RENDER ─────────────────────────────────────
+function renderViewer() {
+  const feed=document.getElementById('viewerFeed');
+  const aEntries=Object.entries(allEntries).filter(([,e])=>e.scorer==='A').sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  const bEntries=Object.entries(allEntries).filter(([,e])=>e.scorer==='B').sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  const maxSeq=Math.max(aEntries.length,bEntries.length,0);
+
+  // Stats
+  document.getElementById('statABalls').textContent=aEntries.length;
+  document.getElementById('statBBalls').textContent=bEntries.length;
+  let aFirst=0,bFirst=0;
+  for(let i=0;i<Math.min(aEntries.length,bEntries.length);i++){
+    const at=aEntries[i][1].confirmed_at,bt=bEntries[i][1].confirmed_at;
+    if(at<bt)aFirst++;else if(bt<at)bFirst++;
+  }
+  document.getElementById('statAFirst').textContent=aFirst;
+  document.getElementById('statBFirst').textContent=bFirst;
+
+  // Accuracy & score
+  function scorerStats(scorer,entries) {
+    let right=0,judged=0,total=0;
+    entries.forEach(([,e])=>{
+      const j=Object.values(allJudge).find(jj=>jj.seq===e.seq);
+      if(!j)return; judged++;
+      if(getOutcome(e.confirmed_key)===getOutcome(j.confirmed_key))right++;
+      total+=calculatePenalty(e.confirmed_key,j.confirmed_key,e.confidence)||0;
     });
+    return {acc:judged?Math.round(right/judged*100)+'%':'—',score:total};
+  }
+  const sA=scorerStats('A',aEntries), sB=scorerStats('B',bEntries);
+  document.getElementById('statAAcc').textContent=sA.acc;
+  document.getElementById('statBAcc').textContent=sB.acc;
+  const scoreAEl=document.getElementById('statAScore');
+  scoreAEl.textContent=formatPenalty(sA.score||null);
+  scoreAEl.className='ss-val '+(sA.score>0?'pos':sA.score<0?'neg':'');
+  const scoreBEl=document.getElementById('statBScore');
+  scoreBEl.textContent=formatPenalty(sB.score||null);
+  scoreBEl.className='ss-val '+(sB.score>0?'pos':sB.score<0?'neg':'');
+
+  // Current ball bar
+  const cb=getCurrentBall();
+  document.getElementById('viewerCurrentBall').textContent=seqToSimpleLabel(cb);
+  const aHas=aEntries.some(([,e])=>e.seq===cb),bHas=bEntries.some(([,e])=>e.seq===cb);
+  document.getElementById('viewerBallStatus').textContent=(aHas?'A✓ ':'A… ')+(bHas?'B✓':'B…');
+
+  if (!maxSeq){feed.innerHTML='<div class="empty-feed">Waiting for scorers...</div>';return;}
+
+  // Group by over
+  const overGroups={};
+  for(let seq=1;seq<=maxSeq;seq++){
+    const o=Math.floor((seq-1)/6)+1;
+    if(!overGroups[o])overGroups[o]=[];
+    overGroups[o].push(seq);
   }
 
-  function onKeyDown(k, btn, flashClass) {
-    if (pressStart !== null) return;
-    pressStart = Date.now();
-    btn.classList.add(flashClass);
+  function scorerRow(entry,scorer,seq) {
+    if(!entry) return `<div class="sr-waiting"><div class="mini-dot"></div>${scorer} pending...</div>`;
+    const [fbKey,ball]=entry;
+    const chips=(ball.keys||'').split(' ').filter(Boolean).map(k=>`<span class="sr-key ${scorer}">${k}</span>`).join('');
+    const t=formatUKTime(ball.confirmed_at);
+    const judgeEntry=Object.values(allJudge).find(j=>j.seq===seq);
+    const p=judgeEntry?calculatePenalty(ball.confirmed_key,judgeEntry.confirmed_key,ball.confidence):null;
+    const pStr=formatPenalty(p), pCls=formatPenaltyClass(p);
+    const editedTag=ball.edited?`<span style="color:var(--orange);font-size:9px;margin-left:2px">ed</span>`:'';
+    return `<div class="scorer-row">
+      <div class="sr-who ${scorer}">${scorer}</div>
+      <div class="sr-keys">${chips}${editedTag}</div>
+      <div class="sr-time">${t}</div>
+      <div class="sr-penalty ${pCls}">${pStr}</div>
+      <button class="ib" data-edit="${fbKey}" data-path="entries" data-label="${ball.label||''}" data-keys="${ball.keys||''}">✏</button>
+    </div>`;
   }
 
-  function onKeyUp(k, btn, flashClass) {
-    if (pressStart === null) return;
-    const dur = Date.now() - pressStart;
-    pressStart = null;
-    btn.classList.remove(flashClass);
-    if (k === '#') {
-      if (hasSubmittedCurrentBall()) return; // already submitted, ignore
-      if (currentKeys.length === 0) return;  // nothing pressed yet
-      commitBall();
-    } else {
-      if (hasSubmittedCurrentBall()) return; // locked after submit
-      currentKeys.push(k);
-      currentTimings.push({ key: k, duration_ms: dur, time: new Date().toISOString() });
-      renderCurrentKeys();
-    }
-  }
-
-  function renderCurrentKeys() {
-    const box = document.getElementById('currentKeysBox');
-    if (!currentKeys.length) {
-      box.innerHTML = '<span class="hint">Press keys · # to confirm ball</span>';
-      return;
-    }
-    box.innerHTML = currentTimings.map(t =>
-      `<div class="k-chip ${myRole}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`
-    ).join('');
-  }
-
-  function commitBall() {
-    const seq = getCurrentBall();
-    const keysSnapshot = [...currentKeys];
-    const timingsSnapshot = [...currentTimings];
-    // Lock IMMEDIATELY — do not wait for Firebase round-trip
-    mySubmittedSeqs.add(seq);
-    currentKeys = []; currentTimings = [];
-    renderCurrentKeys();
-    updateScorerUI(); // greys out keypad instantly
-    // confirmed_at = timestamp of LAST KEY pressed (not #) — used for A First / B First
-    const lastKeyTime = timingsSnapshot.length > 0
-      ? timingsSnapshot[timingsSnapshot.length - 1].time
-      : new Date().toISOString();
-    push(entriesRef, {
-      scorer: myRole, seq,
-      label: seqToLabel(seq),
-      keys: keysSnapshot.join(' '),
-      timings: timingsSnapshot,
-      confirmed_at: lastKeyTime,
-      hash_at: new Date().toISOString(),
-      edited: false
-    }).catch(() => {
-      // If send fails, revert the lock so scorer can try again
-      mySubmittedSeqs.delete(seq);
-      updateScorerUI();
-      setStatus('error', 'Send failed — check connection');
-    });
-  }
-
-  function updateScorerUI() {
-    if (!myRole || myRole === 'viewer') return;
-    const currentBall = getCurrentBall();
-    const el = document.getElementById('scorerBallId');
-    el.textContent = seqToLabel(currentBall);
-    el.className = 'ball-id ' + myRole;
-    const kp = document.getElementById('keypad');
-    const statusEl = document.getElementById('ballStatus');
-    if (hasSubmittedCurrentBall()) {
-      kp.classList.add('submitted');
-      const confirmBtn = kp.querySelector('.confirm');
-      if (confirmBtn) confirmBtn.textContent = '⏳ Wait';
-      statusEl.textContent = 'Submitted — waiting for other scorer';
-      statusEl.className = 'ball-status waiting';
-    } else {
-      kp.classList.remove('submitted');
-      const confirmBtn = kp.querySelector('.confirm');
-      if (confirmBtn) confirmBtn.textContent = '✓ #';
-      statusEl.textContent = 'Press keys · # to confirm';
-      statusEl.className = 'ball-status ready';
-    }
-  }
-
-  // ── FIREBASE ──
-  onValue(query(entriesRef, orderByChild('confirmed_at')), snap => {
-    allEntries = snap.val() || {};
-    const count = Object.keys(allEntries).length;
-    setStatus('live', `Connected · ${count} entries`);
-    // Remove old seqs from local lock — keep only current ball and above
-    const cb = getCurrentBall();
-    mySubmittedSeqs = new Set([...mySubmittedSeqs].filter(s => s >= cb));
-    updateScorerUI();
-    if (myRole === 'viewer') renderViewer();
-  }, () => setStatus('error', 'Connection lost — retrying...'));
-
-  onValue(verdictsRef, snap => {
-    allVerdicts = snap.val() || {};
-    if (myRole === 'viewer') renderViewer();
-  }, () => {});
-
-  // ── RENDER VIEWER ──
-  function renderViewer() {
-    const feed = document.getElementById('viewerFeed');
-    const aEntries = Object.entries(allEntries).filter(([,e]) => e.scorer === 'A').sort((a,b) => (a[1].seq||0)-(b[1].seq||0));
-    const bEntries = Object.entries(allEntries).filter(([,e]) => e.scorer === 'B').sort((a,b) => (a[1].seq||0)-(b[1].seq||0));
-
-    // Stats
-    document.getElementById('statABalls').textContent = aEntries.length;
-    document.getElementById('statBBalls').textContent = bEntries.length;
-    let aFirst = 0, bFirst = 0;
-    for (let i = 0; i < Math.min(aEntries.length, bEntries.length); i++) {
-      const at = aEntries[i][1].confirmed_at, bt = bEntries[i][1].confirmed_at;
-      if (at < bt) aFirst++; else if (bt < at) bFirst++;
-    }
-    document.getElementById('statAFirst').textContent = aFirst;
-    document.getElementById('statBFirst').textContent = bFirst;
-    function calcAcc(scorer) {
-      const v = Object.values(allVerdicts).filter(v => v.scorer === scorer);
-      if (!v.length) return '—';
-      return Math.round(v.filter(v => v.verdict === 'right').length / v.length * 100) + '%';
-    }
-    document.getElementById('statAAcc').textContent = calcAcc('A');
-    document.getElementById('statBAcc').textContent = calcAcc('B');
-
-    // Current ball bar
-    const currentBall = getCurrentBall();
-    document.getElementById('viewerCurrentBall').textContent = seqToLabel(currentBall);
-    const aHas = aEntries.some(([,e]) => e.seq === currentBall);
-    const bHas = bEntries.some(([,e]) => e.seq === currentBall);
-    const submitted = (aHas ? 'A✓ ' : 'A… ') + (bHas ? 'B✓' : 'B…');
-    document.getElementById('viewerBallStatus').textContent = submitted;
-
-    const maxSeq = Math.max(aEntries.length, bEntries.length, 0);
-    if (!maxSeq) {
-      feed.innerHTML = '<div class="empty-feed">Waiting for scorers...</div>';
-      return;
-    }
-
-    // Group by over, newest over first, balls ascending within each over
-    const overGroups = {};
-    for (let seq = 1; seq <= maxSeq; seq++) {
-      const over = Math.floor((seq - 1) / 6) + 1;
-      if (!overGroups[over]) overGroups[over] = [];
-      overGroups[over].push(seq);
-    }
-
-    function verdictBtns(scorer, seq, v) {
-      const vKey = `${seq}_${scorer}`;
-      return `<div class="verdict-btns">
-        <button class="vb${v==='right'?' active-right':''}" data-verdict="right" data-key="${vKey}" data-scorer="${scorer}" data-seq="${seq}">✓</button>
-        <button class="vb${v==='wrong'?' active-wrong':''}" data-verdict="wrong" data-key="${vKey}" data-scorer="${scorer}" data-seq="${seq}">✗</button>
+  let html='';
+  Object.keys(overGroups).map(Number).sort((a,b)=>b-a).forEach(over=>{
+    const ballsHtml=overGroups[over].map(seq=>{
+      const aE=aEntries.find(([,e])=>e.seq===seq);
+      const bE=bEntries.find(([,e])=>e.seq===seq);
+      const label=aE?aE[1].label:bE?bE[1].label:seqToSimpleLabel(seq);
+      let firstBadge='<span class="first-badge pending">Waiting</span>';
+      if(aE&&bE){
+        const at=aE[1].confirmed_at,bt=bE[1].confirmed_at;
+        if(at<bt)firstBadge='<span class="first-badge A">A First</span>';
+        else if(bt<at)firstBadge='<span class="first-badge B">B First</span>';
+        else firstBadge='<span class="first-badge tie">Tied</span>';
+      } else if(aE) firstBadge='<span class="first-badge A">A only</span>';
+      else if(bE) firstBadge='<span class="first-badge B">B only</span>';
+      const jEntry=Object.values(allJudge).find(j=>j.seq===seq);
+      const jBadge=jEntry?`<span class="judge-badge">J: ${jEntry.keys||''}${jEntry.overturned?' OVR':''}</span>`:'';
+      return `<div class="ball-card">
+        <div class="ball-card-header">
+          <span class="ball-card-label">${label}</span>${firstBadge}${jBadge}
+        </div>
+        ${scorerRow(aE,'A',seq)}
+        ${scorerRow(bE,'B',seq)}
       </div>`;
-    }
-
-    function scorerRow(entry, scorer, seq, verdict) {
-      if (!entry) return `<div class="sr-waiting"><div class="mini-dot"></div>${scorer} pending...</div>`;
-      const [fbKey, ball] = entry;
-      const chips = (ball.keys||'').split(' ').filter(Boolean).map(k => `<span class="sr-key ${scorer}">${k}</span>`).join('');
-      const t = formatUKTime(ball.confirmed_at);
-      const editedTag = ball.edited ? `<span style="color:var(--orange);font-size:9px;margin-left:3px">edited</span>` : '';
-      return `<div class="scorer-row">
-        <div class="sr-who ${scorer}">${scorer}</div>
-        <div class="sr-keys">${chips}${editedTag}</div>
-        <div class="sr-time">${t}</div>
-        ${verdictBtns(scorer, seq, verdict)}
-        <button class="ib" data-edit="${fbKey}" data-label="${ball.label}" data-keys="${ball.keys||''}">✏</button>
-      </div>`;
-    }
-
-    let html = '';
-    Object.keys(overGroups).map(Number).sort((a,b) => b-a).forEach(over => {
-      const ballsHtml = overGroups[over].map(seq => {
-        const aE = aEntries.find(([,e]) => e.seq === seq);
-        const bE = bEntries.find(([,e]) => e.seq === seq);
-        const label = seqToLabel(seq);
-        let firstBadge = `<span class="first-badge pending">Waiting</span>`;
-        if (aE && bE) {
-          const at = aE[1].confirmed_at, bt = bE[1].confirmed_at;
-          if (at < bt) firstBadge = `<span class="first-badge A">A First</span>`;
-          else if (bt < at) firstBadge = `<span class="first-badge B">B First</span>`;
-          else firstBadge = `<span class="first-badge tie">Tied</span>`;
-        } else if (aE) {
-          firstBadge = `<span class="first-badge A">A only</span>`;
-        } else if (bE) {
-          firstBadge = `<span class="first-badge B">B only</span>`;
-        }
-        const vA = allVerdicts[`${seq}_A`]?.verdict || null;
-        const vB = allVerdicts[`${seq}_B`]?.verdict || null;
-        return `<div class="ball-card">
-          <div class="ball-card-header">
-            <span class="ball-card-label">${label}</span>${firstBadge}
-          </div>
-          ${scorerRow(aE, 'A', seq, vA)}
-          ${scorerRow(bE, 'B', seq, vB)}
-        </div>`;
-      }).join('');
-      html += `<div class="over-section">
-        <div class="over-section-label">Over ${over} · ${overGroups[over].length}/6 balls</div>
-        ${ballsHtml}
-      </div>`;
-    });
-
-    feed.innerHTML = html;
-
-    feed.querySelectorAll('[data-verdict]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const { key, scorer, seq, verdict } = btn.dataset;
-        set(ref(db, 'comp/verdicts/' + key), { scorer, seq: parseInt(seq), verdict, set_at: new Date().toISOString() });
-      });
-    });
-    feed.querySelectorAll('[data-edit]').forEach(btn => {
-      btn.addEventListener('click', () => openEdit(btn.dataset.edit, btn.dataset.label, btn.dataset.keys));
-    });
-  }
-
-  // ── EDIT ──
-  function openEdit(fbKey, label, keys) {
-    editingFbKey = fbKey;
-    document.getElementById('editLabel').textContent = label;
-    document.getElementById('editInput').value = keys;
-    document.getElementById('editModal').classList.add('open');
-    setTimeout(() => document.getElementById('editInput').focus(), 80);
-  }
-  document.getElementById('btnCancelEdit').addEventListener('click', () => {
-    document.getElementById('editModal').classList.remove('open'); editingFbKey = null;
+    }).join('');
+    html+=`<div class="over-section"><div class="over-section-label">Over ${over} · ${overGroups[over].length}/6 balls</div>${ballsHtml}</div>`;
   });
-  document.getElementById('btnSaveEdit').addEventListener('click', () => {
-    if (!editingFbKey) return;
-    const newKeys = document.getElementById('editInput').value.trim();
-    if (!newKeys) return;
-    const existing = allEntries[editingFbKey] || {};
-    set(ref(db, 'comp/entries/' + editingFbKey), { ...existing, keys: newKeys, edited: true, edited_at: new Date().toISOString() });
-    document.getElementById('editModal').classList.remove('open'); editingFbKey = null;
+  feed.innerHTML=html;
+  feed.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click',()=>openEdit(btn.dataset.edit,btn.dataset.path,btn.dataset.label,btn.dataset.keys));
   });
+}
 
-  // ── CLEAR / RESET ──
-  document.getElementById('btnClear').addEventListener('click', () => {
-    if (!confirm('Delete ALL data? Clears for everyone.')) return;
-    remove(entriesRef); remove(verdictsRef);
-    currentKeys = []; currentTimings = []; renderCurrentKeys();
-  });
-  document.getElementById('btnResetAll').addEventListener('click', () => {
-    if (!confirm('Reset ALL data? Fresh start for everyone.')) return;
-    remove(entriesRef); remove(verdictsRef);
-  });
-  document.getElementById('btnResetOver').addEventListener('click', () => {
-    const allSeqs = Object.values(allEntries).map(e => e.seq||0);
-    if (!allSeqs.length) { alert('Nothing to reset.'); return; }
-    const maxSeq = Math.max(...allSeqs);
-    const currentOver = Math.floor((maxSeq - 1) / 6) + 1;
-    const overStart = (currentOver - 1) * 6 + 1;
-    const overEnd = currentOver * 6;
-    if (!confirm(`Reset Over ${currentOver}? Deletes balls ${seqToLabel(overStart)}–${seqToLabel(overEnd)} for everyone.`)) return;
-    Object.entries(allEntries).forEach(([fbKey, e]) => {
-      if ((e.seq||0) >= overStart && (e.seq||0) <= overEnd) remove(ref(db, 'comp/entries/' + fbKey));
-    });
-    Object.entries(allVerdicts).forEach(([vKey, v]) => {
-      if ((v.seq||0) >= overStart && (v.seq||0) <= overEnd) remove(ref(db, 'comp/verdicts/' + vKey));
-    });
-  });
+// ── EDIT / OVERTURN ──────────────────────────────────
+function openEdit(fbKey,path,label,keys) {
+  editFbKey=fbKey; editPath=path;
+  document.getElementById('editModalTitle').textContent=path==='judge'?`Overturn · ${label}`:`Edit · ${label}`;
+  document.getElementById('editInput').value=keys;
+  document.getElementById('editModal').classList.add('open');
+  setTimeout(()=>document.getElementById('editInput').focus(),80);
+}
+document.getElementById('btnCancelEdit').addEventListener('click',()=>{ document.getElementById('editModal').classList.remove('open'); editFbKey=null; });
+document.getElementById('btnSaveEdit').addEventListener('click',()=>{
+  if(!editFbKey) return;
+  const newKeys=document.getElementById('editInput').value.trim();
+  if(!newKeys) return;
+  const path=editPath==='judge'?'comp/judge/':('comp/entries/');
+  const existing=editPath==='judge'?(allJudge[editFbKey]||{}):(allEntries[editFbKey]||{});
+  const updates=editPath==='judge'
+    ?{...existing,keys:newKeys,overturned:true,overturn_from:existing.keys||'',overturn_at:new Date().toISOString()}
+    :{...existing,keys:newKeys,edited:true,edited_at:new Date().toISOString()};
+  set(ref(db,path+editFbKey),updates);
+  document.getElementById('editModal').classList.remove('open'); editFbKey=null;
+});
 
-  // ── EXPORT CSV ──
-  function exportCSV() {
-    const entries = Object.entries(allEntries).sort((a,b) => {
-      if (a[1].scorer !== b[1].scorer) return a[1].scorer < b[1].scorer ? -1 : 1;
-      return (a[1].seq||0) - (b[1].seq||0);
-    });
-    if (!entries.length) { alert('No data yet.'); return; }
-    const rows = [['scorer','ball_num','over_ball','keys','confirmed_at_utc','confirmed_at_uk','edited','verdict']];
-    entries.forEach(([,ball]) => {
-      const vKey = `${ball.seq}_${ball.scorer}`;
-      const v = allVerdicts[vKey]?.verdict || '';
-      rows.push([ball.scorer, ball.seq||'', ball.label||'', ball.keys||'', ball.confirmed_at||'', formatUKTime(ball.confirmed_at), ball.edited?'yes':'no', v]);
-    });
-    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = 'scorer_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click(); URL.revokeObjectURL(url);
-  }
-  document.getElementById('btnExportScorer').addEventListener('click', exportCSV);
-  document.getElementById('btnExportViewer').addEventListener('click', exportCSV);
+// ── SOLO MODE ─────────────────────────────────────────
+function updateSoloBtn() {
+  const btn=document.getElementById('btnSoloToggle');
+  if(!btn) return;
+  btn.textContent=soloMode?'Solo: On':'Solo: Off';
+  btn.className=soloMode?'btn solo-on':'btn';
+}
+document.getElementById('btnSoloToggle').addEventListener('click',()=>{
+  set(ref(db,'comp/state/soloMode'),!soloMode);
+});
+
+// ── RESET / CLEAR ─────────────────────────────────────
+document.getElementById('btnClear').addEventListener('click',()=>{
+  if(!confirm('Delete ALL data? Clears for everyone.')) return;
+  remove(entriesRef); remove(judgeRef); set(ref(db,'comp/state/soloMode'),false);
+  currentKeys=[]; currentTimings=[];
+  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
+  renderCurrentKeys();
+});
+document.getElementById('btnResetAll').addEventListener('click',()=>{
+  if(!confirm('Reset ALL data? Fresh start for everyone.')) return;
+  remove(entriesRef); remove(judgeRef); set(ref(db,'comp/state/soloMode'),false);
+});
+document.getElementById('btnResetOver').addEventListener('click',()=>{
+  const allSeqs=Object.values(allEntries).map(e=>e.seq||0);
+  if(!allSeqs.length){alert('Nothing to reset.');return;}
+  const maxSeq=Math.max(...allSeqs);
+  const curOver=Math.floor((maxSeq-1)/6)+1;
+  const overStart=(curOver-1)*6+1, overEnd=curOver*6;
+  if(!confirm(`Reset Over ${curOver}? Deletes balls ${seqToSimpleLabel(overStart)}–${seqToSimpleLabel(overEnd)} for everyone.`)) return;
+  Object.entries(allEntries).forEach(([k,e])=>{ if((e.seq||0)>=overStart&&(e.seq||0)<=overEnd) remove(ref(db,'comp/entries/'+k)); });
+  Object.entries(allJudge).forEach(([k,j])=>{ if((j.seq||0)>=overStart&&(j.seq||0)<=overEnd) remove(ref(db,'comp/judge/'+k)); });
+});
+
+// ── EXPORT CSV ───────────────────────────────────────
+function exportCSV() {
+  const entries=Object.entries(allEntries).sort((a,b)=>{
+    if(a[1].scorer!==b[1].scorer) return a[1].scorer<b[1].scorer?-1:1;
+    return (a[1].seq||0)-(b[1].seq||0);
+  });
+  if(!entries.length){alert('No data yet.');return;}
+  const rows=[['scorer','ball_num','over_ball','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at_uk','hash_at_uk','edited','judge_keys','judge_confirmed_key','penalty']];
+  entries.forEach(([,ball])=>{
+    const j=Object.values(allJudge).find(jj=>jj.seq===ball.seq);
+    const p=j?calculatePenalty(ball.confirmed_key,j.confirmed_key,ball.confidence):null;
+    rows.push([ball.scorer,ball.seq||'',ball.label||'',ball.keys||'',ball.confirmed_key||'',ball.confidence||'',ball.is_wide?'yes':'no',ball.is_noball?'yes':'no',formatUKTime(ball.confirmed_at),formatUKTime(ball.hash_at),ball.edited?'yes':'no',j?j.keys||'':'',j?j.confirmed_key||'':'',p!==null?p:'']);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='scorer_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+document.getElementById('btnExportScorer').addEventListener('click',exportCSV);
+document.getElementById('btnExportJudge').addEventListener('click',exportCSV);
+document.getElementById('btnExportViewer').addEventListener('click',exportCSV);
 </script>
 </body>
 </html>
