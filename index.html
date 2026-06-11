@@ -611,10 +611,17 @@ function judgeKeyUp(k,btn) {
 function renderJudgeCurrentKeys() {
   const box=document.getElementById('judgeKeysBox');
   if (!currentJudgeKeys.length) { box.innerHTML='<span class="hint">Double press to confirm · # to advance</span>'; return; }
-  box.innerHTML=currentJudgeTimings.map((t,i)=>{
+  const chips=currentJudgeTimings.map((t,i)=>{
     const isLast=i===currentJudgeTimings.length-1;
     return `<div class="k-chip J${judgeBallConfirmed&&isLast?' confirmed-chip':''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`;
   }).join('');
+  // Always show a clear button so judge can undo at any point before #
+  box.innerHTML=chips+`<button id="btnJudgeClearKeys" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-family:var(--font-mono);font-size:11px;padding:3px 8px;cursor:pointer;flex-shrink:0;">✕ Clear</button>`;
+  document.getElementById('btnJudgeClearKeys').addEventListener('click',()=>{
+    currentJudgeKeys=[]; currentJudgeTimings=[];
+    judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
+    renderJudgeCurrentKeys(); updateJudgeUI();
+  });
 }
 
 function commitJudge() {
@@ -827,9 +834,20 @@ document.getElementById('btnSaveEdit').addEventListener('click',()=>{
   if(!newKeys) return;
   const path=editPath==='judge'?'comp/judge/':('comp/entries/');
   const existing=editPath==='judge'?(allJudge[editFbKey]||{}):(allEntries[editFbKey]||{});
-  const updates=editPath==='judge'
-    ?{...existing,keys:newKeys,overturned:true,overturn_from:existing.keys||'',overturn_at:new Date().toISOString()}
-    :{...existing,keys:newKeys,edited:true,edited_at:new Date().toISOString()};
+  let updates;
+  if (editPath==='judge') {
+    // Parse the new confirmed_key from the last result key in the new sequence
+    const keyArr=newKeys.split(' ').filter(Boolean);
+    let newConfirmedKey=existing.confirmed_key||null;
+    for(let i=keyArr.length-1;i>=0;i--) {
+      if(RESULT_KEYS.has(keyArr[i])){newConfirmedKey=keyArr[i];break;}
+    }
+    updates={...existing,keys:newKeys,confirmed_key:newConfirmedKey,
+      is_wide:newConfirmedKey==='7',is_noball:newConfirmedKey==='9',
+      overturned:true,overturn_from:existing.keys||'',overturn_at:new Date().toISOString()};
+  } else {
+    updates={...existing,keys:newKeys,edited:true,edited_at:new Date().toISOString()};
+  }
   set(ref(db,path+editFbKey),updates);
   document.getElementById('editModal').classList.remove('open'); editFbKey=null;
 });
