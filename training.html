@@ -180,6 +180,7 @@ body{display:flex;flex-direction:column;}
       <button class="vb-btn" id="btnPlayPause">▶ Start</button>
       <span class="vb-pauses" id="pauseInfo">Pauses: 0</span>
       <button class="vb-btn" id="btnToggleVideo" style="font-size:10px;">📺 Hide</button>
+      <button class="vb-btn" id="btnChangeUrl" style="font-size:10px;display:none;">🔗 Change URL</button>
       <span class="vb-time" id="vcTime">0.0s</span>
     </div>
   </div>
@@ -484,8 +485,9 @@ function startJudgeSession(){
     hide('judgeSetup');
     initVideo(config.clip_url);
     show('scoringArea');
-
     show('refFeed');
+    document.getElementById('btnChangeUrl').style.display='inline';
+    document.getElementById('videoUrlInput').value=config.clip_url;
   } else {
     show('judgeSetup');
   }
@@ -495,16 +497,28 @@ function startJudgeSession(){
   setJudgeTab('score');
 }
 
+// Change URL button — shows setup panel again with current URL pre-filled
+document.getElementById('btnChangeUrl').addEventListener('click',()=>{
+  videoPauseApi();stopTick(false);
+  document.getElementById('playerContainer').innerHTML='';
+  document.getElementById('videoStatus').textContent=config.clip_url?`Current: ${config.clip_url}`:'No clip loaded';
+  show('judgeSetup');
+  document.getElementById('btnChangeUrl').style.display='none';
+});
+
 document.getElementById('btnLoadVideo').addEventListener('click',()=>{
   const url=document.getElementById('videoUrlInput').value.trim();
   if(!url)return;
+  // Reset video player before loading new one
+  ytPlayer=null;vmPlayer=null;videoPlatform=null;
+  document.getElementById('playerContainer').innerHTML='';
   if(initVideo(url)){
     set(ref(db,'training/config/clip_url'),url);
     set(ref(db,'training/config/loaded_at'),new Date().toISOString());
     hide('judgeSetup');
     show('scoringArea');
-
     show('refFeed');
+    document.getElementById('btnChangeUrl').style.display='inline';
     document.getElementById('videoStatus').textContent='✓ Loaded';
   }
 });
