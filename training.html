@@ -485,8 +485,8 @@ onValue(configRef,snap=>{
   } else if(sessionStarted&&!config.paused_at&&!isPlaying&&sessionStarted){
     // resume handled below
   }
-  // Check for session start
-  if(config.session_started&&!sessionStarted){
+  // Check for session start — only if already logged in
+  if(config.session_started&&!sessionStarted&&myName){
     onSessionStart();
   }
   // Update schedule display
@@ -500,9 +500,17 @@ onValue(configRef,snap=>{
 document.getElementById('btnLogin').addEventListener('click',doLogin);
 ['loginName','loginPw'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 $('judgeLink').addEventListener('click',()=>{
-  const pw=$('loginPw').value||prompt('Judge password:');
-  if(!pw)return;if(judgePw&&pw!==judgePw){toast('Wrong judge password');return;}
-  myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();
+  const pw=$('loginPw').value.trim();
+  // If no judge password set, let straight in
+  if(!judgePw){myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();return;}
+  // If password field has value, use it
+  if(pw){
+    if(pw!==judgePw){$('loginErr').textContent='Wrong judge password';return;}
+    myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();return;
+  }
+  // Otherwise show password hint
+  $('loginErr').textContent='Enter judge password in the password field above';
+  $('loginPw').focus();
 });
 
 function doLogin(){
@@ -534,8 +542,8 @@ function scheduleCountdownAlerts(){
   const t30=remaining-30000;
   if(t30>0)alertTimeouts.push(setTimeout(()=>{beepUrgent();show30SecCountdown();},t30));
   else if(remaining<=30000&&remaining>0)show30SecCountdown();
-  // Auto-start
-  if(remaining>0)alertTimeouts.push(setTimeout(()=>onSessionStart(),remaining));
+  // Auto-start at scheduled time — only if logged in
+  if(remaining>0)alertTimeouts.push(setTimeout(()=>{if(myName)onSessionStart();},remaining));
   // Update countdown display every second
   updateCountdownDisplay();
 }
@@ -576,14 +584,23 @@ function onSessionStart(){
   clearInterval(cdInterval);
   beep3();
   if(IS_VIDEO){
-    // Start video + timer
     videoPlay();startTick();
     if(!isJudge)showScreen('videoScreen');
+    // Fix 3: iOS fallback — if video hasn't started after 1.5s show tap overlay
+    setTimeout(()=>{
+      if(!isPlaying){
+        const overlay=document.createElement('div');
+        overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+        overlay.innerHTML='<div style="font-family:var(--font-mono);font-size:18px;color:var(--accent);text-align:center;padding:24px;">▶ Tap to start video<br><span style="font-size:12px;color:var(--muted);">Browser blocked autoplay</span></div>';
+        overlay.addEventListener('click',()=>{videoPlay();document.body.removeChild(overlay);});
+        document.body.appendChild(overlay);
+      }
+    },1500);
   } else {
     // Start timer on phone
+    // Restore session including timer
+    try{const s=JSON.parse(localStorage.getItem(LS)||'{}');if(s.name===myName&&s.balls){myBalls=s.balls;currentSeq=s.seq||1;sessionTimer=s.timer||0;updateTimerDisp();}}catch(e){}
     startTick();
-    // Restore session
-    try{const s=JSON.parse(localStorage.getItem(LS)||'{}');if(s.name===myName&&s.balls){myBalls=s.balls;currentSeq=s.seq||1;}}catch(e){}
     showScreen('keypadScreen');
     updateBallDisplay();buildKeypad();
   }
@@ -779,7 +796,11 @@ function commitBall(){
   const isWide=extraKey==='7',isNoBall=extraKey==='9';
   const confidence=runKey==='*'?'certain':'confirmed';
   const videoSecs=getVidSecs();
-  const legalBefore=isJudge?Object.values(allRefBalls).filter(b=>!b.is_wide&&!b.is_noball).length:myBalls.filter(b=>!b.is_wide&&!b.is_noball).length;
+  // Fix 7: use Firebase reference ball count for accurate label on reload
+  const legalBefore=isJudge
+    ?Object.values(allRefBalls).filter(b=>!b.is_wide&&!b.is_noball).length
+    :myBalls.filter(b=>!b.is_wide&&!b.is_noball).length||
+      Object.values(allRefBalls).filter(b=>b.seq<seq&&!b.is_wide&&!b.is_noball).length;
   const lbl=isWide?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}w`:isNoBall?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}nb`:`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}`;
   const ballData={seq,label:lbl,keys:keysSnap.join(' '),confirmed_key:runKey,confidence,is_wide:isWide,is_noball:isNoBall,
     confirmed_at:atSnap,video_seconds:videoSecs,timings_compact:timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',')};
@@ -792,7 +813,7 @@ function commitBall(){
     ballData.is_correct=getOutcome(runKey)===getOutcome(refBall.confirmed_key);
     myBalls.push(ballData);
     if(!isWide&&!isNoBall)currentSeq++;
-    try{localStorage.setItem(LS,JSON.stringify({name:myName,balls:myBalls,seq:currentSeq}));}catch(e){}
+    try{localStorage.setItem(LS,JSON.stringify({name:myName,balls:myBalls,seq:currentSeq,timer:sessionTimer}));}catch(e){}
     if(refCount>0&&currentSeq>refCount){submitSession();return;}
   }
   resetState();renderKeys(isJudge?'J':'');updateKpadUI();updateBallDisplay();
@@ -802,12 +823,30 @@ function commitBall(){
 function renderRefFeed(){
   const feed=$('refFeed');if(!feed)return;
   const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  if(!balls.length){feed.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:8px;">Score each ball — your timings become the reference</div>';return;}
-  feed.innerHTML=[...balls].reverse().slice(0,5).map(([fbKey,b])=>{
-    const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
-    return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-del="${fbKey}">✕</button></div>`;
-  }).join('');
-  feed.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.del));}));
+  // Judge control buttons
+  const controls=`<div style="display:flex;gap:6px;padding:4px 0;flex-shrink:0;">
+    <button id="btnClearRef" style="background:none;border:1px solid var(--red);border-radius:6px;color:var(--red);font-family:var(--font-mono);font-size:10px;padding:4px 10px;cursor:pointer;">🗑 Clear Reference</button>
+    <button id="btnResetSession" style="background:none;border:1px solid var(--orange);border-radius:6px;color:var(--orange);font-family:var(--font-mono);font-size:10px;padding:4px 10px;cursor:pointer;">↺ Reset Session</button>
+  </div>`;
+  if(!balls.length){
+    feed.innerHTML=controls+'<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:4px 0;">Score each ball — your timings become the reference</div>';
+  } else {
+    feed.innerHTML=controls+[...balls].reverse().slice(0,5).map(([fbKey,b])=>{
+      const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
+      return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-del="${fbKey}">✕</button></div>`;
+    }).join('');
+    feed.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.del));}));
+  }
+  // Wire control buttons
+  const cr=$('btnClearRef');if(cr)cr.addEventListener('click',()=>{if(confirm('Clear ALL reference balls? This cannot be undone.'))remove(refRef);});
+  const rs=$('btnResetSession');if(rs)rs.addEventListener('click',()=>{
+    if(!confirm('Reset session state? Trainees will need to re-login.'))return;
+    set(ref(db,'training/config/session_started'),false);
+    set(ref(db,'training/config/scheduled_start_at'),null);
+    set(ref(db,'training/config/paused_at'),null);
+    remove(readyRef);
+    toast('Session reset — trainees can now re-login','ok');
+  });
 }
 
 function submitSession(){
@@ -835,6 +874,7 @@ function setJudgeTab(tab){
 $('btnAddTrainee').addEventListener('click',()=>{
   const n=$('tpName').value.trim(),p=$('tpPw').value.trim();
   if(!n||!p){toast('Enter name and password');return;}
+  if(Object.values(allTrainees).some(t=>t.name.toLowerCase()===n.toLowerCase())){toast('Name already exists — choose a different name');return;}
   push(traineesRef,{name:n,password:p,created_at:new Date().toISOString()});
   $('tpName').value='';$('tpPw').value='';toast('Trainee added','ok');
 });
