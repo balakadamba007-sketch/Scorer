@@ -500,7 +500,7 @@ onValue(configRef,snap=>{
 document.getElementById('btnLogin').addEventListener('click',doLogin);
 ['loginName','loginPw'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 $('judgeLink').addEventListener('click',()=>{
-  const pw=$(('loginPw').value||prompt('Judge password:'));
+  const pw=$('loginPw').value||prompt('Judge password:');
   if(!pw)return;if(judgePw&&pw!==judgePw){toast('Wrong judge password');return;}
   myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();
 });
