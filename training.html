@@ -249,6 +249,15 @@ body{display:flex;flex-direction:column;}
     <div class="top-timer" id="kTopTimer">00:00.0</div>
   </div>
   <div class="status-bar"><div class="dot" id="kStatusDot"></div><span id="kStatusText">Connecting...</span></div>
+  <!-- Judge video embed (shown only when judge is reference scoring) -->
+  <div id="judgeVideoWrap" style="display:none;flex-shrink:0;flex-direction:column;">
+    <div id="playerContainer" style="height:28vh;background:#000;"></div>
+    <div class="video-bar" id="videoBar" style="display:none;">
+      <button class="vb-btn" id="vBtnPlayPause">▶ Play</button>
+      <button class="vb-btn danger" id="vBtnChangeUrl" style="display:none;font-size:10px;">🔗 Change URL</button>
+      <span class="vb-time" id="vTime">0.0s</span>
+    </div>
+  </div>
   <div class="scoring-area" id="scoringArea">
     <div class="ball-indicator">
       <div>
@@ -659,6 +668,27 @@ $('vBtnChangeUrl').addEventListener('click',()=>{
   ytPlayer=null;vmPlayer=null;videoPlatform=null;
 });
 $('vBtnPlayPause').addEventListener('click',()=>{if(isPlaying)videoPauseApi();else videoPlay();});
+$('vBtnChangeUrl').addEventListener('click',()=>{
+  videoPauseApi();stopTick();$('playerContainer').innerHTML='';
+  $('judgeVideoWrap').style.display='none';
+  $('videoBar').style.display='none';
+  ytPlayer=null;vmPlayer=null;videoPlatform=null;
+  // Re-show inline URL loader
+  const sa=$('scoringArea');
+  const urlDiv=document.createElement('div');
+  urlDiv.id='inlineUrlLoad';
+  urlDiv.style.cssText='padding:8px 0;display:flex;gap:8px;flex-shrink:0;';
+  urlDiv.innerHTML=`<input id="inlineUrl" type="url" placeholder="Paste new video URL" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;"/><button id="inlineLoadBtn" style="background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;">Load ▶</button>`;
+  sa.insertBefore(urlDiv,sa.firstChild);
+  $('inlineLoadBtn').addEventListener('click',()=>{
+    const url=$('inlineUrl').value.trim();if(!url)return;
+    set(ref(db,'training/config/clip_url'),url);
+    if(initVideo(url)){
+      $('judgeVideoWrap').style.display='flex';$('judgeVideoWrap').style.flexDirection='column';
+      $('videoBar').style.display='flex';$('vBtnChangeUrl').style.display='inline';urlDiv.remove();toast('Video loaded ✓','ok');
+    }
+  });
+});
 $('vBtnPauseAll').addEventListener('click',()=>{
   if(config.paused_at){
     set(ref(db,'training/config/paused_at'),null);toast('Session resumed','ok');
@@ -706,14 +736,35 @@ function startKeypadSession(){
     $('judgeTabs').style.display='flex';$('refFeed').style.display='flex';
     setKStatus('live','Connected');
     showScreen('keypadScreen');
-    // If already have a clip, check if ref scoring or waiting
+    buildKeypad();renderRefFeed();renderTraineeList();setJudgeTab('score');
+    sessionStarted=true;startTick();
+    // Show video if clip already loaded, otherwise show URL input inside scoring area
     if(config.clip_url){
-      // Judge scores reference directly — start immediately
-      buildKeypad();renderRefFeed();renderTraineeList();setJudgeTab('score');
-      sessionStarted=true;startTick();
+      initVideo(config.clip_url);
+      $('judgeVideoWrap').style.display='flex';
+      $('judgeVideoWrap').style.flexDirection='column';
+      $('videoBar').style.display='flex';
+      $('vBtnChangeUrl').style.display='inline';
     } else {
-      showScreen('waitScreen');$('waitName').textContent='Judge';$('waitRole').textContent='Keypad Mode';
-      $('cdMsg').textContent='Load a video URL in the Video tab first';setWStatus('live','Connected');
+      // Show inline URL loader for judge
+      const urlDiv=document.createElement('div');
+      urlDiv.id='inlineUrlLoad';
+      urlDiv.style.cssText='padding:8px 0;display:flex;gap:8px;flex-shrink:0;';
+      urlDiv.innerHTML=`<input id="inlineUrl" type="url" placeholder="Paste video URL to start scoring" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;"/><button id="inlineLoadBtn" style="background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;">Load ▶</button>`;
+      const sa=$('scoringArea');
+      sa.insertBefore(urlDiv,sa.firstChild);
+      $('inlineLoadBtn').addEventListener('click',()=>{
+        const url=$('inlineUrl').value.trim();if(!url)return;
+        set(ref(db,'training/config/clip_url'),url);
+        if(initVideo(url)){
+          $('judgeVideoWrap').style.display='flex';
+          $('judgeVideoWrap').style.flexDirection='column';
+          $('videoBar').style.display='flex';
+          $('vBtnChangeUrl').style.display='inline';
+          urlDiv.remove();
+          toast('Video loaded ✓','ok');
+        }
+      });
     }
     return;
   }
