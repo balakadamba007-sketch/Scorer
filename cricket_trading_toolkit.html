@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cricket Trading Toolkit</title>
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --border2: #2a3f5f;
+    --text: #e8edf5;
+    --muted: #7a8aaa;
+    --accent: #00d4ff;
+    --accent2: #0099cc;
+    --green: #00e676;
+    --green-bg: #002a1a;
+    --green-border: #004d30;
+    --red: #ff5252;
+    --red-bg: #2a0000;
+    --red-border: #5a0000;
+    --gold: #ffd700;
+    --gold-bg: #1a1400;
+    --gold-border: #4a3a00;
+    --purple: #b39ddb;
+    --teal: #00bcd4;
+    --radius: 10px;
+    --font: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    padding: 1rem 1.5rem 1rem 0;
+    border-right: 1px solid var(--border);
+    margin-right: 1rem;
+    white-space: nowrap;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+
+  .nav-tab {
+    padding: 1rem 1rem;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LAYOUT */
+  .page { display: none; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* INPUTS */
+  .field { margin-bottom: 0.75rem; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  input[type=number], input[type=text], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  /* METRIC */
+  .metric {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    text-align: center;
+  }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .metric-val { font-size: 20px; font-weight: 600; }
+  .metric.green { background: var(--green-bg); border-color: var(--green-border); }
+  .metric.green .metric-val { color: var(--green); }
+  .metric.red { background: var(--red-bg); border-color: var(--red-border); }
+  .metric.red .metric-val { color: var(--red); }
+  .metric.gold { background: var(--gold-bg); border-color: var(--gold-border); }
+  .metric.gold .metric-val { color: var(--gold); }
+  .metric.accent { background: #001a2a; border-color: #003a5a; }
+  .metric.accent .metric-val { color: var(--accent); }
+
+  /* BUTTON */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .btn-success { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 8px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: var(--surface2); }
+
+  /* FORMULA BOX */
+  .formula {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 13px;
+    line-height: 2;
+    margin-top: 1rem;
+  }
+  .formula strong { color: var(--accent); }
+
+  /* TARGET GRID */
+  .target-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .target-btn:hover { border-color: var(--accent); }
+  .target-btn.selected { border-color: var(--accent); background: #001a2a; }
+  .target-btn .t-odds { font-size: 11px; color: var(--muted); }
+  .target-btn .t-green { font-size: 14px; font-weight: 600; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .badge-gold { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-border); }
+  .badge-accent { background: #001a2a; color: var(--accent); border: 1px solid #003a5a; }
+  .badge-purple { background: #1a0030; color: var(--purple); border: 1px solid #3a005a; }
+
+  /* RULE ITEM */
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .rule-num.red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .rule-num.green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .rule-title { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .rule-desc { font-size: 12px; color: var(--muted); }
+
+  /* TRIGGER TABLE */
+  .trigger-row { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); align-items: center; }
+  .trigger-row:last-child { border-bottom: none; }
+  .trigger-score { font-weight: 600; font-size: 13px; min-width: 90px; }
+  .trigger-signal { font-size: 12px; color: var(--muted); flex: 1; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .section-header h2 { font-size: 17px; font-weight: 700; }
+  .section-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* PLAN BOX */
+  .plan-box {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  .plan-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .plan-val { font-size: 18px; font-weight: 700; color: var(--accent); }
+
+  /* SIMULATOR */
+  .odds-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .odds-input-row input { width: 80px; }
+  .odds-input-row span { font-size: 12px; color: var(--muted); flex: 1; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.3s;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: repeat(3, 1fr); }
+    nav { padding: 0 0.75rem; }
+    .page { padding: 1rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">⚡ Cricket Trader</div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="show('greenbook')">Greenbook Calc</div>
+    <div class="nav-tab" onclick="show('layplan')">Lay Planner</div>
+    <div class="nav-tab" onclick="show('sim')">Sim Edge</div>
+    <div class="nav-tab" onclick="show('trigger')">Triggers</div>
+    <div class="nav-tab" onclick="show('rules')">Hard Rules</div>
+    <div class="nav-tab" onclick="show('pregame')">Pre-game Check</div>
+    <div class="nav-tab" onclick="show('log')">Trade Log</div>
+  </div>
+</nav>
+
+<!-- ═══ 1. GREENBOOK CALCULATOR ═══ -->
+<div id="greenbook" class="page active">
+  <div class="section-header"><div class="dot"></div><h2>Greenbook Calculator</h2></div>
+
+  <div class="card">
+    <div class="card-title">Your back bet</div>
+    <div class="grid-2">
+      <div class="field"><label>Back stake (£)</label><input type="number" id="gb_stake" value="150" min="1" oninput="calcGB()"></div>
+      <div class="field"><label>Back odds</label><input type="number" id="gb_back" value="2.46" min="1.01" step="0.01" oninput="calcGB()"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Target lay odds</label><input type="number" id="gb_lay" value="1.75" min="1.01" step="0.01" oninput="calcGB()"></div>
+      <div class="field"><label>Commission %</label><input type="number" id="gb_comm" value="2" min="0" max="10" step="0.5" oninput="calcGB()"></div>
+    </div>
+  </div>
+
+  <div class="grid-3" id="gb_results" style="margin-bottom:1rem;">
+    <div class="metric accent"><div class="metric-label">Lay stake</div><div class="metric-val" id="gb_laystake">£205</div></div>
+    <div class="metric green"><div class="metric-label">Green if back wins</div><div class="metric-val" id="gb_greenback">+£61</div></div>
+    <div class="metric green"><div class="metric-label">Green if lay wins</div><div class="metric-val" id="gb_greenlay">+£60</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The maths — step by step</div>
+    <div class="formula" id="gb_formula"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Try different lay targets — tap to apply</div>
+    <div class="grid-4" id="gb_targets"></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);">Patience from 1.93 → 1.75 = extra £30+ per trade. Over 50 trades = £1,500+ more profit.</div>
+  </div>
+
+  <div class="card" id="gb_warning" style="background:var(--gold-bg);border-color:var(--gold-border);">
+    <span style="color:var(--gold);font-size:12px;" id="gb_warn_text"></span>
+  </div>
+</div>
+
+<!-- ═══ 2. LAY PLANNER ═══ -->
+<div id="layplan" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Pre-trade Lay Planner</h2></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:1rem;">Write your complete exit plan BEFORE placing the back bet. No back placed without all three fields filled.</p>
+
+  <div class="card">
+    <div class="card-title">Trade setup</div>
+    <div class="grid-2">
+      <div class="field"><label>Match</label><input type="text" id="lp_match" placeholder="e.g. QTG vs LQ"></div>
+      <div class="field"><label>Market</label>
+        <select id="lp_market">
+          <option>Match Odds</option>
+          <option>20 Ov Line</option>
+          <option>PP 6 Ov Line</option>
+          <option>10 Ov Line</option>
+        </select>
+      </div>
+      <div class="field"><label>Back team / direction</label><input type="text" id="lp_team" placeholder="e.g. Back QTG / Back OVER 170"></div>
+      <div class="field"><label>Mode</label>
+        <select id="lp_mode" onchange="updateMode()">
+          <option value="conviction">Conviction (3 yes signals)</option>
+          <option value="fiftyfifty">50/50 (unclear edge)</option>
+        </select>
+      </div>
+      <div class="field"><label>Back stake (£)</label><input type="number" id="lp_stake" value="150" oninput="calcLP()"></div>
+      <div class="field"><label>Back odds</label><input type="number" id="lp_back" value="2.20" step="0.01" oninput="calcLP()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Your pre-written exit plan — fill before placing</div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Target lay odds</label>
+        <input type="number" id="lp_layodds" step="0.01" oninput="calcLP()">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="lp_mode_hint">Conviction: target 1.45 | 50/50: target 1.75</div>
+      </div>
+      <div class="field">
+        <label>Trigger score</label>
+        <input type="text" id="lp_trigger" placeholder="e.g. Score 110 at over 12">
+      </div>
+      <div class="field">
+        <label>Lay stake (calculated)</label>
+        <input type="text" id="lp_laystake_calc" readonly style="color:var(--accent);font-weight:600;">
+      </div>
+    </div>
+
+    <div class="plan-box" id="lp_plan">
+      <div class="plan-label">Your written plan</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.8;" id="lp_plan_text">Fill all fields above to generate your plan.</div>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:1rem;">
+    <div class="metric green"><div class="metric-label">Green if back wins</div><div class="metric-val" id="lp_gback">—</div></div>
+    <div class="metric green"><div class="metric-label">Green if lay wins</div><div class="metric-val" id="lp_glay">—</div></div>
+    <div class="metric accent"><div class="metric-label">Return on stake</div><div class="metric-val" id="lp_ror">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Conviction checklist — must be 3 YES for conviction mode</div>
+    <div class="rule-item">
+      <div class="rule-num green">1</div>
+      <div><div class="rule-title">Bowling matchup edge?</div><div class="rule-desc">Quality spinners vs RHB lineup on slow pitch / Pace vs weak top order on grassy track</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num green">2</div>
+      <div><div class="rule-title">Pitch supports the read?</div><div class="rule-desc">Sim adjusted for pitch type (-10 to -15 slow, -5 grassy, +5 flat). Edge confirmed after adjustment.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num green">3</div>
+      <div><div class="rule-title">Sim price gives value?</div><div class="rule-desc">Market price is ABOVE sim true price = value exists. Gap 8%+ = strong value.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 3. SIM EDGE CALCULATOR ═══ -->
+<div id="sim" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Sim Edge Calculator</h2></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:1rem;">Enter sim price and market price to find the value gap and identify which side has edge.</p>
+
+  <div class="card">
+    <div class="card-title">Match odds edge</div>
+    <div class="grid-2">
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;">Team A</div>
+        <div class="field"><label>Sim true price</label><input type="number" id="se_a_sim" value="2.07" step="0.01" oninput="calcSE()"></div>
+        <div class="field"><label>Market price</label><input type="number" id="se_a_mkt" value="2.40" step="0.01" oninput="calcSE()"></div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;">Team B</div>
+        <div class="field"><label>Sim true price</label><input type="number" id="se_b_sim" value="1.94" step="0.01" oninput="calcSE()"></div>
+        <div class="field"><label>Market price</label><input type="number" id="se_b_mkt" value="1.71" step="0.01" oninput="calcSE()"></div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:12px;" id="se_results">
+      <div class="metric" id="se_a_card"><div class="metric-label" id="se_a_label">Team A edge</div><div class="metric-val" id="se_a_val">—</div></div>
+      <div class="metric" id="se_b_card"><div class="metric-label" id="se_b_label">Team B edge</div><div class="metric-val" id="se_b_val">—</div></div>
+    </div>
+    <div class="formula" id="se_verdict" style="margin-top:1rem;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Runs line edge</div>
+    <div class="grid-2">
+      <div class="field"><label>Sim median score</label><input type="number" id="rl_sim" value="177" oninput="calcRL()"></div>
+      <div class="field"><label>Pitch adjustment (runs)</label><input type="number" id="rl_adj" value="-10" oninput="calcRL()"></div>
+      <div class="field"><label>Market line</label><input type="number" id="rl_mkt" value="165" oninput="calcRL()"></div>
+      <div class="field"><label>Pitch type</label>
+        <select id="rl_pitch" onchange="setPitchAdj()">
+          <option value="0">Fresh / flat (+0)</option>
+          <option value="-5">Grassy / fresh seam (-5)</option>
+          <option value="-10" selected>Slow / used (-10)</option>
+          <option value="-15">Very slow / cracked (-15)</option>
+          <option value="5">Flat belter (+5)</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top:12px;">
+      <div class="metric accent"><div class="metric-label">Adjusted fair value</div><div class="metric-val" id="rl_fair">167</div></div>
+      <div class="metric" id="rl_gap_card"><div class="metric-label">Gap vs market</div><div class="metric-val" id="rl_gap">+2</div></div>
+      <div class="metric" id="rl_signal_card"><div class="metric-label">Signal</div><div class="metric-val" id="rl_signal" style="font-size:14px;">MARGINAL</div></div>
+    </div>
+    <div class="formula" id="rl_formula" style="margin-top:1rem;"></div>
+  </div>
+</div>
+
+<!-- ═══ 4. TRIGGERS ═══ -->
+<div id="trigger" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Over 3 Trigger Matrix</h2></div>
+
+  <div class="card">
+    <div class="card-title">Enter live over 3 score</div>
+    <div class="grid-2">
+      <div class="field"><label>Runs at over 3</label><input type="number" id="trig_runs" value="24" oninput="calcTrig()"></div>
+      <div class="field"><label>Wickets at over 3</label><input type="number" id="trig_wkts" value="1" min="0" max="10" oninput="calcTrig()"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Ground</label>
+        <select id="trig_ground" onchange="calcTrig()">
+          <option value="lahore_night">Lahore Night</option>
+          <option value="lahore_day">Lahore Day</option>
+          <option value="karachi">Karachi</option>
+        </select>
+      </div>
+      <div class="field"><label>Innings</label>
+        <select id="trig_inn" onchange="calcTrig()">
+          <option value="1">Inn 1 (batting first)</option>
+          <option value="2">Inn 2 (chase)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="trig_result_card">
+    <div class="card-title">Signal</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="font-size:28px;font-weight:700;" id="trig_signal">—</div>
+      <div>
+        <div id="trig_signal_detail" style="font-size:13px;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div class="formula" id="trig_action"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Full trigger matrix</div>
+    <div style="margin-bottom:8px;">
+      <select onchange="showMatrix(this.value)" style="width:auto;display:inline-block;">
+        <option value="lahore_night">Lahore Night</option>
+        <option value="lahore_day">Lahore Day</option>
+        <option value="karachi">Karachi</option>
+      </select>
+    </div>
+    <div id="matrix_table"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Projected final from current score</div>
+    <div class="grid-3">
+      <div class="field"><label>Current score</label><input type="number" id="proj_score" value="100" oninput="calcProj()"></div>
+      <div class="field"><label>Current over</label><input type="number" id="proj_over" value="10" min="1" max="20" oninput="calcProj()"></div>
+      <div class="field"><label>Current wickets</label><input type="number" id="proj_wkts" value="2" min="0" max="10" oninput="calcProj()"></div>
+    </div>
+    <div class="grid-3" style="margin-top:10px;">
+      <div class="metric accent"><div class="metric-label">Simple projection</div><div class="metric-val" id="proj_simple">—</div></div>
+      <div class="metric gold"><div class="metric-label">Wkt-adjusted</div><div class="metric-val" id="proj_adj">—</div></div>
+      <div class="metric"><div class="metric-label">Range</div><div class="metric-val" id="proj_range" style="font-size:14px;">—</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 5. HARD RULES ═══ -->
+<div id="rules" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Hard Rules</h2></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:1rem;">21 violations this season. Each rule costs £100–200 per breach. These are permanent and non-negotiable.</p>
+
+  <div class="card">
+    <div class="card-title">The 7 rules — never break</div>
+    <div class="rule-item">
+      <div class="rule-num red">1</div>
+      <div><div class="rule-title">No PP trade before over 3</div><div class="rule-desc">Zero PP line bets until 3 complete overs bowled. Broken 7× this season. Cost £700+. No exceptions for any reason.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">2</div>
+      <div><div class="rule-title">One order per market per innings</div><div class="rule-desc">One bet per market per innings. Never re-enter the same market in the same innings. Broken 7×. Cost £700+.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">3</div>
+      <div><div class="rule-title">Second back — calculate greenbook first</div><div class="rule-desc">Before any second back on same team: calculate combined position. If combined liability exceeds £500 = do not place. Broken 5×. Cost £500+.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">4</div>
+      <div><div class="rule-title">No lay target = do not back</div><div class="rule-desc">Write lay target odds, score trigger, and lay stake before every single back. No back placed without all three written. Broken 5×. Cost £500+.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">5</div>
+      <div><div class="rule-title">Never back UNDER straight</div><div class="rule-desc">Always back/lay structure on UNDER bets. Straight UNDER = no cash out = locked in. Broken 3×. Cost £300+.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">6</div>
+      <div><div class="rule-title">15 Ov line — permanently banned</div><div class="rule-desc">This market is banned forever. Never trade it again. Banned after 28 Mar.</div></div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num red">7</div>
+      <div><div class="rule-title">Conviction game: hold to 1.45</div><div class="rule-desc">If 3 YES signals (matchup + pitch + sim gap) = conviction. Lay at 1.45, not 1.75. Never greenbook a conviction game at 1.93.</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Rule violation checker — before every trade</div>
+    <div id="rule_checks">
+      <div class="trigger-row"><input type="checkbox" id="rc1" style="width:auto;"> <label for="rc1" style="font-size:13px;cursor:pointer;margin-left:8px;">It is after over 3 (PP trades only)</label></div>
+      <div class="trigger-row"><input type="checkbox" id="rc2" style="width:auto;"> <label for="rc2" style="font-size:13px;cursor:pointer;margin-left:8px;">This is my FIRST order in this market this innings</label></div>
+      <div class="trigger-row"><input type="checkbox" id="rc3" style="width:auto;"> <label for="rc3" style="font-size:13px;cursor:pointer;margin-left:8px;">I have written my lay target, trigger score, and lay stake</label></div>
+      <div class="trigger-row"><input type="checkbox" id="rc4" style="width:auto;"> <label for="rc4" style="font-size:13px;cursor:pointer;margin-left:8px;">If UNDER bet: I am using back/lay structure (not straight UNDER)</label></div>
+      <div class="trigger-row"><input type="checkbox" id="rc5" style="width:auto;"> <label for="rc5" style="font-size:13px;cursor:pointer;margin-left:8px;">If second back: I have calculated the combined greenbook</label></div>
+      <div class="trigger-row"><input type="checkbox" id="rc6" style="width:auto;"> <label for="rc6" style="font-size:13px;cursor:pointer;margin-left:8px;">I am NOT placing this to recover a previous loss</label></div>
+    </div>
+    <div style="margin-top:12px;" id="rule_verdict"></div>
+    <button class="btn btn-ghost" style="margin-top:8px;" onclick="checkRules()">Check rules</button>
+    <button class="btn btn-ghost" style="margin-top:8px;margin-left:8px;" onclick="resetRules()">Reset</button>
+  </div>
+</div>
+
+<!-- ═══ 6. PRE-GAME CHECKLIST ═══ -->
+<div id="pregame" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Pre-game Checklist</h2></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:1rem;">Complete before every match. No trade until all mandatory fields are filled.</p>
+
+  <div class="card">
+    <div class="card-title">Match info</div>
+    <div class="grid-2">
+      <div class="field"><label>Match</label><input type="text" id="pg_match" placeholder="e.g. QTG vs LQ"></div>
+      <div class="field"><label>Ground & time</label><input type="text" id="pg_ground" placeholder="e.g. Karachi Night"></div>
+      <div class="field"><label>Toss winner & decision</label><input type="text" id="pg_toss" placeholder="e.g. QTG won — bat first"></div>
+      <div class="field"><label>Pitch type</label>
+        <select id="pg_pitch">
+          <option>Fresh / flat</option>
+          <option>Grassy / seam</option>
+          <option selected>Slow / used</option>
+          <option>Very slow / cracked</option>
+          <option>Flat belter</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sim data</div>
+    <div class="grid-2">
+      <div class="field"><label>Batting team sim median</label><input type="number" id="pg_sim" placeholder="e.g. 177"></div>
+      <div class="field"><label>Market runs line</label><input type="number" id="pg_mktline" placeholder="e.g. 168"></div>
+      <div class="field"><label>Batting team sim odds</label><input type="number" id="pg_sim_odds" placeholder="e.g. 2.07" step="0.01"></div>
+      <div class="field"><label>Market odds (batting team)</label><input type="number" id="pg_mkt_odds" placeholder="e.g. 2.40" step="0.01"></div>
+    </div>
+    <div class="grid-3" style="margin-top:10px;" id="pg_calcs">
+      <div class="metric" id="pg_runs_gap_card"><div class="metric-label">Runs line gap</div><div class="metric-val" id="pg_runs_gap">—</div></div>
+      <div class="metric" id="pg_odds_gap_card"><div class="metric-label">Odds gap</div><div class="metric-val" id="pg_odds_gap">—</div></div>
+      <div class="metric" id="pg_edge_card"><div class="metric-label">Market edge</div><div class="metric-val" id="pg_edge" style="font-size:13px;">—</div></div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:10px;" onclick="calcPG()">Calculate edge</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bowling matchup</div>
+    <div class="grid-2">
+      <div class="field"><label>Key bowlers (economy / wkt bias)</label><textarea id="pg_bowl" placeholder="e.g. Abrar eco 1.17 wkt 1.46&#10;Usman Tariq eco 1.13 wkt 1.61" style="min-height:60px;"></textarea></div>
+      <div class="field"><label>Batting lineup (RHB / LHB count)</label><textarea id="pg_bat" placeholder="e.g. 5 RHBs vs 2 quality spinners on slow pitch" style="min-height:60px;"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Pre-written trade plan — mandatory before ball one</div>
+    <div class="grid-2">
+      <div class="field"><label>Conviction or 50/50?</label>
+        <select id="pg_mode">
+          <option>50/50 — greenbook at 1.75</option>
+          <option>Conviction — hold to 1.45</option>
+        </select>
+      </div>
+      <div class="field"><label>PP bowler confirmed?</label>
+        <select id="pg_pp_bowl">
+          <option>Yes — confirmed playing XI</option>
+          <option>No — waiting for teams</option>
+          <option>Key bowler missing — recalculate</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Pre-written lay target</label>
+      <input type="text" id="pg_lay_plan" placeholder="e.g. Lay at 1.75 when score reaches 110 at over 12">
+    </div>
+    <div class="field"><label>Death bowler status</label>
+      <input type="text" id="pg_death" placeholder="e.g. Hasan Ali playing — death bowling full strength">
+    </div>
+    <div class="field"><label>Dew / weather notes</label>
+      <input type="text" id="pg_dew" placeholder="e.g. Night game — dew from over 10, spinners neutralised in Inn2">
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="savePG()">Save plan</button>
+  </div>
+
+  <div class="card" id="pg_saved" style="display:none;">
+    <div class="card-title">Saved plan for this match</div>
+    <div id="pg_saved_content" style="font-size:13px;line-height:2;"></div>
+  </div>
+</div>
+
+<!-- ═══ 7. TRADE LOG ═══ -->
+<div id="log" class="page">
+  <div class="section-header"><div class="dot"></div><h2>Quick Trade Log</h2></div>
+
+  <div class="card">
+    <div class="card-title">Add trade</div>
+    <div class="grid-2">
+      <div class="field"><label>Date</label><input type="text" id="log_date" placeholder="e.g. 21 Apr"></div>
+      <div class="field"><label>Match</label><input type="text" id="log_match" placeholder="e.g. QTG vs LQ"></div>
+      <div class="field"><label>Market</label>
+        <select id="log_market">
+          <option>Match Odds</option>
+          <option>20 Ov Line</option>
+          <option>PP 6 Ov Line</option>
+          <option>10 Ov Line</option>
+          <option>PP Inn2</option>
+        </select>
+      </div>
+      <div class="field"><label>Direction</label>
+        <select id="log_dir">
+          <option>Back OVER</option>
+          <option>Back UNDER</option>
+          <option>Back Match Odds</option>
+          <option>Back (drift)</option>
+          <option>Lay</option>
+          <option>Cash Out</option>
+        </select>
+      </div>
+      <div class="field"><label>Odds</label><input type="number" id="log_odds" step="0.01" placeholder="e.g. 2.34"></div>
+      <div class="field"><label>Stake (£)</label><input type="number" id="log_stake" placeholder="e.g. 150"></div>
+      <div class="field"><label>P&L (£)</label><input type="number" id="log_pl" placeholder="e.g. 134 or -150"></div>
+      <div class="field"><label>Result</label>
+        <select id="log_result">
+          <option>Won</option>
+          <option>Lost</option>
+          <option>Cash Out</option>
+          <option>Pending</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Edge / strategy</label><input type="text" id="log_edge" placeholder="e.g. Sim 177 vs market 168 = 9 run gap. OVER value. Trigger: over 12 score 112/2."></div>
+    <div class="field"><label>Rule broken?</label>
+      <select id="log_rule">
+        <option value="">Clean — no rule broken</option>
+        <option>Over 3 rule broken</option>
+        <option>One order per market</option>
+        <option>Second back no greenbook</option>
+        <option>No lay target written</option>
+        <option>UNDER straight no exit</option>
+        <option>Chasing losses</option>
+        <option>PP bowler check missed</option>
+        <option>Conviction game too early</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="addTrade()">Add trade</button>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:1rem;">
+    <div class="metric accent"><div class="metric-label">Total trades</div><div class="metric-val" id="log_total">0</div></div>
+    <div class="metric green"><div class="metric-label">Net P&L</div><div class="metric-val" id="log_netpl">£0</div></div>
+    <div class="metric gold"><div class="metric-label">Win rate</div><div class="metric-val" id="log_winrate">—</div></div>
+    <div class="metric" id="log_rules_card"><div class="metric-label">Rules broken</div><div class="metric-val" id="log_rules">0</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Trade history</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl" id="log_table">
+        <thead>
+          <tr>
+            <th>#</th><th>Date</th><th>Match</th><th>Market</th><th>Direction</th><th>Odds</th><th>Stake</th><th>P&L</th><th>Result</th><th>Rule</th>
+          </tr>
+        </thead>
+        <tbody id="log_body">
+          <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;">No trades yet. Add your first trade above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="exportLog()">Export CSV</button>
+      <button class="btn btn-danger" onclick="clearLog()">Clear all</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ NAV ═══
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ═══ GREENBOOK CALC ═══
+function calcGB() {
+  const bs = parseFloat(document.getElementById('gb_stake').value) || 0;
+  const bo = parseFloat(document.getElementById('gb_back').value) || 0;
+  const lo = parseFloat(document.getElementById('gb_lay').value) || 0;
+  const comm = parseFloat(document.getElementById('gb_comm').value) || 0;
+  const warn = document.getElementById('gb_warn_text');
+  if (lo >= bo) { warn.textContent = '⚠ Lay odds (' + lo + ') must be lower than back odds (' + bo + ') to make a profit.'; return; }
+  warn.textContent = '✓ Valid — lay odds are lower than back odds.';
+  const backProfit = bs * (bo - 1);
+  const layStake = (bs * bo) / lo;
+  const layLiab = layStake * (lo - 1);
+  const commF = 1 - comm / 100;
+  const gBack = (backProfit * commF) - layLiab;
+  const gLay = layStake - bs;
+  document.getElementById('gb_laystake').textContent = '£' + layStake.toFixed(2);
+  setMetric('gb_greenback', gBack >= 0 ? '+£' + gBack.toFixed(2) : '-£' + Math.abs(gBack).toFixed(2), gBack >= 0 ? 'green' : 'red');
+  setMetric('gb_greenlay', gLay >= 0 ? '+£' + gLay.toFixed(2) : '-£' + Math.abs(gLay).toFixed(2), gLay >= 0 ? 'green' : 'red');
+  document.getElementById('gb_formula').innerHTML =
+    'Back profit = £' + bs.toFixed(2) + ' × (' + bo + ' − 1) = <strong>£' + backProfit.toFixed(2) + '</strong><br>' +
+    'Lay stake = £' + bs.toFixed(2) + ' × ' + bo + ' ÷ ' + lo + ' = <strong>£' + layStake.toFixed(2) + '</strong><br>' +
+    'Lay liability = £' + layStake.toFixed(2) + ' × (' + lo + ' − 1) = <strong>£' + layLiab.toFixed(2) + '</strong><br>' +
+    'Green if back wins = £' + backProfit.toFixed(2) + ' × ' + commF.toFixed(2) + ' − £' + layLiab.toFixed(2) + ' = <strong>' + (gBack >= 0 ? '+' : '') + '£' + gBack.toFixed(2) + '</strong><br>' +
+    'Green if lay wins = £' + layStake.toFixed(2) + ' − £' + bs.toFixed(2) + ' = <strong>' + (gLay >= 0 ? '+' : '') + '£' + gLay.toFixed(2) + '</strong>';
+  const targets = [1.30, 1.40, 1.45, 1.50, 1.60, 1.70, 1.75, 1.85, 1.90, 2.00, 2.10, 2.20];
+  const tDiv = document.getElementById('gb_targets');
+  tDiv.innerHTML = '';
+  targets.forEach(t => {
+    if (t >= bo) return;
+    const ls = (bs * bo) / t;
+    const lb = ls * (t - 1);
+    const g = Math.min((backProfit * commF) - lb, ls - bs);
+    const sel = Math.abs(t - lo) < 0.01;
+    const d = document.createElement('div');
+    d.className = 'target-btn' + (sel ? ' selected' : '');
+    d.innerHTML = '<div class="t-odds">lay ' + t + '</div><div class="t-green" style="color:' + (g >= 0 ? 'var(--green)' : 'var(--red)') + ';">' + (g >= 0 ? '+' : '') + '£' + Math.round(g) + '</div>';
+    d.onclick = () => { document.getElementById('gb_lay').value = t; calcGB(); };
+    tDiv.appendChild(d);
+  });
+}
+
+function setMetric(id, val, type) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  const card = el.parentElement;
+  card.className = 'metric ' + type;
+  el.style.color = '';
+}
+
+// ═══ LAY PLANNER ═══
+function updateMode() {
+  const mode = document.getElementById('lp_mode').value;
+  document.getElementById('lp_mode_hint').textContent = mode === 'conviction' ? 'Conviction: target 1.45 | lay at 1.45 or below' : '50/50: target 1.75 | lay at 1.75';
+  if (mode === 'conviction') document.getElementById('lp_layodds').value = 1.45;
+  else document.getElementById('lp_layodds').value = 1.75;
+  calcLP();
+}
+
+function calcLP() {
+  const bs = parseFloat(document.getElementById('lp_stake').value) || 0;
+  const bo = parseFloat(document.getElementById('lp_back').value) || 0;
+  const lo = parseFloat(document.getElementById('lp_layodds').value) || 0;
+  if (!lo || lo >= bo) { document.getElementById('lp_laystake_calc').value = '—'; return; }
+  const backP = bs * (bo - 1);
+  const ls = (bs * bo) / lo;
+  const lb = ls * (lo - 1);
+  const gBack = (backP * 0.98) - lb;
+  const gLay = ls - bs;
+  document.getElementById('lp_laystake_calc').value = '£' + ls.toFixed(2);
+  document.getElementById('lp_gback').textContent = (gBack >= 0 ? '+' : '') + '£' + gBack.toFixed(2);
+  document.getElementById('lp_glay').textContent = (gLay >= 0 ? '+' : '') + '£' + gLay.toFixed(2);
+  document.getElementById('lp_ror').textContent = ((Math.min(gBack, gLay) / bs) * 100).toFixed(1) + '%';
+  const match = document.getElementById('lp_match').value || '[Match]';
+  const mkt = document.getElementById('lp_market').value;
+  const team = document.getElementById('lp_team').value || '[Team/Direction]';
+  const trigger = document.getElementById('lp_trigger').value || '[score trigger not written]';
+  document.getElementById('lp_plan_text').innerHTML =
+    'Back ' + team + ' £' + bs + ' at ' + bo + ' on ' + match + ' (' + mkt + ')<br>' +
+    'Lay target: <strong>' + lo + '</strong> | Lay stake: <strong>£' + ls.toFixed(2) + '</strong><br>' +
+    'Trigger: <strong>' + trigger + '</strong><br>' +
+    'Green both sides: <strong>+£' + Math.round(Math.min(gBack, gLay)) + '</strong>';
+}
+
+// ═══ SIM EDGE ═══
+function calcSE() {
+  const as = parseFloat(document.getElementById('se_a_sim').value) || 0;
+  const am = parseFloat(document.getElementById('se_a_mkt').value) || 0;
+  const bs = parseFloat(document.getElementById('se_b_sim').value) || 0;
+  const bm = parseFloat(document.getElementById('se_b_mkt').value) || 0;
+  const aEdge = ((am - as) / as * 100);
+  const bEdge = ((bm - bs) / bs * 100);
+  const aHasEdge = am > as;
+  const bHasEdge = bm > bs;
+  document.getElementById('se_a_val').textContent = (aEdge >= 0 ? '+' : '') + aEdge.toFixed(1) + '%';
+  document.getElementById('se_b_val').textContent = (bEdge >= 0 ? '+' : '') + bEdge.toFixed(1) + '%';
+  document.getElementById('se_a_card').className = 'metric ' + (aHasEdge ? 'green' : 'red');
+  document.getElementById('se_b_card').className = 'metric ' + (bHasEdge ? 'green' : 'red');
+  const verdict = [];
+  if (aHasEdge && Math.abs(aEdge) >= 8) verdict.push('<strong style="color:var(--green)">BACK TEAM A</strong> — market ' + aEdge.toFixed(1) + '% above sim = strong value');
+  else if (aHasEdge && Math.abs(aEdge) >= 4) verdict.push('<strong style="color:var(--gold)">MARGINAL TEAM A</strong> — market ' + aEdge.toFixed(1) + '% above sim = marginal value');
+  if (bHasEdge && Math.abs(bEdge) >= 8) verdict.push('<strong style="color:var(--green)">BACK TEAM B</strong> — market ' + bEdge.toFixed(1) + '% above sim = strong value');
+  else if (bHasEdge && Math.abs(bEdge) >= 4) verdict.push('<strong style="color:var(--gold)">MARGINAL TEAM B</strong> — market ' + bEdge.toFixed(1) + '% above sim = marginal value');
+  if (!verdict.length) verdict.push('<span style="color:var(--muted)">No clear value — market roughly in line with sim. Greenbook mode only.</span>');
+  document.getElementById('se_verdict').innerHTML = verdict.join('<br>');
+}
+
+function calcRL() {
+  const sim = parseFloat(document.getElementById('rl_sim').value) || 0;
+  const adj = parseFloat(document.getElementById('rl_adj').value) || 0;
+  const mkt = parseFloat(document.getElementById('rl_mkt').value) || 0;
+  const fair = sim + adj;
+  const gap = mkt - fair;
+  document.getElementById('rl_fair').textContent = fair.toFixed(0);
+  document.getElementById('rl_gap').textContent = (gap >= 0 ? '+' : '') + gap.toFixed(1);
+  let signal, cls;
+  if (gap >= 8) { signal = 'UNDER strong'; cls = 'green'; }
+  else if (gap >= 5) { signal = 'UNDER value'; cls = 'green'; }
+  else if (gap >= 2) { signal = 'UNDER marginal'; cls = 'gold'; }
+  else if (gap >= -2) { signal = 'NEUTRAL'; cls = ''; }
+  else if (gap >= -5) { signal = 'OVER marginal'; cls = 'gold'; }
+  else if (gap >= -8) { signal = 'OVER value'; cls = 'green'; }
+  else { signal = 'OVER strong'; cls = 'green'; }
+  document.getElementById('rl_signal').textContent = signal;
+  document.getElementById('rl_signal_card').className = 'metric ' + cls;
+  document.getElementById('rl_gap_card').className = 'metric ' + (gap > 0 ? 'green' : gap < 0 ? 'red' : '');
+  document.getElementById('rl_formula').innerHTML =
+    'Sim median: <strong>' + sim + '</strong> | Pitch adj: <strong>' + adj + '</strong> | Adjusted fair value: <strong>' + fair.toFixed(0) + '</strong><br>' +
+    'Market line: <strong>' + mkt + '</strong> | Gap: <strong>' + (gap >= 0 ? '+' : '') + gap.toFixed(1) + ' runs</strong><br>' +
+    (Math.abs(gap) >= 5 ? 'Gap ≥ 5 runs = <strong style="color:var(--green)">TRADEABLE EDGE</strong>' : 'Gap < 5 runs = edge too thin, consider waiting for better line');
+}
+
+function setPitchAdj() {
+  document.getElementById('rl_adj').value = document.getElementById('rl_pitch').value;
+  calcRL();
+}
+
+// ═══ TRIGGERS ═══
+const matrices = {
+  lahore_night: [
+    { runs: [30, 999], wkts: [0, 0], signal: 'OVER STRONG', cls: 'green', action: 'Back OVER immediately. Night PP avg 47.4 — at 30+/0 the innings is tracking 195+. Strong edge.' },
+    { runs: [27, 29], wkts: [0, 0], signal: 'OVER', cls: 'green', action: 'Back OVER. Above fair value. Monitor over 6 score to confirm.' },
+    { runs: [24, 29], wkts: [0, 1], signal: 'MARGINAL OVER', cls: 'gold', action: 'Marginal edge. Wait for over 6 confirmation before placing.' },
+    { runs: [20, 23], wkts: [0, 1], signal: 'NEUTRAL', cls: '', action: 'No clear edge. Wait for over 6. Market is near fair value.' },
+    { runs: [0, 19], wkts: [1, 1], signal: 'UNDER LEAN', cls: 'gold', action: 'UNDER lean. Score below fair value pace. Wait for over 6 confirmation.' },
+    { runs: [0, 999], wkts: [2, 10], signal: 'UNDER STRONG', cls: 'red', action: 'UNDER confirmed. 2+ wickets at over 3 = innings is in trouble. Back immediately.' },
+  ],
+  lahore_day: [
+    { runs: [35, 999], wkts: [0, 0], signal: 'OVER STRONG', cls: 'green', action: 'Back OVER. Day PP avg 54.4 — 35+/0 tracks 210+.' },
+    { runs: [30, 34], wkts: [0, 0], signal: 'OVER', cls: 'green', action: 'Back OVER. Above day fair value pace.' },
+    { runs: [25, 34], wkts: [0, 1], signal: 'MARGINAL', cls: 'gold', action: 'Wait for over 6. Day game = higher PP expected.' },
+    { runs: [0, 21], wkts: [1, 1], signal: 'UNDER LEAN', cls: 'gold', action: 'Below day fair value. UNDER lean.' },
+    { runs: [0, 999], wkts: [2, 10], signal: 'UNDER STRONG', cls: 'red', action: '2+ wickets. UNDER confirmed regardless of score.' },
+  ],
+  karachi: [
+    { runs: [30, 999], wkts: [0, 0], signal: 'OVER STRONG', cls: 'green', action: 'Back OVER. Karachi PP avg 50.7 — 30+/0 tracks 190+. Binary pattern confirms.' },
+    { runs: [25, 29], wkts: [0, 0], signal: 'OVER', cls: 'green', action: 'Back OVER. Above fair value pace.' },
+    { runs: [20, 24], wkts: [0, 1], signal: 'NEUTRAL', cls: '', action: 'Wait for over 6. Score in neutral zone.' },
+    { runs: [0, 19], wkts: [1, 1], signal: 'UNDER LEAN', cls: 'gold', action: 'Below fair value. UNDER lean. Over 6 will confirm.' },
+    { runs: [0, 999], wkts: [2, 10], signal: 'UNDER STRONG', cls: 'red', action: 'Binary trigger confirmed. 2+ PP wickets at Karachi = 100-150 total. Back UNDER immediately.' },
+  ]
+};
+
+function calcTrig() {
+  const runs = parseFloat(document.getElementById('trig_runs').value) || 0;
+  const wkts = parseInt(document.getElementById('trig_wkts').value) || 0;
+  const ground = document.getElementById('trig_ground').value;
+  const matrix = matrices[ground];
+  let found = null;
+  for (const row of matrix) {
+    if (runs >= row.runs[0] && runs <= row.runs[1] && wkts >= row.wkts[0] && wkts <= row.wkts[1]) {
+      found = row; break;
+    }
+  }
+  if (!found) found = matrix[matrix.length - 1];
+  const colors = { green: 'var(--green)', red: 'var(--red)', gold: 'var(--gold)', '': 'var(--text)' };
+  document.getElementById('trig_signal').textContent = found.signal;
+  document.getElementById('trig_signal').style.color = colors[found.cls];
+  document.getElementById('trig_signal_detail').textContent = runs + '/' + wkts + ' at over 3';
+  document.getElementById('trig_action').innerHTML = found.action;
+  document.getElementById('trig_result_card').style.borderColor = found.cls === 'green' ? 'var(--green-border)' : found.cls === 'red' ? 'var(--red-border)' : found.cls === 'gold' ? 'var(--gold-border)' : 'var(--border)';
+}
+
+function showMatrix(ground) {
+  const matrix = matrices[ground];
+  const cols = ['Score range', 'Wickets', 'Signal', 'Action'];
+  const labels = { green: 'OVER', red: 'UNDER', gold: 'MARGINAL', '': 'NEUTRAL' };
+  const colors = { green: 'badge-green', red: 'badge-red', gold: 'badge-gold', '': 'badge-accent' };
+  let html = '<table class="tbl"><thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>';
+  matrix.forEach(row => {
+    const score = row.runs[0] === 0 && row.runs[1] === 999 ? 'Any' : row.runs[1] === 999 ? row.runs[0] + '+' : row.runs[0] + '–' + row.runs[1];
+    const wkt = row.wkts[0] === row.wkts[1] ? row.wkts[0] + ' wkt' : row.wkts[1] === 10 ? row.wkts[0] + '+ wkts' : row.wkts[0] + '–' + row.wkts[1] + ' wkts';
+    html += '<tr><td><strong>' + score + '</strong></td><td>' + wkt + '</td><td><span class="badge ' + colors[row.cls] + '">' + row.signal + '</span></td><td style="font-size:11px;color:var(--muted);">' + row.action.substring(0, 60) + '...</td></tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('matrix_table').innerHTML = html;
+}
+
+function calcProj() {
+  const score = parseFloat(document.getElementById('proj_score').value) || 0;
+  const over = parseFloat(document.getElementById('proj_over').value) || 1;
+  const wkts = parseFloat(document.getElementById('proj_wkts').value) || 0;
+  const rpo = score / over;
+  const left = 20 - over;
+  const simple = Math.round(score + left * rpo);
+  const wktPen = wkts * 5;
+  const adj = Math.round(simple - wktPen);
+  const lo = Math.round(adj * 0.88);
+  const hi = Math.round(adj * 1.12);
+  document.getElementById('proj_simple').textContent = simple;
+  document.getElementById('proj_adj').textContent = adj;
+  document.getElementById('proj_range').textContent = lo + '–' + hi;
+}
+
+// ═══ RULES ═══
+function checkRules() {
+  const ids = ['rc1','rc2','rc3','rc4','rc5','rc6'];
+  const unchecked = ids.filter(id => !document.getElementById(id).checked);
+  const verdict = document.getElementById('rule_verdict');
+  if (unchecked.length === 0) {
+    verdict.innerHTML = '<span class="badge badge-green">✓ ALL RULES CLEAR — safe to place</span>';
+  } else {
+    verdict.innerHTML = '<span class="badge badge-red">✗ ' + unchecked.length + ' rule(s) not confirmed — DO NOT PLACE</span>';
+  }
+}
+function resetRules() {
+  ['rc1','rc2','rc3','rc4','rc5','rc6'].forEach(id => document.getElementById(id).checked = false);
+  document.getElementById('rule_verdict').innerHTML = '';
+}
+
+// ═══ PRE-GAME ═══
+function calcPG() {
+  const simOdds = parseFloat(document.getElementById('pg_sim_odds').value) || 0;
+  const mktOdds = parseFloat(document.getElementById('pg_mkt_odds').value) || 0;
+  const simLine = parseFloat(document.getElementById('pg_sim').value) || 0;
+  const mktLine = parseFloat(document.getElementById('pg_mktline').value) || 0;
+  if (simOdds && mktOdds) {
+    const oddsGap = ((mktOdds - simOdds) / simOdds * 100);
+    document.getElementById('pg_odds_gap').textContent = (oddsGap >= 0 ? '+' : '') + oddsGap.toFixed(1) + '%';
+    document.getElementById('pg_odds_gap_card').className = 'metric ' + (oddsGap >= 8 ? 'green' : oddsGap >= 4 ? 'gold' : '');
+  }
+  if (simLine && mktLine) {
+    const gap = mktLine - simLine;
+    document.getElementById('pg_runs_gap').textContent = (gap >= 0 ? '+' : '') + gap.toFixed(1) + 'r';
+    document.getElementById('pg_runs_gap_card').className = 'metric ' + (Math.abs(gap) >= 8 ? 'green' : Math.abs(gap) >= 5 ? 'gold' : '');
+  }
+  const mode = document.getElementById('pg_mode').value;
+  const layPlan = document.getElementById('pg_lay_plan').value;
+  let edge = '—';
+  if (simOdds && mktOdds) {
+    const og = ((mktOdds - simOdds) / simOdds * 100);
+    if (og >= 8) edge = 'STRONG VALUE';
+    else if (og >= 4) edge = 'MARGINAL';
+    else edge = 'NO EDGE';
+  }
+  document.getElementById('pg_edge').textContent = edge;
+  document.getElementById('pg_edge_card').className = 'metric ' + (edge === 'STRONG VALUE' ? 'green' : edge === 'MARGINAL' ? 'gold' : '');
+}
+
+function savePG() {
+  const match = document.getElementById('pg_match').value;
+  const ground = document.getElementById('pg_ground').value;
+  const toss = document.getElementById('pg_toss').value;
+  const pitch = document.getElementById('pg_pitch').value;
+  const mode = document.getElementById('pg_mode').value;
+  const layPlan = document.getElementById('pg_lay_plan').value;
+  const bowl = document.getElementById('pg_bowl').value;
+  const dew = document.getElementById('pg_dew').value;
+  document.getElementById('pg_saved').style.display = 'block';
+  document.getElementById('pg_saved_content').innerHTML =
+    '<strong>' + match + '</strong> | ' + ground + '<br>' +
+    'Toss: ' + toss + ' | Pitch: ' + pitch + '<br>' +
+    'Mode: <span class="badge ' + (mode.includes('Conviction') ? 'badge-accent' : 'badge-gold') + '">' + (mode.includes('Conviction') ? 'CONVICTION' : '50/50') + '</span><br>' +
+    'Lay plan: <strong>' + layPlan + '</strong><br>' +
+    (bowl ? 'Bowling: ' + bowl + '<br>' : '') +
+    (dew ? 'Weather: ' + dew : '');
+}
+
+// ═══ TRADE LOG ═══
+let trades = JSON.parse(localStorage.getItem('ct_trades') || '[]');
+
+function addTrade() {
+  const t = {
+    date: document.getElementById('log_date').value,
+    match: document.getElementById('log_match').value,
+    market: document.getElementById('log_market').value,
+    dir: document.getElementById('log_dir').value,
+    odds: document.getElementById('log_odds').value,
+    stake: parseFloat(document.getElementById('log_stake').value) || 0,
+    pl: parseFloat(document.getElementById('log_pl').value) || 0,
+    result: document.getElementById('log_result').value,
+    edge: document.getElementById('log_edge').value,
+    rule: document.getElementById('log_rule').value,
+  };
+  trades.push(t);
+  localStorage.setItem('ct_trades', JSON.stringify(trades));
+  renderLog();
+  ['log_date','log_match','log_odds','log_stake','log_pl','log_edge'].forEach(id => document.getElementById(id).value = '');
+}
+
+function renderLog() {
+  const body = document.getElementById('log_body');
+  if (!trades.length) {
+    body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;">No trades yet.</td></tr>';
+    document.getElementById('log_total').textContent = 0;
+    document.getElementById('log_netpl').textContent = '£0';
+    document.getElementById('log_winrate').textContent = '—';
+    document.getElementById('log_rules').textContent = 0;
+    return;
+  }
+  const net = trades.reduce((s, t) => s + t.pl, 0);
+  const won = trades.filter(t => t.result === 'Won').length;
+  const lost = trades.filter(t => t.result === 'Lost').length;
+  const rulesB = trades.filter(t => t.rule).length;
+  document.getElementById('log_total').textContent = trades.length;
+  document.getElementById('log_netpl').textContent = (net >= 0 ? '+' : '') + '£' + net.toFixed(2);
+  document.getElementById('log_netpl').style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('log_winrate').textContent = (won + lost) > 0 ? Math.round(won / (won + lost) * 100) + '%' : '—';
+  document.getElementById('log_rules').textContent = rulesB;
+  document.getElementById('log_rules_card').className = 'metric ' + (rulesB > 0 ? 'red' : 'green');
+  body.innerHTML = trades.slice().reverse().map((t, i) => {
+    const idx = trades.length - i;
+    const plStr = (t.pl >= 0 ? '+' : '') + '£' + Math.abs(t.pl).toFixed(2);
+    const plColor = t.pl > 0 ? 'var(--green)' : t.pl < 0 ? 'var(--red)' : 'var(--text)';
+    const resBadge = t.result === 'Won' ? 'badge-green' : t.result === 'Lost' ? 'badge-red' : 'badge-gold';
+    const ruleBadge = t.rule ? '<span class="badge badge-red">×</span>' : '<span class="badge badge-green">✓</span>';
+    return '<tr>' +
+      '<td style="color:var(--muted);">' + idx + '</td>' +
+      '<td>' + t.date + '</td>' +
+      '<td><strong>' + t.match + '</strong></td>' +
+      '<td style="color:var(--muted);font-size:11px;">' + t.market + '</td>' +
+      '<td style="font-size:11px;">' + t.dir + '</td>' +
+      '<td>' + t.odds + '</td>' +
+      '<td>£' + t.stake + '</td>' +
+      '<td style="font-weight:600;color:' + plColor + ';">' + plStr + '</td>' +
+      '<td><span class="badge ' + resBadge + '">' + t.result + '</span></td>' +
+      '<td>' + ruleBadge + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function exportLog() {
+  const headers = ['Date','Match','Market','Direction','Odds','Stake','P&L','Result','Edge','Rule'];
+  const rows = trades.map(t => [t.date,t.match,t.market,t.dir,t.odds,t.stake,t.pl,t.result,'"'+t.edge+'"','"'+(t.rule||'Clean')+'"'].join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'cricket_trades.csv';
+  a.click();
+}
+
+function clearLog() {
+  if (confirm('Clear all trades? This cannot be undone.')) {
+    trades = [];
+    localStorage.removeItem('ct_trades');
+    renderLog();
+  }
+}
+
+// ═══ INIT ═══
+calcGB();
+calcLP();
+calcSE();
+calcRL();
+calcTrig();
+showMatrix('lahore_night');
+calcProj();
+renderLog();
+</script>
+</body>
+</html>
