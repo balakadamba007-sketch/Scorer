@@ -318,7 +318,6 @@ function loadDM(id){const f=document.createElement('iframe');f.src=`https://www.
 function initVideo(url){const p=detectPlatform(url);const id=p?extractId(url,p):null;if(!id){toast('Could not recognise URL');return false;}videoPlatform=p;$('playerContainer').style.display='block';$('videoControls').style.display='flex';if(p==='youtube')loadYT(id);else if(p==='vimeo')loadVimeo(id);else if(p==='dailymotion')loadDM(id);return true;}
 
 // LOGIN
-document.getElementById('loginScreen').style.display='flex';
 onValue(pwRef,snap=>{judgePw=snap.val()||'';IS_VIDEO?setS('v','live','Connected'):setS('k','live','Connected');},()=>{IS_VIDEO?setS('v','error','Connection error'):setS('k','error','Connection error');});
 onValue(traineesRef,snap=>{allTrainees=snap.val()||{};renderTrainees();},()=>{});
 onValue(refRef,snap=>{allRefBalls=snap.val()||{};renderRefFeed();updateBallDisplay();const n=Object.keys(allRefBalls).length;if($('refCount'))$('refCount').textContent=`${n} ball${n!==1?'s':''} scored`;},()=>{});
