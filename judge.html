@@ -170,6 +170,7 @@ body{display:flex;flex-direction:column;}
   </div>
   <div class="actions">
     <button class="btn danger" id="btnClearRef">Clear Ref</button>
+    <button class="btn" id="btnExportRef">Export Ref CSV</button>
     <button class="btn ok" id="btnDone">Done Scoring</button>
     <button class="btn" id="btnKLogout">Log Out</button>
   </div>
@@ -228,6 +229,7 @@ body{display:flex;flex-direction:column;}
       <div>
         <div class="sec-title">Ref balls scored</div>
         <div style="font-size:13px;color:var(--colJ);" id="refCount">0 balls</div>
+        <div id="refViewer" style="max-height:20vh;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-top:6px;"></div>
       </div>
     </div>
   </div>
@@ -277,6 +279,7 @@ const configRef   = ref(db,'training/config');
 const refRef      = ref(db,'training/reference');
 const sessionsRef = ref(db,'training/sessions');
 const readyRef    = ref(db,'training/ready');
+const playbackRef = ref(db,'training/judge_playback');
 
 const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
 
@@ -284,6 +287,9 @@ const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
 let judgePw='', allTrainees={}, allRefBalls={}, allSessions={}, config={}, allReady={};
 let sessionTimer=0, timerTick=null, isPlaying=false;
 let videoPlatform=null, ytPlayer=null, vmPlayer=null;
+// Cross-device playback sync (laptop ↔ phone for solo judge reference scoring)
+let playbackState={position:0,playing:false,updated_at:Date.now()};
+let heartbeatInterval=null, displayInterval=null;
 // Ball state
 const RK=new Set(['0','1','2','3','4','6','7','9','*']), EK=new Set(['7','9']);
 let cState='scoring', cRunKey=null, cExtraKey=null, cAt=null, cKeys=[], cTimings=[], ps=null, pVS=null;
@@ -296,9 +302,31 @@ function toast(m,type='err'){const t=$('toast');t.textContent=m;t.className='toa
 function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
 function seqLbl(seq){return`${Math.floor((seq-1)/6)+1}.${((seq-1)%6)+1}`;}
 function formatMs(ms){const s=ms/1000,m=Math.floor(s/60),sec=(s%60).toFixed(1);return`${String(m).padStart(2,'0')}:${sec.padStart(4,'0')}`;}
-function getVS(){return sessionTimer/1000;}
-function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$(IS_VIDEO?'vTimer':'kTimer').textContent=formatMs(sessionTimer);},100);}
+// getVS() returns current "video seconds" — the single source of truth for ball timestamps.
+// On laptop (IS_VIDEO): driven directly by the actual video player, tied to play/pause events.
+// On phone (keypad): computed from the broadcasted playbackState + wall-clock extrapolation
+// since the last update. Every play/pause event on laptop resets this baseline, so drift
+// only accumulates during a single continuous play — kept small by a 2s heartbeat too.
+function getVS(){
+  if(IS_VIDEO) return sessionTimer/1000;
+  if(!playbackState) return 0;
+  if(playbackState.playing) return playbackState.position + (Date.now()-playbackState.updated_at)/1000;
+  return playbackState.position;
+}
+function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$('vTimer').textContent=formatMs(sessionTimer);},100);}
 function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
+// Get the ACTUAL current video position from the player (laptop side only)
+function getActualVideoTime(cb){
+  if(videoPlatform==='youtube'&&ytPlayer&&ytPlayer.getCurrentTime)cb(ytPlayer.getCurrentTime());
+  else if(videoPlatform==='vimeo'&&vmPlayer&&vmPlayer.getCurrentTime)vmPlayer.getCurrentTime().then(cb).catch(()=>cb(sessionTimer/1000));
+  else cb(sessionTimer/1000); // dailymotion fallback — wall-clock estimate
+}
+// Broadcast current playback state to Firebase so the phone can sync to it
+function pushPlaybackState(playing){
+  getActualVideoTime(pos=>{
+    set(playbackRef,{position:pos,playing,updated_at:Date.now()});
+  });
+}
 
 // BEEPS
 function beep(f=880,d=0.25,v=0.4){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
@@ -308,8 +336,18 @@ function beep3(){beep(660,0.15);setTimeout(()=>beep(880,0.15),220);setTimeout(()
 // VIDEO API
 function detectPlatform(url){if(/youtube\.com|youtu\.be/.test(url))return'youtube';if(/vimeo\.com/.test(url))return'vimeo';if(/dailymotion\.com/.test(url))return'dailymotion';return null;}
 function extractId(url,p){try{if(p==='youtube'){const m=url.match(/(?:v=|youtu\.be\/)([^&?/\s]+)/);return m?m[1]:null;}if(p==='vimeo'){const m=url.match(/vimeo\.com\/(\d+)/);return m?m[1]:null;}if(p==='dailymotion'){const m=url.match(/dailymotion\.com\/video\/([^_?\s]+)/);return m?m[1]:null;}}catch(e){}return null;}
-function onVPlay(){startTick();$('btnPlayPause').textContent='⏸ Pause';}
-function onVPause(){stopTick();$('btnPlayPause').textContent='▶ Play';}
+function onVPlay(){
+  startTick();$('btnPlayPause').textContent='⏸ Pause';
+  pushPlaybackState(true);
+  // Heartbeat every 2s while playing — corrects drift from buffering on the phone's clock
+  clearInterval(heartbeatInterval);
+  heartbeatInterval=setInterval(()=>{if(isPlaying)pushPlaybackState(true);},2000);
+}
+function onVPause(){
+  stopTick();$('btnPlayPause').textContent='▶ Play';
+  pushPlaybackState(false);
+  clearInterval(heartbeatInterval);
+}
 function vPlay(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.playVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.play();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'play'}),'*');}}
 function vPause(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.pauseVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.pause();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'pause'}),'*');}}
 function loadYT(id){$('playerContainer').innerHTML='<div id="ytDiv" style="width:100%;height:100%;"></div>';const init=()=>{ytPlayer=new YT.Player('ytDiv',{videoId:id,height:'100%',width:'100%',playerVars:{playsinline:1,controls:1,rel:0,modestbranding:1},events:{onReady:()=>setS('v','live','Video ready'),onStateChange:(e)=>{if(e.data===1)onVPlay();else if(e.data===2||e.data===0)onVPause();}}});};if(window.YT?.Player){init();return;}const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);window.onYouTubeIframeAPIReady=init;}
@@ -320,7 +358,19 @@ function initVideo(url){const p=detectPlatform(url);const id=p?extractId(url,p):
 // LOGIN
 onValue(pwRef,snap=>{judgePw=snap.val()||'';IS_VIDEO?setS('v','live','Connected'):setS('k','live','Connected');},()=>{IS_VIDEO?setS('v','error','Connection error'):setS('k','error','Connection error');});
 onValue(traineesRef,snap=>{allTrainees=snap.val()||{};renderTrainees();},()=>{});
-onValue(refRef,snap=>{allRefBalls=snap.val()||{};renderRefFeed();updateBallDisplay();const n=Object.keys(allRefBalls).length;if($('refCount'))$('refCount').textContent=`${n} ball${n!==1?'s':''} scored`;},()=>{});
+onValue(refRef,snap=>{
+  allRefBalls=snap.val()||{};renderRefFeed();updateBallDisplay();
+  const n=Object.keys(allRefBalls).length;
+  if($('refCount'))$('refCount').textContent=`${n} ball${n!==1?'s':''} scored`;
+  if($('refViewer')){
+    const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+    $('refViewer').innerHTML=balls.length?[...balls].reverse().map(([fbKey,b])=>{
+      const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
+      return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-rdel="${fbKey}">✕</button></div>`;
+    }).join(''):'<div style="font-size:11px;color:var(--muted);">No reference scored yet — use judge.html on phone</div>';
+    $('refViewer').querySelectorAll('[data-rdel]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.rdel));}));
+  }
+},()=>{});
 onValue(sessionsRef,snap=>{allSessions=snap.val()||{};renderResults();},()=>{});
 onValue(readyRef,snap=>{allReady=snap.val()||{};renderReady();},()=>{});
 onValue(configRef,snap=>{
@@ -351,6 +401,13 @@ function doLogin(){
 function afterLoginKeypad(){
   setS('k','live','Connected');
   buildKeypad();renderRefFeed();updateBallDisplay();
+  // Listen for the laptop's playback state — this is what drives the phone's timer
+  onValue(playbackRef,snap=>{
+    playbackState=snap.val()||{position:0,playing:false,updated_at:Date.now()};
+  },()=>{});
+  // Visual ticker — purely for display, the actual ball timestamps always use getVS() fresh
+  clearInterval(displayInterval);
+  displayInterval=setInterval(()=>{$('kTimer').textContent=formatMs(getVS()*1000);},100);
 }
 
 const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
@@ -416,13 +473,23 @@ function renderRefFeed(){
   const feed=$('refFeed');if(!feed)return;
   const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
   if(!balls.length){feed.innerHTML='<div style="font-size:11px;color:var(--muted);padding:4px 0;">Score each ball · double press to confirm · # to advance</div>';return;}
-  feed.innerHTML=[...balls].reverse().slice(0,5).map(([fbKey,b])=>{
+  const header=`<div style="font-size:10px;color:var(--colJ);padding:2px 0 4px;text-transform:uppercase;letter-spacing:0.06em;">${balls.length} ball${balls.length!==1?'s':''} scored — scroll to see all</div>`;
+  feed.innerHTML=header+[...balls].reverse().map(([fbKey,b])=>{
     const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
     return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-del="${fbKey}">✕</button></div>`;
   }).join('');
   feed.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.del));}));
 }
 $('btnClearRef').addEventListener('click',()=>{if(confirm('Clear ALL reference balls?'))remove(refRef);});
+$('btnExportRef').addEventListener('click',()=>{
+  const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  if(!balls.length){toast('No reference balls to export');return;}
+  const rows=[['ball','label','keys','confirmed_key','confidence','is_wide','is_noball','video_seconds','timings']];
+  balls.forEach(([,b])=>rows.push([b.seq||'',b.label||'',b.keys||'',b.confirmed_key||'',b.confidence||'',b.is_wide?'yes':'no',b.is_noball?'yes':'no',(b.video_seconds||0).toFixed(2),b.timings_compact||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='reference_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+});
 $('btnDone').addEventListener('click',()=>{set(ref(db,'training/config/reference_complete'),true);toast('Reference saved ✓','ok');});
 $('btnKLogout').addEventListener('click',doLogout);
 
@@ -555,6 +622,7 @@ function scheduleAlerts(startAt){
 // LOGOUT
 function doLogout(){
   alertTimeouts.forEach(t=>clearTimeout(t));clearInterval(cdInterval);
+  clearInterval(heartbeatInterval);clearInterval(displayInterval);
   vPause();stopTick();ytPlayer=null;vmPlayer=null;videoPlatform=null;
   if($('playerContainer'))$('playerContainer').innerHTML='';
   resetState();sessionTimer=0;
