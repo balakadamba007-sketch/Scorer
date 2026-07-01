@@ -425,7 +425,9 @@ function buildKeypad(){
 }
 function kd(k,btn){if(ps!==null)return;ps=Date.now();pVS=getVS();btn.classList.add('flash');}
 function ku(k,btn){
-  if(ps===null)return;const dur=Date.now()-ps;const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
+  if(ps===null)return;
+  const dur=Math.min(Date.now()-ps,800); // cap at 800ms — anything longer is a ghost/synthetic event
+  const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
   if(k==='#'){if(cState==='scoring'){toast('Double press first!');return;}commitBall();return;}
   if(cState==='full-conf'||cState==='wicket')return;
   if(cState==='run_conf'){
