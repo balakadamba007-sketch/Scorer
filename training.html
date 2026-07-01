@@ -10,293 +10,158 @@
 :root{
   --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--text:#f0f0f0;--muted:#555;
   --accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--red:#ff4d4d;--red-dim:rgba(255,77,77,0.1);
-  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--blue:#4da6ff;--green:#33ff99;--green-dim:rgba(51,255,153,0.1);
-  --colJ:#ff6eb5;--colJ-dim:rgba(255,110,181,0.1);
-  --font-mono:'IBM Plex Mono',monospace;--font-sans:'IBM Plex Sans',sans-serif;
+  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--green:#33ff99;--green-dim:rgba(51,255,153,0.1);
+  --blue:#4da6ff;--font-mono:'IBM Plex Mono',monospace;
 }
-html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-sans);}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-mono);}
 body{display:flex;flex-direction:column;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
-@keyframes countdown-flash{0%,100%{opacity:1}50%{opacity:0.6}}
+@keyframes cdflash{0%,100%{opacity:1}50%{opacity:0.5}}
 
 .screen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 .screen.active{display:flex;}
 
 /* LOGIN */
 #loginScreen{align-items:center;justify-content:center;gap:14px;padding:24px;}
-.login-title{font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--accent);}
-.login-mode-badge{font-family:var(--font-mono);font-size:11px;padding:3px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);}
-.login-mode-badge.video{border-color:var(--blue);color:var(--blue);}
-.login-sub{font-size:12px;color:var(--muted);font-family:var(--font-mono);text-align:center;}
-.login-form{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
+.login-title{font-size:20px;font-weight:600;color:var(--accent);}
+.login-badge{font-size:11px;padding:3px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);}
+.login-badge.video{border-color:var(--blue);color:var(--blue);}
+.login-sub{font-size:11px;color:var(--muted);text-align:center;}
+.login-form{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;}
 .f-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:16px;padding:12px 14px;width:100%;outline:none;}
 .f-input:focus{border-color:var(--accent);}
-.f-btn{padding:14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);font-family:var(--font-mono);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.f-btn{padding:14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent-dim);color:var(--accent);font-family:var(--font-mono);font-size:14px;font-weight:600;cursor:pointer;}
 .f-btn:active{background:var(--accent);color:var(--bg);}
-.f-err{font-family:var(--font-mono);font-size:11px;color:var(--red);text-align:center;min-height:16px;}
-.judge-link{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;cursor:pointer;text-decoration:underline;}
+.f-err{font-size:11px;color:var(--red);text-align:center;min-height:16px;}
 
-/* TOP BAR */
+/* WAIT SCREEN */
+#waitScreen{align-items:center;justify-content:center;gap:16px;padding:24px;}
+.cd-big{font-size:64px;font-weight:600;color:var(--accent);letter-spacing:0.05em;line-height:1;}
+.cd-big.urgent{color:var(--red);animation:cdflash 0.5s infinite;}
+.cd-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.cd-msg{font-size:12px;color:var(--orange);text-align:center;max-width:280px;line-height:1.5;}
+.ready-btn{padding:14px 28px;border-radius:10px;border:2px solid var(--green);background:var(--green-dim);color:var(--green);font-family:var(--font-mono);font-size:14px;font-weight:600;cursor:pointer;display:none;animation:pulse 1.5s infinite;}
+.ready-btn:active{background:var(--green);color:var(--bg);}
+.ready-done{font-size:11px;color:var(--green);display:none;}
+
+/* VIDEO SCREEN */
+#videoScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
+#videoScreen.active{display:flex;}
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
-.top-left{display:flex;flex-direction:column;}
-.top-name{font-family:var(--font-mono);font-size:13px;font-weight:600;}
-.top-name.judge{color:var(--colJ);}.top-name.trainee{color:var(--accent);}
-.top-role{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
-.top-timer{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--orange);}
-.status-bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.top-name{font-size:13px;font-weight:600;color:var(--accent);}
+.top-role{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.top-timer{font-size:16px;font-weight:600;color:var(--orange);}
+.status-bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
 .dot.live{background:var(--accent);box-shadow:0 0 4px var(--accent);animation:pulse 1.5s infinite;}
 .dot.error{background:var(--red);}
+#playerContainer{flex:1;background:#000;min-height:0;position:relative;}
+#playerContainer iframe,#playerContainer div{width:100%!important;height:100%!important;}
+.vid-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+.vid-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:6px 12px;cursor:pointer;transition:all 0.12s;}
+.vid-btn:active{border-color:var(--orange);color:var(--orange);}
+.vid-pauses{font-size:10px;color:var(--muted);margin-left:auto;}
+/* iOS autoplay overlay */
+.autoplay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:500;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.autoplay-overlay-inner{font-size:18px;color:var(--accent);text-align:center;padding:24px;}
 
-/* COUNTDOWN SCREEN */
-#waitScreen{align-items:center;justify-content:center;gap:16px;padding:24px;}
-.countdown-big{font-family:var(--font-mono);font-size:64px;font-weight:600;color:var(--accent);letter-spacing:0.05em;line-height:1;}
-.countdown-big.urgent{color:var(--red);animation:countdown-flash 0.5s infinite;}
-.countdown-label{font-family:var(--font-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.countdown-msg{font-family:var(--font-mono);font-size:12px;color:var(--orange);text-align:center;max-width:280px;line-height:1.5;}
-.ready-btn{padding:16px 32px;border-radius:10px;border:2px solid var(--green);background:var(--green-dim);color:var(--green);font-family:var(--font-mono);font-size:15px;font-weight:600;cursor:pointer;display:none;animation:pulse 1.5s infinite;}
-.ready-btn:active{background:var(--green);color:var(--bg);}
-.ready-badge{font-family:var(--font-mono);font-size:11px;color:var(--green);display:none;}
-
-/* VIDEO SCREEN (laptop/video mode) */
-#videoScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
-#videoScreen.active{display:flex;}
-#playerContainer{flex:1;background:#000;position:relative;overflow:hidden;min-height:0;}
-#playerContainer iframe, #playerContainer div{width:100%!important;height:100%!important;}
-.video-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
-.vb-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:5px 10px;cursor:pointer;white-space:nowrap;transition:all 0.12s;}
-.vb-btn:hover{border-color:var(--accent);color:var(--accent);}
-.vb-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.vb-btn.danger{border-color:var(--red);color:var(--red);}
-.vb-time{font-family:var(--font-mono);font-size:11px;color:var(--muted);}
-
-/* JUDGE CONTROLS (video mode) */
-.judge-controls{padding:10px 12px;background:var(--surface2);border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:8px;}
-.jc-title{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
-.schedule-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.schedule-input{background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;flex:1;min-width:160px;}
-.schedule-input:focus{border-color:var(--accent);}
-.ready-list{display:flex;gap:6px;flex-wrap:wrap;}
-.ready-chip{font-family:var(--font-mono);font-size:11px;padding:3px 10px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green);}
-.ready-chip.waiting{background:var(--surface);color:var(--muted);border-color:var(--border);}
-
-/* JUDGE SETUP (URL input) */
-#judgeSetup{padding:12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;border-bottom:1px solid var(--border);}
-.setup-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
-.url-row{display:flex;gap:8px;}
-.url-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:8px 12px;outline:none;}
-.url-input:focus{border-color:var(--accent);}
-.url-btn{background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:12px;padding:8px 12px;cursor:pointer;white-space:nowrap;}
-
-/* KEYPAD SCREEN (phone) */
+/* KEYPAD SCREEN */
 #keypadScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 #keypadScreen.active{display:flex;}
-.scoring-area{flex:1;display:flex;flex-direction:column;gap:6px;padding:8px 10px;overflow:hidden;min-height:0;}
-.ball-indicator{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;flex-shrink:0;}
-.b-id{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--accent);}
-.b-status{font-family:var(--font-mono);font-size:11px;text-align:right;color:var(--muted);max-width:160px;}
+.scoring-area{flex:1;display:flex;flex-direction:column;gap:7px;padding:10px 12px;overflow:hidden;min-height:0;}
+.ball-indicator{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;flex-shrink:0;}
+.b-id{font-size:26px;font-weight:600;color:var(--accent);}
+.b-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+.b-status{font-size:11px;text-align:right;color:var(--muted);max-width:160px;}
 .b-status.run-conf{color:var(--accent);}.b-status.full-conf{color:var(--green);}
-.keys-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;min-height:40px;max-height:54px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;overflow:hidden;}
-.hint{font-size:11px;color:var(--muted);font-family:var(--font-mono);}
-.k-chip{border-radius:5px;padding:2px 8px;font-family:var(--font-mono);font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid rgba(200,241,53,0.25);color:var(--accent);}
-.k-chip.J{background:var(--colJ-dim);border-color:rgba(255,110,181,0.25);color:var(--colJ);}
+.keys-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;min-height:44px;max-height:56px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;overflow:hidden;}
+.hint{font-size:11px;color:var(--muted);}
+.k-chip{border-radius:5px;padding:2px 8px;font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;background:var(--accent-dim);border:1px solid rgba(200,241,53,0.25);color:var(--accent);}
 .k-chip .ms{font-size:8px;color:var(--muted);font-weight:400;}
-.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0;}
-.key{background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-mono);font-size:26px;font-weight:600;cursor:pointer;transition:background 0.06s,transform 0.06s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;min-height:0;touch-action:manipulation;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;flex:1;min-height:0;}
+.key{background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:26px;font-weight:600;cursor:pointer;transition:background 0.06s,transform 0.06s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;min-height:0;touch-action:manipulation;}
 .key:active,.key.flash{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);transform:scale(0.94);}
-.key.confirm{border-color:var(--orange);color:var(--orange);font-size:15px;border-width:2px;}
+.key.confirm{border-color:var(--orange);color:var(--orange);font-size:14px;border-width:2px;}
 .key.confirm.go{border-color:var(--accent)!important;color:var(--accent)!important;animation:pulse 1.2s infinite;}
 .keypad.run-conf .key{opacity:0.15;pointer-events:none;}
 .keypad.run-conf .key[data-key="7"],.keypad.run-conf .key[data-key="9"],.keypad.run-conf .key.confirm{opacity:1;pointer-events:all;}
 .keypad.full-conf .key{opacity:0.15;pointer-events:none;}
 .keypad.full-conf .key.confirm{opacity:1;pointer-events:all;}
 
-/* JUDGE REFERENCE FEED */
-#refFeed{max-height:20vh;overflow-y:auto;padding:0 10px 8px;display:flex;flex-direction:column;gap:3px;}
-.ref-row{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-family:var(--font-mono);font-size:11px;}
-.ref-label{color:var(--colJ);font-weight:600;min-width:32px;}
-.ref-keys{display:flex;gap:3px;flex:1;flex-wrap:wrap;}
-.ref-key{font-size:12px;font-weight:600;border-radius:4px;padding:1px 5px;color:var(--colJ);background:var(--colJ-dim);border:1px solid rgba(255,110,181,0.2);}
-.ref-time{font-size:10px;color:var(--muted);}
-.del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-size:11px;cursor:pointer;padding:1px 6px;font-family:var(--font-mono);}
-.del-btn:hover{border-color:var(--red);color:var(--red);}
-
-/* JUDGE TABS (keypad mode) */
-#judgeTabs{display:none;flex-direction:row;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.jtab{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;transition:all 0.12s;}
-.jtab.active{color:var(--accent);border-top:2px solid var(--accent);background:var(--accent-dim);}
-#traineesPanel{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
-.tp-wrap{flex:1;display:flex;flex-direction:column;gap:10px;padding:12px;overflow:hidden;min-height:0;}
-.tp-add{display:flex;gap:6px;flex-shrink:0;}
-.tp-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:8px 10px;outline:none;}
-.tp-input:focus{border-color:var(--accent);}
-.tp-btn{background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:8px 12px;cursor:pointer;white-space:nowrap;}
-.trainee-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;min-height:0;}
-.trainee-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--font-mono);font-size:12px;}
-.tr-name{font-weight:600;color:var(--accent);flex:1;}
-#resultsPanel{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
-.rp-wrap{flex:1;display:flex;flex-direction:column;gap:8px;padding:12px;overflow:hidden;min-height:0;}
-.rp-title{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--accent);}
-.rp-sub{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
-.results-table-wrap{flex:1;overflow-y:auto;min-height:0;}
-.rt{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:12px;}
-.rt th{background:var(--surface2);color:var(--muted);padding:7px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--border);}
-.rt td{padding:7px 8px;border-bottom:1px solid var(--border);}
-.pos{color:var(--green);font-weight:600;}.neg{color:var(--red);font-weight:600;}
-
-/* DONE SCREEN */
+/* DONE */
 #doneScreen{align-items:center;justify-content:center;gap:14px;padding:28px;}
-.done-title{font-family:var(--font-mono);font-size:18px;color:var(--green);}
-.done-sub{font-family:var(--font-mono);font-size:12px;color:var(--muted);text-align:center;line-height:1.6;}
+.done-title{font-size:18px;color:var(--green);}
+.done-sub{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;}
 
 /* ACTIONS */
 .actions{display:flex;gap:7px;padding:9px 12px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.04em;}
-.btn:hover,.btn:active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
-.btn.danger:hover,.btn.danger:active{border-color:var(--red);color:var(--red);background:var(--red-dim);}
-.btn.primary{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-family:var(--font-mono);font-size:12px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:300;white-space:nowrap;max-width:90vw;text-align:center;background:var(--red);color:#fff;}
-.toast.show{opacity:1;}.toast.ok{background:var(--green);color:var(--bg);}
-.toast.info{background:var(--orange);color:var(--bg);}
+.btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;}
+.btn:active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.btn.danger:active{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:8px;font-size:12px;opacity:0;transition:opacity 0.25s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;background:var(--red);color:#fff;}
+.toast.show{opacity:1;}.toast.ok{background:var(--green);color:var(--bg);}.toast.info{background:var(--orange);color:var(--bg);}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
 <div class="screen active" id="loginScreen">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:24px;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;">
     <div class="login-title">⚾ Scout Training</div>
-    <div class="login-mode-badge" id="loginModeBadge">📱 Keypad Mode</div>
-    <div class="login-sub" id="loginSub">Score the clip on your phone</div>
+    <div class="login-badge" id="modeBadge">📱 Keypad Mode</div>
+    <div class="login-sub" id="modeSub">Score on your phone</div>
     <div class="login-form">
       <input class="f-input" id="loginName" type="text" placeholder="Your name" autocomplete="off"/>
       <input class="f-input" id="loginPw" type="password" placeholder="Password"/>
       <div class="f-err" id="loginErr"></div>
       <button class="f-btn" id="btnLogin">Enter →</button>
-      <div class="judge-link" id="judgeLink">⚖ Judge / Admin access</div>
     </div>
   </div>
 </div>
 
-<!-- WAIT / COUNTDOWN SCREEN -->
+<!-- WAIT SCREEN (countdown) -->
 <div class="screen" id="waitScreen">
-  <div class="top-bar">
-    <div class="top-left"><div class="top-name" id="waitName">—</div><div class="top-role" id="waitRole">Waiting</div></div>
-    <div></div>
-  </div>
-  <div class="status-bar"><div class="dot" id="waitDot"></div><span id="waitStatus">Connecting...</span></div>
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">
-    <div class="countdown-label" id="cdLabel">Session starts in</div>
-    <div class="countdown-big" id="cdDisplay">--:--</div>
-    <div class="countdown-msg" id="cdMsg">Waiting for judge to schedule the session</div>
+    <div class="cd-label" id="cdLabel">Session starts in</div>
+    <div class="cd-big" id="cdDisplay">--:--</div>
+    <div class="cd-msg" id="cdMsg">Waiting for judge to schedule the session</div>
     <button class="ready-btn" id="btnReady">✓ I'm Ready</button>
-    <div class="ready-badge" id="readyBadge">✓ Ready — waiting for session to start</div>
+    <div class="ready-done" id="readyDone">✓ Ready — waiting for session to start</div>
   </div>
-  <div class="actions">
-    <button class="btn danger" id="btnWaitLogout">Log Out</button>
-  </div>
+  <div class="actions"><button class="btn danger" id="btnWaitLogout">Log Out</button></div>
 </div>
 
-<!-- VIDEO SCREEN (laptop / ?video mode) -->
+<!-- VIDEO SCREEN (training.html?video) -->
 <div class="screen" id="videoScreen">
   <div class="top-bar">
-    <div class="top-left"><div class="top-name" id="vTopName">—</div><div class="top-role" id="vTopRole">Video</div></div>
-    <div class="top-timer" id="vTopTimer">00:00.0</div>
+    <div><div class="top-name" id="vName">—</div><div class="top-role">Trainee · Video</div></div>
+    <div class="top-timer" id="vTimer">00:00.0</div>
   </div>
-  <div class="status-bar"><div class="dot" id="vStatusDot"></div><span id="vStatusText">Connecting...</span></div>
-  <!-- Judge setup (URL input) -->
-  <div id="judgeSetup" style="display:none;">
-    <div class="judge-setup" style="padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
-      <div class="setup-label">Video URL (YouTube · Vimeo · Dailymotion)</div>
-      <div class="url-row">
-        <input class="url-input" id="videoUrlInput" type="url" placeholder="https://..."/>
-        <button class="url-btn" id="btnLoadVideo">Load ▶</button>
-      </div>
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);" id="videoStatus">No clip loaded</div>
-    </div>
+  <div class="status-bar"><div class="dot" id="vDot"></div><span id="vStatus">Connecting...</span></div>
+  <div id="playerContainer"></div>
+  <div class="vid-bar">
+    <button class="vid-btn" id="btnPausePlay">⏸ Pause</button>
+    <span class="vid-pauses" id="pauseInfo">Pauses: 0</span>
   </div>
-  <!-- Video player -->
-  <div id="playerContainer" style="display:none;"></div>
-  <!-- Video bar -->
-  <div class="video-bar" id="videoBar" style="display:none;">
-    <button class="vb-btn" id="vBtnPlayPause">▶ Play</button>
-    <button class="vb-btn" id="vBtnPauseAll" style="display:none;">⏸ Pause All</button>
-    <button class="vb-btn danger" id="vBtnChangeUrl" style="display:none;">🔗 Change URL</button>
-    <span class="vb-time" id="vTime">0.0s</span>
-  </div>
-  <!-- Judge controls (schedule + ready list) -->
-  <div class="judge-controls" id="judgeControlsPanel" style="display:none;">
-    <div class="jc-title">Schedule Session Start</div>
-    <div class="schedule-row">
-      <input type="datetime-local" class="schedule-input" id="scheduleInput"/>
-      <button class="url-btn" id="btnSchedule">Schedule</button>
-      <button class="url-btn" style="border-color:var(--orange);color:var(--orange);" id="btnStartNow">Start Now</button>
-    </div>
-    <div class="jc-title" id="scheduleStatus">No session scheduled</div>
-    <div class="jc-title">Who's Ready</div>
-    <div class="ready-list" id="readyList"><span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);">No one yet</span></div>
-  </div>
-  <div class="actions">
-    <button class="btn danger" id="btnVLogout">Log Out</button>
-    <button class="btn" id="btnVResults" style="display:none;">📊 Results</button>
-  </div>
+  <div class="actions"><button class="btn danger" id="btnVLogout">Log Out</button></div>
 </div>
 
-<!-- KEYPAD SCREEN (phone) -->
+<!-- KEYPAD SCREEN (training.html) -->
 <div class="screen" id="keypadScreen">
   <div class="top-bar">
-    <div class="top-left"><div class="top-name" id="kTopName">—</div><div class="top-role" id="kTopRole">Trainee</div></div>
-    <div class="top-timer" id="kTopTimer">00:00.0</div>
+    <div><div class="top-name" id="kName">—</div><div class="top-role">Trainee · Keypad</div></div>
+    <div class="top-timer" id="kTimer">00:00.0</div>
   </div>
-  <div class="status-bar"><div class="dot" id="kStatusDot"></div><span id="kStatusText">Connecting...</span></div>
-  <!-- Judge video embed (shown only when judge is reference scoring) -->
-  <div id="judgeVideoWrap" style="display:none;flex-shrink:0;flex-direction:column;">
-    <div id="playerContainer" style="height:28vh;background:#000;"></div>
-    <div class="video-bar" id="videoBar" style="display:none;">
-      <button class="vb-btn" id="vBtnPlayPause">▶ Play</button>
-      <button class="vb-btn danger" id="vBtnChangeUrl" style="display:none;font-size:10px;">🔗 Change URL</button>
-      <span class="vb-time" id="vTime">0.0s</span>
-    </div>
-  </div>
-  <div class="scoring-area" id="scoringArea">
+  <div class="status-bar"><div class="dot" id="kDot"></div><span id="kStatus">Connecting...</span></div>
+  <div class="scoring-area">
     <div class="ball-indicator">
-      <div>
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;" id="ballLabel">Ball</div>
-        <div class="b-id" id="bId">1.1</div>
-      </div>
+      <div><div class="b-lbl" id="ballLbl">Ball</div><div class="b-id" id="bId">1.1</div></div>
       <div class="b-status" id="bStatus">Double press to confirm</div>
     </div>
     <div class="keys-box" id="keysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
     <div class="keypad" id="kpad"></div>
   </div>
-  <div id="refFeed" style="display:none;"></div>
-  <div id="judgeTabs">
-    <button class="jtab active" data-tab="score">⌨ Score</button>
-    <button class="jtab" data-tab="trainees">👥 Trainees</button>
-    <button class="jtab" data-tab="results">📊 Results</button>
-  </div>
-  <div id="traineesPanel">
-    <div class="tp-wrap">
-      <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--colJ);">Trainee Accounts</div>
-      <div class="tp-add"><input class="tp-input" id="tpName" placeholder="Name" style="max-width:110px;"/><input class="tp-input" id="tpPw" placeholder="Password" type="password"/><button class="tp-btn" id="btnAddTrainee">+ Add</button></div>
-      <div class="tp-add"><input class="tp-input" id="judgeNewPw" placeholder="Judge password" type="password"/><button class="tp-btn" id="btnSetJudgePw">Set PW</button></div>
-      <div class="trainee-list" id="traineeList"></div>
-    </div>
-  </div>
-  <div id="resultsPanel">
-    <div class="rp-wrap">
-      <div class="rp-title">Results</div>
-      <div class="rp-sub" id="rpSub">—</div>
-      <div class="results-table-wrap">
-        <table class="rt"><thead><tr><th>Name</th><th>Balls</th><th>Accuracy</th><th>Avg React</th><th>Score</th><th>Pauses</th></tr></thead>
-        <tbody id="resultsTbody"></tbody></table>
-      </div>
-    </div>
-    <div class="actions"><button class="btn danger" id="btnClearSessions">Clear</button><button class="btn primary" id="btnExportCSV">Export CSV</button></div>
-  </div>
-  <div class="actions" id="keypadActions">
-    <button class="btn danger" id="btnKLogout">Log Out</button>
-  </div>
+  <div class="actions"><button class="btn danger" id="btnKLogout">Log Out</button></div>
 </div>
 
 <!-- DONE SCREEN -->
@@ -311,53 +176,287 @@ body{display:flex;flex-direction:column;}
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, set, get, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, push, set, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 const app = initializeApp({ databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/' });
-const db = getDatabase(app);
-
-// ── MODE ──────────────────────────────────────────────
-const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
-
-// ── FIREBASE REFS ─────────────────────────────────────
-const pwRef       = ref(db,'training/passwords/judge');
+const db  = getDatabase(app);
 const traineesRef = ref(db,'training/trainees');
 const configRef   = ref(db,'training/config');
 const refRef      = ref(db,'training/reference');
 const sessionsRef = ref(db,'training/sessions');
 const readyRef    = ref(db,'training/ready');
 
-// ── STATE ─────────────────────────────────────────────
-let myName='', isJudge=false;
-let judgePw='', allTrainees={}, allRefBalls={}, allSessions={}, config={}, allReady={};
+const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
+
+// STATE
+let myName='', allTrainees={}, allRefBalls={}, config={};
 let sessionTimer=0, timerTick=null, isPlaying=false, pauseCount=0;
+// Per-trainee playback sync (laptop video ↔ phone keypad) — keyed by trainee name
+// so multiple trainees scoring at once don't clobber each other's sync state.
+let playbackState={position:0,playing:false,updated_at:Date.now()};
+let heartbeatInterval=null, displayInterval=null;
+function playbackRefFor(name){return ref(db,'training/trainee_playback/'+name.replace(/[^a-zA-Z0-9]/g,'_'));}
 let videoPlatform=null, ytPlayer=null, vmPlayer=null;
 let sessionStarted=false;
-// Alert flags
-let alerted10=false, alerted2=false, alerted30=false;
-let alertTimeouts=[];
-// Ball state
+// Ball state machine
 const RK=new Set(['0','1','2','3','4','6','7','9','*']), EK=new Set(['7','9']);
-let cState='scoring', cRunKey=null, cExtraKey=null, cAt=null, cKeys=[], cTimings=[], ps=null, pressVS=null;
+let cState='scoring', cRunKey=null, cExtraKey=null, cAt=null, cKeys=[], cTimings=[], ps=null, pVS=null;
 let currentSeq=1, myBalls=[], refCount=0;
-const LS='scout_v2';
+let alertTimeouts=[], cdInterval=null;
+const LS='scout_v3';
 
-// ── HELPERS ───────────────────────────────────────────
+// HELPERS
 function $(id){return document.getElementById(id);}
-function showScreen(id){
-  ['loginScreen','waitScreen','videoScreen','keypadScreen','doneScreen'].forEach(s=>{
-    const el=$(s); if(el){el.classList.toggle('active',s===id);}
-  });
-}
-function toast(m,type='err',dur=3000){
-  const t=$('toast');t.textContent=m;
-  t.className='toast show '+(type==='ok'?'ok':type==='info'?'info':'');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',dur);
-}
-function setVStatus(s,m){$('vStatusDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');$('vStatusText').textContent=m;}
-function setKStatus(s,m){$('kStatusDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');$('kStatusText').textContent=m;}
-function setWStatus(s,m){$('waitDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');$('waitStatus').textContent=m;}
+function showScreen(id){['loginScreen','waitScreen','videoScreen','keypadScreen','doneScreen'].forEach(s=>{const el=$(s);if(el)el.classList.toggle('active',s===id);});}
+function toast(m,type='err'){const t=$('toast');t.textContent=m;t.className='toast show'+(type==='ok'?' ok':type==='info'?' info':'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000);}
+function setKS(s,m){$('kDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');$('kStatus').textContent=m;}
+function setVS(s,m){$('vDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');$('vStatus').textContent=m;}
 function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
 function seqLbl(seq){return`${Math.floor((seq-1)/6)+1}.${((seq-1)%6)+1}`;}
+function formatMs(ms){const s=ms/1000,m=Math.floor(s/60),sec=(s%60).toFixed(1);return`${String(m).padStart(2,'0')}:${sec.padStart(4,'0')}`;}
+// getVS() is the single source of truth for ball timestamps.
+// On laptop (IS_VIDEO): driven directly by the actual video, tied to play/pause events.
+// On phone (keypad): computed from this trainee's own broadcasted playbackState +
+// wall-clock extrapolation since the last update — corrected every play/pause and
+// by a 2s heartbeat, so pausing never desyncs the two devices.
+function getVS(){
+  if(IS_VIDEO) return sessionTimer/1000;
+  if(!playbackState) return 0;
+  if(playbackState.playing) return playbackState.position + (Date.now()-playbackState.updated_at)/1000;
+  return playbackState.position;
+}
+function getActualVideoTime(cb){
+  if(videoPlatform==='youtube'&&ytPlayer&&ytPlayer.getCurrentTime)cb(ytPlayer.getCurrentTime());
+  else if(videoPlatform==='vimeo'&&vmPlayer&&vmPlayer.getCurrentTime)vmPlayer.getCurrentTime().then(cb).catch(()=>cb(sessionTimer/1000));
+  else cb(sessionTimer/1000); // dailymotion fallback — wall-clock estimate
+}
+function pushPlaybackState(playing){
+  if(!myName)return;
+  getActualVideoTime(pos=>{set(playbackRefFor(myName),{position:pos,playing,updated_at:Date.now()});});
+}
+function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$(IS_VIDEO?'vTimer':'kTimer').textContent=formatMs(sessionTimer);},100);}
+function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
+
+// BEEPS
+function beep(f=880,d=0.25,v=0.4){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function beep2(){beep(880,0.2);setTimeout(()=>beep(880,0.2),350);}
+function beep3(){beep(660,0.15);setTimeout(()=>beep(880,0.15),220);setTimeout(()=>beep(1100,0.3),440);}
+function beepUrgent(){beep(440,0.15,0.6);setTimeout(()=>beep(880,0.15,0.6),150);setTimeout(()=>beep(440,0.15,0.6),300);setTimeout(()=>beep(1320,0.4,0.6),450);}
+
+// LOGIN PAGE SETUP
+if(IS_VIDEO){
+  $('modeBadge').textContent='💻 Video Mode';$('modeBadge').classList.add('video');
+  $('modeSub').textContent='Watch the clip on your laptop';
+}
+
+// FIREBASE LISTENERS — all guarded with if(myName)
+onValue(traineesRef,snap=>{allTrainees=snap.val()||{};},()=>{});
+onValue(refRef,snap=>{allRefBalls=snap.val()||{};refCount=Object.keys(allRefBalls).length;if(myName)updateBallDisplay();},()=>{});
+onValue(configRef,snap=>{
+  config=snap.val()||{};
+  if(!myName)return; // guard — do nothing before login
+  // Pause signal
+  if(IS_VIDEO&&sessionStarted&&config.paused_at&&isPlaying){
+    videoPauseApi();$('btnPausePlay').textContent='▶ Resume (paused by judge)';
+    toast('Judge paused the session','info');
+  } else if(IS_VIDEO&&sessionStarted&&!config.paused_at&&!isPlaying&&sessionStarted){
+    // Don't auto-resume — let trainee tap resume
+  }
+  // Session started signal
+  if(config.session_started&&!sessionStarted)onSessionStart();
+  // Countdown
+  if(config.scheduled_start_at)setupCountdown(config.scheduled_start_at);
+},()=>{});
+
+// LOGIN
+$('btnLogin').addEventListener('click',doLogin);
+['loginName','loginPw'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
+function doLogin(){
+  const name=$('loginName').value.trim(), pw=$('loginPw').value, err=$('loginErr');
+  if(!name){err.textContent='Enter your name';return;}
+  const account=Object.values(allTrainees).find(t=>t.name.toLowerCase()===name.toLowerCase());
+  if(Object.keys(allTrainees).length>0){
+    if(!account){err.textContent='Name not found — ask your judge';return;}
+    if(pw!==account.password){err.textContent='Wrong password';return;}
+  }
+  // Lock onto the judge-registered name's exact casing — this is what keeps phone
+  // and laptop pointed at the SAME Firebase sync path even if trainee types the
+  // name with different capitalisation on the two devices.
+  myName=account?account.name:name;
+  if(IS_VIDEO){$('vName').textContent=myName;setVS('live','Connected');}
+  else{$('kName').textContent=myName;setKS('live','Connected');}
+  // Check if session already started
+  if(config.session_started){onSessionStart();return;}
+  // Check if scheduled
+  if(config.scheduled_start_at){
+    showScreen('waitScreen');setupCountdown(config.scheduled_start_at);return;
+  }
+  // Waiting for judge
+  showScreen('waitScreen');$('cdMsg').textContent='Waiting for judge to schedule the session';
+}
+
+// COUNTDOWN
+function setupCountdown(startAt){
+  if(sessionStarted)return;
+  clearInterval(cdInterval);alertTimeouts.forEach(t=>clearTimeout(t));alertTimeouts=[];
+  const now=Date.now(),rem=startAt-now;
+  if(rem<=0){onSessionStart();return;}
+  showScreen('waitScreen');
+  // Update display every second
+  cdInterval=setInterval(()=>{
+    const r=startAt-Date.now();
+    if(r<=0){clearInterval(cdInterval);onSessionStart();return;}
+    const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);
+    $('cdDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    $('cdDisplay').classList.toggle('urgent',r<=30000);
+    if(r<=30000){$('cdMsg').textContent=`Get ready — ${s} seconds`;$('btnReady').style.display='block';}
+  },500);
+  // Alerts
+  const t10=rem-600000;if(t10>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('Session starts in 10 minutes — prepare your devices','info',6000);},t10));
+  const t2=rem-120000;if(t2>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('2 minutes to go — get ready','info',5000);},t2));
+  const t30=rem-30000;
+  if(t30>0)alertTimeouts.push(setTimeout(()=>{beepUrgent();$('cdMsg').textContent='30 seconds — tap I\'m Ready!';$('btnReady').style.display='block';},t30));
+  else if(rem<=30000)$('btnReady').style.display='block';
+  // Auto start
+  alertTimeouts.push(setTimeout(()=>{if(!sessionStarted)onSessionStart();},rem));
+}
+
+// I'M READY BUTTON
+$('btnReady').addEventListener('click',()=>{
+  beep3();
+  $('btnReady').style.display='none';$('readyDone').style.display='block';
+  set(ref(db,'training/ready/'+myName.replace(/[^a-zA-Z0-9]/g,'_')),{name:myName,at:new Date().toISOString()});
+  // Unlock iOS autoplay
+  if(IS_VIDEO&&videoPlatform==='youtube'&&ytPlayer){ytPlayer.playVideo();setTimeout(()=>ytPlayer?.pauseVideo(),200);}
+});
+
+// SESSION START
+function onSessionStart(){
+  if(sessionStarted)return;
+  sessionStarted=true;
+  clearInterval(cdInterval);alertTimeouts.forEach(t=>clearTimeout(t));
+  beep3();
+  if(IS_VIDEO){
+    if(config.clip_url&&!videoPlatform)initVideo(config.clip_url);
+    showScreen('videoScreen');
+    setTimeout(()=>{
+      videoPlay();startTick();
+      // iOS fallback
+      setTimeout(()=>{
+        if(!isPlaying){
+          const ov=document.createElement('div');ov.className='autoplay-overlay';
+          ov.innerHTML='<div class="autoplay-overlay-inner">▶ Tap to start video<br><span style="font-size:12px;color:var(--muted);">Browser blocked autoplay</span></div>';
+          ov.addEventListener('click',()=>{videoPlay();document.body.removeChild(ov);});
+          document.body.appendChild(ov);
+        }
+      },1500);
+    },200);
+  } else {
+    // Restore session from localStorage
+    try{const s=JSON.parse(localStorage.getItem(LS)||'{}');if(s.name===myName&&s.balls){myBalls=s.balls;currentSeq=s.seq||1;}}catch(e){}
+    showScreen('keypadScreen');buildKeypad();updateBallDisplay();
+    // Listen for THIS trainee's own laptop playback state — drives the phone's synced clock
+    onValue(playbackRefFor(myName),snap=>{
+      playbackState=snap.val()||{position:0,playing:false,updated_at:Date.now()};
+    },()=>{});
+    // Visual ticker only — actual ball timestamps always call getVS() fresh
+    clearInterval(displayInterval);
+    displayInterval=setInterval(()=>{$('kTimer').textContent=formatMs(getVS()*1000);},100);
+  }
+}
+
+// VIDEO API
+function detectPlatform(url){if(/youtube\.com|youtu\.be/.test(url))return'youtube';if(/vimeo\.com/.test(url))return'vimeo';if(/dailymotion\.com/.test(url))return'dailymotion';return null;}
+function extractId(url,p){try{if(p==='youtube'){const m=url.match(/(?:v=|youtu\.be\/)([^&?/\s]+)/);return m?m[1]:null;}if(p==='vimeo'){const m=url.match(/vimeo\.com\/(\d+)/);return m?m[1]:null;}if(p==='dailymotion'){const m=url.match(/dailymotion\.com\/video\/([^_?\s]+)/);return m?m[1]:null;}}catch(e){}return null;}
+function onVPlay(){
+  isPlaying=true;if(timerTick)clearInterval(timerTick);timerTick=setInterval(()=>{sessionTimer+=100;$('vTimer').textContent=formatMs(sessionTimer);},100);
+  $('btnPausePlay').textContent='⏸ Pause';
+  pushPlaybackState(true);
+  clearInterval(heartbeatInterval);
+  heartbeatInterval=setInterval(()=>{if(isPlaying)pushPlaybackState(true);},2000);
+}
+function onVPause(){
+  isPlaying=false;clearInterval(timerTick);
+  $('btnPausePlay').textContent='▶ Resume';
+  pushPlaybackState(false);
+  clearInterval(heartbeatInterval);
+}
+function videoPlay(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.playVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.play();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'play'}),'*');}}
+function videoPauseApi(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.pauseVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.pause();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'pause'}),'*');}}
+function initVideo(url){
+  const p=detectPlatform(url);const id=p?extractId(url,p):null;if(!id)return false;
+  videoPlatform=p;
+  if(p==='youtube'){
+    $('playerContainer').innerHTML='<div id="ytDiv" style="width:100%;height:100%;"></div>';
+    const init=()=>{ytPlayer=new YT.Player('ytDiv',{videoId:id,height:'100%',width:'100%',playerVars:{playsinline:1,controls:0,disablekb:1,rel:0,modestbranding:1},events:{onStateChange:(e)=>{if(e.data===1)onVPlay();else if(e.data===2||e.data===0)onVPause();}}});};
+    if(window.YT?.Player){init();return true;}
+    const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);window.onYouTubeIframeAPIReady=init;
+  } else if(p==='vimeo'){
+    $('playerContainer').innerHTML='<div id="vmDiv" style="width:100%;height:100%;"></div>';
+    const init=()=>{vmPlayer=new Vimeo.Player('vmDiv',{id:parseInt(id),responsive:false,width:'100%',height:'100%',controls:false,playsinline:true});vmPlayer.on('play',onVPlay);vmPlayer.on('pause',onVPause);};
+    if(window.Vimeo){init();return true;}
+    const s=document.createElement('script');s.src='https://player.vimeo.com/api/player.js';document.head.appendChild(s);s.onload=init;
+  } else if(p==='dailymotion'){
+    const f=document.createElement('iframe');f.src=`https://www.dailymotion.com/embed/video/${id}?api=1&controls=0&playsinline=1`;f.setAttribute('allow','autoplay;fullscreen');f.setAttribute('allowfullscreen','');f.style.cssText='width:100%;height:100%;border:0;display:block;';$('playerContainer').innerHTML='';$('playerContainer').appendChild(f);
+    window.addEventListener('message',(e)=>{if(!e.data)return;try{const d=typeof e.data==='string'?JSON.parse(e.data):e.data;if(d.event==='play')onVPlay();if(d.event==='pause')onVPause();}catch(err){}});
+  }
+  return true;
+}
+$('btnPausePlay').addEventListener('click',()=>{
+  if(isPlaying){videoPauseApi();pauseCount++;$('pauseInfo').textContent=`Pauses: ${pauseCount}`;}
+  else{videoPlay();}
+});
+
+// KEYPAD
+const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
+function buildKeypad(){
+  const kp=$('kpad');kp.innerHTML='';
+  KEYS.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='key'+(k==='#'?' confirm':'');btn.dataset.key=k;btn.textContent=k==='#'?'# ▶':k;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();kd(k,btn);},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();kd(k,btn);});
+    btn.addEventListener('touchend',e=>{e.preventDefault();ku(k,btn);},{passive:false});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();ku(k,btn);});
+    kp.appendChild(btn);
+  });
+}
+function kd(k,btn){if(ps!==null)return;ps=Date.now();pVS=getVS();btn.classList.add('flash');}
+function ku(k,btn){
+  if(ps===null)return;
+  const dur=Math.min(Date.now()-ps,800); // cap at 800ms — anything longer is a ghost/synthetic event
+  const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
+  if(k==='#'){if(cState==='scoring'){toast('Double press first!');return;}commitBall();return;}
+  if(cState==='full-conf'||cState==='wicket')return;
+  if(cState==='run_conf'){
+    if(!EK.has(k))return;
+    cKeys.push(k);cTimings.push({key:k,duration_ms:dur,video_s:vs});
+    if(getConsec(cKeys,k)>=2){cExtraKey=k;cState='full-conf';}
+  } else {
+    cKeys.push(k);cTimings.push({key:k,duration_ms:dur,video_s:vs});
+    if(k==='*'){if(getConsec(cKeys,'*')>=3){cRunKey='*';cAt=getVS();cState='wicket';}}
+    else if(RK.has(k)&&!EK.has(k)){if(cKeys.length>=2&&cKeys[cKeys.length-2]===k){cRunKey=k;cAt=getVS();cState='run_conf';}}
+  }
+  renderKeys();updateKpad();
+}
+function renderKeys(){
+  const box=$('keysBox');
+  if(!cKeys.length){box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>';return;}
+  box.innerHTML=cTimings.map(t=>`<div class="k-chip">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('')+
+    `<button id="clrK" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-size:10px;padding:2px 7px;cursor:pointer;flex-shrink:0;">✕</button>`;
+  $('clrK').addEventListener('click',()=>{resetState();renderKeys();updateKpad();});
+}
+function resetState(){cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];}
+function updateKpad(){
+  const kp=$('kpad'),cb=kp?.querySelector('.confirm'),st=$('bStatus');
+  if(cState==='full-conf'||cState==='wicket'){if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('go');}st.textContent='Confirmed — press #';st.className='b-status full-conf';}
+  else if(cState==='run_conf'){if(kp)kp.className='keypad run-conf';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}st.textContent=`[${cRunKey}] · add 7/9 or #`;st.className='b-status run-conf';}
+  else{if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}st.textContent='Double press to confirm';st.className='b-status';}
+}
+function updateBallDisplay(){
+  $('bId').textContent=seqLbl(currentSeq);
+  $('ballLbl').textContent=`Ball · ${refCount?currentSeq+'/'+refCount:'—'}`;
+}
+
 function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
 function calcPenalty(sk,jk,conf){
   const s=getOutcome(sk),j=getOutcome(jk);if(s===null||j===null)return null;
@@ -367,627 +466,57 @@ function calcPenalty(sk,jk,conf){
   else if(se||je){b=-4;}else{b=-2*Math.abs(s-j);}
   return b*(conf==='certain'?2:1.5);
 }
-function formatMs(ms){const s=ms/1000,m=Math.floor(s/60),sec=(s%60).toFixed(1);return`${String(m).padStart(2,'0')}:${sec.padStart(4,'0')}`;}
-
-// ── AUDIO BEEPS ───────────────────────────────────────
-function beep(freq=880,dur=0.25,vol=0.4){
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.frequency.value=freq;o.type='sine';
-    g.gain.setValueAtTime(vol,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
-    o.start();o.stop(ctx.currentTime+dur);
-  }catch(e){}
-}
-function beep2(){beep(880,0.2);setTimeout(()=>beep(880,0.2),350);}
-function beep3(){beep(660,0.15);setTimeout(()=>beep(880,0.15),220);setTimeout(()=>beep(1100,0.3),440);}
-function beepUrgent(){beep(440,0.15,0.6);setTimeout(()=>beep(880,0.15,0.6),150);setTimeout(()=>beep(440,0.15,0.6),300);setTimeout(()=>beep(1320,0.4,0.6),450);}
-
-// ── TIMER ─────────────────────────────────────────────
-function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;updateTimerDisp();},100);}
-function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
-function pauseAndCount(){stopTick();pauseCount++;if(IS_VIDEO){$('vTopTimer').textContent=formatMs(sessionTimer);}else{$('kTopTimer').textContent=formatMs(sessionTimer);}toast(`Paused (${pauseCount})`, 'info',2000);}
-function getVidSecs(){return sessionTimer/1000;}
-function updateTimerDisp(){
-  const t=formatMs(sessionTimer);
-  if(IS_VIDEO)$('vTopTimer').textContent=t;
-  else $('kTopTimer').textContent=t;
-}
-
-// ── VIDEO API ─────────────────────────────────────────
-function detectPlatform(url){
-  if(/youtube\.com|youtu\.be/.test(url))return'youtube';
-  if(/vimeo\.com/.test(url))return'vimeo';
-  if(/dailymotion\.com/.test(url))return'dailymotion';
-  return null;
-}
-function extractId(url,p){
-  try{
-    if(p==='youtube'){const m=url.match(/(?:v=|youtu\.be\/)([^&?/\s]+)/);return m?m[1]:null;}
-    if(p==='vimeo'){const m=url.match(/vimeo\.com\/(\d+)/);return m?m[1]:null;}
-    if(p==='dailymotion'){const m=url.match(/dailymotion\.com\/video\/([^_?\s]+)/);return m?m[1]:null;}
-  }catch(e){}return null;
-}
-
-function onVideoPlay(){startTick();$('vBtnPlayPause').textContent='⏸ Pause';}
-function onVideoPause(){stopTick();$('vBtnPlayPause').textContent='▶ Play';}
-
-function videoPlay(){
-  if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.playVideo();
-  else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.play();
-  else if(videoPlatform==='dailymotion'){const fr=document.querySelector('#playerContainer iframe');if(fr)fr.contentWindow.postMessage(JSON.stringify({command:'play'}),'*');}
-}
-function videoPauseApi(){
-  if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.pauseVideo();
-  else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.pause();
-  else if(videoPlatform==='dailymotion'){const fr=document.querySelector('#playerContainer iframe');if(fr)fr.contentWindow.postMessage(JSON.stringify({command:'pause'}),'*');}
-}
-
-function loadYouTube(videoId){
-  $('playerContainer').innerHTML='<div id="ytDiv" style="width:100%;height:100%;"></div>';
-  const init=()=>{
-    ytPlayer=new YT.Player('ytDiv',{videoId,height:'100%',width:'100%',
-      playerVars:{playsinline:1,controls:isJudge?1:0,disablekb:isJudge?0:1,rel:0,modestbranding:1},
-      events:{onReady:()=>setVStatus('live','Video ready'),
-        onStateChange:(e)=>{if(e.data===1)onVideoPlay();else if(e.data===2||e.data===0)onVideoPause();}}});
-  };
-  if(window.YT?.Player){init();return;}
-  const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);
-  window.onYouTubeIframeAPIReady=init;
-}
-function loadVimeo(videoId){
-  $('playerContainer').innerHTML='<div id="vmDiv" style="width:100%;height:100%;"></div>';
-  const init=()=>{
-    vmPlayer=new Vimeo.Player('vmDiv',{id:parseInt(videoId),responsive:false,width:'100%',height:'100%',controls:!!isJudge,playsinline:true});
-    vmPlayer.on('play',onVideoPlay);vmPlayer.on('pause',onVideoPause);
-    vmPlayer.on('loaded',()=>setVStatus('live','Video ready'));
-  };
-  if(window.Vimeo){init();return;}
-  const s=document.createElement('script');s.src='https://player.vimeo.com/api/player.js';document.head.appendChild(s);s.onload=init;
-}
-function loadDailymotion(videoId){
-  const fr=document.createElement('iframe');
-  fr.src=`https://www.dailymotion.com/embed/video/${videoId}?api=1&controls=${isJudge?1:0}&playsinline=1`;
-  fr.setAttribute('allow','autoplay;fullscreen');fr.setAttribute('allowfullscreen','');
-  fr.style.cssText='width:100%;height:100%;border:0;display:block;';
-  $('playerContainer').innerHTML='';$('playerContainer').appendChild(fr);
-  window.addEventListener('message',(e)=>{
-    if(!e.data)return;
-    try{const d=typeof e.data==='string'?JSON.parse(e.data):e.data;
-      if(d.event==='play')onVideoPlay();if(d.event==='pause')onVideoPause();
-    }catch(err){}
-  });
-  setVStatus('live','Video ready');
-}
-
-function initVideo(url){
-  const platform=detectPlatform(url);const videoId=platform?extractId(url,platform):null;
-  if(!videoId){toast('Could not recognise video URL');return false;}
-  videoPlatform=platform;
-  $('playerContainer').style.display='block';
-  $('videoBar').style.display='flex';
-  if(platform==='youtube')loadYouTube(videoId);
-  else if(platform==='vimeo')loadVimeo(videoId);
-  else if(platform==='dailymotion')loadDailymotion(videoId);
-  return true;
-}
-
-// ── LOGIN ─────────────────────────────────────────────
-// Set mode badge
-if(IS_VIDEO){
-  $('loginModeBadge').textContent='💻 Video Mode';$('loginModeBadge').classList.add('video');
-  $('loginSub').textContent='Watch the clip on your laptop';
-}
-
-onValue(pwRef,snap=>{judgePw=snap.val()||'';},()=>{});
-onValue(traineesRef,snap=>{allTrainees=snap.val()||{};renderTraineeList();},()=>{});
-onValue(refRef,snap=>{allRefBalls=snap.val()||{};refCount=Object.keys(allRefBalls).length;renderRefFeed();updateBallDisplay();},()=>{});
-onValue(sessionsRef,snap=>{allSessions=snap.val()||{};if(isJudge)renderResults();},()=>{});
-onValue(readyRef,snap=>{allReady=snap.val()||{};renderReadyList();},()=>{});
-onValue(configRef,snap=>{
-  config=snap.val()||{};
-  // Check for pause signal
-  if(sessionStarted&&config.paused_at&&isPlaying){
-    videoPauseApi();stopTick();toast('Judge paused the session','info');
-  } else if(sessionStarted&&!config.paused_at&&!isPlaying&&sessionStarted){
-    // resume handled below
-  }
-  // Check for session start — only if already logged in
-  if(config.session_started&&!sessionStarted&&myName){
-    onSessionStart();
-  }
-  // Update schedule display
-  if(config.scheduled_start_at&&isJudge){
-    const t=new Date(config.scheduled_start_at);
-    $('scheduleStatus').textContent=`Scheduled: ${t.toLocaleTimeString('en-GB',{timeZone:'Europe/London'})} UK time`;
-  }
-  scheduleCountdownAlerts();
-},()=>{});
-
-document.getElementById('btnLogin').addEventListener('click',doLogin);
-['loginName','loginPw'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
-$('judgeLink').addEventListener('click',()=>{
-  const pw=$('loginPw').value.trim();
-  // If no judge password set, let straight in
-  if(!judgePw){myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();return;}
-  // If password field has value, use it
-  if(pw){
-    if(pw!==judgePw){$('loginErr').textContent='Wrong judge password';return;}
-    myName='Judge';isJudge=true;IS_VIDEO?startVideoSession():startKeypadSession();return;
-  }
-  // Otherwise show password hint
-  $('loginErr').textContent='Enter judge password in the password field above';
-  $('loginPw').focus();
-});
-
-function doLogin(){
-  const name=$('loginName').value.trim(), pw=$('loginPw').value, err=$('loginErr');
-  if(!name){err.textContent='Enter your name';return;}
-  const account=Object.values(allTrainees).find(t=>t.name.toLowerCase()===name.toLowerCase());
-  if(!account&&Object.keys(allTrainees).length>0){err.textContent='Name not found';return;}
-  if(account&&pw!==account.password){err.textContent='Wrong password';return;}
-  myName=name;isJudge=false;
-  IS_VIDEO?startVideoSession():startKeypadSession();
-}
-
-// ── COUNTDOWN SYSTEM ──────────────────────────────────
-function scheduleCountdownAlerts(){
-  // Clear old alerts
-  alertTimeouts.forEach(t=>clearTimeout(t));alertTimeouts=[];
-  alerted10=false;alerted2=false;alerted30=false;
-  const startAt=config.scheduled_start_at;
-  if(!startAt)return;
-  const now=Date.now(), remaining=startAt-now;
-  if(remaining<=0)return;
-  // 10 min alert
-  const t10=remaining-(10*60*1000);
-  if(t10>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('Session starts in 10 minutes — open your video tab on laptop now','info',6000);},t10));
-  // 2 min alert
-  const t2=remaining-(2*60*1000);
-  if(t2>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('2 minutes to go — get ready','info',5000);},t2));
-  // 30 sec alert
-  const t30=remaining-30000;
-  if(t30>0)alertTimeouts.push(setTimeout(()=>{beepUrgent();show30SecCountdown();},t30));
-  else if(remaining<=30000&&remaining>0)show30SecCountdown();
-  // Auto-start at scheduled time — only if logged in
-  if(remaining>0)alertTimeouts.push(setTimeout(()=>{if(myName)onSessionStart();},remaining));
-  // Update countdown display every second
-  updateCountdownDisplay();
-}
-
-let cdInterval=null;
-function updateCountdownDisplay(){
-  if(cdInterval)clearInterval(cdInterval);
-  cdInterval=setInterval(()=>{
-    const startAt=config.scheduled_start_at;
-    if(!startAt){clearInterval(cdInterval);return;}
-    const rem=startAt-Date.now();
-    if(rem<=0){clearInterval(cdInterval);$('cdDisplay').textContent='00:00';return;}
-    const m=Math.floor(rem/60000), s=Math.floor((rem%60000)/1000);
-    $('cdDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    $('cdDisplay').classList.toggle('urgent',rem<=30000);
-    if(rem<=30000){$('cdMsg').textContent=`Get ready! Session starts in ${s} seconds`;$('btnReady').style.display='block';}
-  },500);
-}
-
-function show30SecCountdown(){
-  $('cdMsg').textContent='30 seconds to go — tap I\'m Ready to unlock your device!';
-  $('btnReady').style.display='block';
-}
-
-$('btnReady').addEventListener('click',()=>{
-  beep3();
-  $('btnReady').style.display='none';
-  $('readyBadge').style.display='block';
-  set(ref(db,'training/ready/'+myName.replace(/[^a-zA-Z0-9]/g,'_')),{name:myName,at:new Date().toISOString()});
-  // Unlock iOS audio + video autoplay
-  if(IS_VIDEO)videoPlay();
-  setTimeout(()=>{if(IS_VIDEO)videoPauseApi();},200);
-});
-
-function onSessionStart(){
-  if(sessionStarted)return;
-  sessionStarted=true;
-  clearInterval(cdInterval);
-  beep3();
-  if(IS_VIDEO){
-    videoPlay();startTick();
-    if(!isJudge)showScreen('videoScreen');
-    // Fix 3: iOS fallback — if video hasn't started after 1.5s show tap overlay
-    setTimeout(()=>{
-      if(!isPlaying){
-        const overlay=document.createElement('div');
-        overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-        overlay.innerHTML='<div style="font-family:var(--font-mono);font-size:18px;color:var(--accent);text-align:center;padding:24px;">▶ Tap to start video<br><span style="font-size:12px;color:var(--muted);">Browser blocked autoplay</span></div>';
-        overlay.addEventListener('click',()=>{videoPlay();document.body.removeChild(overlay);});
-        document.body.appendChild(overlay);
-      }
-    },1500);
-  } else {
-    // Start timer on phone
-    // Restore session including timer
-    try{const s=JSON.parse(localStorage.getItem(LS)||'{}');if(s.name===myName&&s.balls){myBalls=s.balls;currentSeq=s.seq||1;sessionTimer=s.timer||0;updateTimerDisp();}}catch(e){}
-    startTick();
-    showScreen('keypadScreen');
-    updateBallDisplay();buildKeypad();
-  }
-}
-
-// ── VIDEO SESSION ─────────────────────────────────────
-function startVideoSession(){
-  $('vTopName').textContent=isJudge?'Judge':myName;
-  $('vTopName').className='top-name '+(isJudge?'judge':'trainee');
-  $('vTopRole').textContent=IS_VIDEO?(isJudge?'Judge · Video Mode':'Trainee · Video Mode'):'Video';
-  showScreen('videoScreen');
-  setVStatus('live','Connected');
-  if(isJudge){
-    $('judgeControlsPanel').style.display='flex';
-    $('vBtnPauseAll').style.display='inline';
-    $('vBtnResults').style.display='inline';
-    // Set default schedule to 10 min from now
-    const def=new Date(Date.now()+10*60*1000);
-    const pad=n=>String(n).padStart(2,'0');
-    $('scheduleInput').value=`${def.getFullYear()}-${pad(def.getMonth()+1)}-${pad(def.getDate())}T${pad(def.getHours())}:${pad(def.getMinutes())}`;
-    if(config.clip_url){
-      hide_setup();initVideo(config.clip_url);$('vBtnChangeUrl').style.display='inline';
-      $('videoUrlInput').value=config.clip_url;
-    } else {
-      $('judgeSetup').style.display='block';
-    }
-  } else {
-    // Trainee video mode — wait for session start or load video
-    if(config.clip_url&&!sessionStarted)initVideo(config.clip_url);
-    if(!config.scheduled_start_at&&!config.session_started){
-      showScreen('waitScreen');$('waitName').textContent=myName;$('waitRole').textContent='Video Mode — Waiting';
-      $('cdMsg').textContent='Waiting for judge to schedule the session';
-      setWStatus('live','Connected');return;
-    }
-    if(config.session_started){onSessionStart();return;}
-    // Show countdown
-    showScreen('waitScreen');$('waitName').textContent=myName;$('waitRole').textContent='Video Mode';setWStatus('live','Connected');
-    updateCountdownDisplay();scheduleCountdownAlerts();
-  }
-}
-
-function hide_setup(){$('judgeSetup').style.display='none';}
-
-$('btnLoadVideo').addEventListener('click',()=>{
-  const url=$('videoUrlInput').value.trim();if(!url)return;
-  ytPlayer=null;vmPlayer=null;videoPlatform=null;$('playerContainer').innerHTML='';
-  if(initVideo(url)){
-    set(ref(db,'training/config/clip_url'),url);
-    set(ref(db,'training/config/loaded_at'),new Date().toISOString());
-    hide_setup();$('vBtnChangeUrl').style.display='inline';$('videoStatus').textContent='✓ Loaded';
-  }
-});
-$('vBtnChangeUrl').addEventListener('click',()=>{
-  videoPauseApi();stopTick();$('playerContainer').innerHTML='';$('playerContainer').style.display='none';
-  $('videoBar').style.display='none';$('judgeSetup').style.display='block';$('vBtnChangeUrl').style.display='none';
-  ytPlayer=null;vmPlayer=null;videoPlatform=null;
-});
-$('vBtnPlayPause').addEventListener('click',()=>{if(isPlaying)videoPauseApi();else videoPlay();});
-$('vBtnChangeUrl').addEventListener('click',()=>{
-  videoPauseApi();stopTick();$('playerContainer').innerHTML='';
-  $('judgeVideoWrap').style.display='none';
-  $('videoBar').style.display='none';
-  ytPlayer=null;vmPlayer=null;videoPlatform=null;
-  // Re-show inline URL loader
-  const sa=$('scoringArea');
-  const urlDiv=document.createElement('div');
-  urlDiv.id='inlineUrlLoad';
-  urlDiv.style.cssText='padding:8px 0;display:flex;gap:8px;flex-shrink:0;';
-  urlDiv.innerHTML=`<input id="inlineUrl" type="url" placeholder="Paste new video URL" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;"/><button id="inlineLoadBtn" style="background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;">Load ▶</button>`;
-  sa.insertBefore(urlDiv,sa.firstChild);
-  $('inlineLoadBtn').addEventListener('click',()=>{
-    const url=$('inlineUrl').value.trim();if(!url)return;
-    set(ref(db,'training/config/clip_url'),url);
-    if(initVideo(url)){
-      $('judgeVideoWrap').style.display='flex';$('judgeVideoWrap').style.flexDirection='column';
-      $('videoBar').style.display='flex';$('vBtnChangeUrl').style.display='inline';urlDiv.remove();toast('Video loaded ✓','ok');
-    }
-  });
-});
-$('vBtnPauseAll').addEventListener('click',()=>{
-  if(config.paused_at){
-    set(ref(db,'training/config/paused_at'),null);toast('Session resumed','ok');
-    $('vBtnPauseAll').textContent='⏸ Pause All';
-  } else {
-    set(ref(db,'training/config/paused_at'),Date.now());toast('Session paused for everyone','info');
-    $('vBtnPauseAll').textContent='▶ Resume All';videoPauseApi();
-  }
-});
-
-// Schedule
-$('btnSchedule').addEventListener('click',()=>{
-  const val=$('scheduleInput').value;if(!val){toast('Pick a time');return;}
-  const ts=new Date(val).getTime();
-  if(isNaN(ts)||ts<Date.now()){toast('Pick a future time');return;}
-  set(ref(db,'training/config/scheduled_start_at'),ts);
-  set(ref(db,'training/config/session_started'),false);
-  const t=new Date(ts);toast(`Scheduled for ${t.toLocaleTimeString('en-GB',{timeZone:'Europe/London'})} UK time`,'ok');
-  scheduleCountdownAlerts();
-});
-$('btnStartNow').addEventListener('click',()=>{
-  if(!confirm('Start session now for all trainees?'))return;
-  set(ref(db,'training/config/scheduled_start_at'),Date.now());
-  set(ref(db,'training/config/session_started'),true);
-  videoPlay();startTick();toast('Session started!','ok');
-});
-$('vBtnResults').addEventListener('click',()=>{renderResults();showScreen('keypadScreen');setJudgeTab('results');});
-$('btnVLogout').addEventListener('click',doLogout);
-$('btnWaitLogout').addEventListener('click',doLogout);
-
-function renderReadyList(){
-  const list=$('readyList');if(!list)return;
-  const entries=Object.values(allReady);
-  if(!entries.length){list.innerHTML='<span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);">No one yet</span>';return;}
-  list.innerHTML=entries.map(r=>`<span class="ready-chip">${r.name} ✓</span>`).join('');
-}
-
-// ── KEYPAD SESSION ────────────────────────────────────
-function startKeypadSession(){
-  $('kTopName').textContent=isJudge?'Judge':myName;
-  $('kTopName').className='top-name '+(isJudge?'judge':'trainee');
-  $('kTopRole').textContent=isJudge?'Reference Scorer':'Trainee · Phone';
-  // If judge, show tabs + ref feed
-  if(isJudge){
-    $('judgeTabs').style.display='flex';$('refFeed').style.display='flex';
-    setKStatus('live','Connected');
-    showScreen('keypadScreen');
-    buildKeypad();renderRefFeed();renderTraineeList();setJudgeTab('score');
-    sessionStarted=true;startTick();
-    // Show video if clip already loaded, otherwise show URL input inside scoring area
-    if(config.clip_url){
-      initVideo(config.clip_url);
-      $('judgeVideoWrap').style.display='flex';
-      $('judgeVideoWrap').style.flexDirection='column';
-      $('videoBar').style.display='flex';
-      $('vBtnChangeUrl').style.display='inline';
-    } else {
-      // Show inline URL loader for judge
-      const urlDiv=document.createElement('div');
-      urlDiv.id='inlineUrlLoad';
-      urlDiv.style.cssText='padding:8px 0;display:flex;gap:8px;flex-shrink:0;';
-      urlDiv.innerHTML=`<input id="inlineUrl" type="url" placeholder="Paste video URL to start scoring" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;"/><button id="inlineLoadBtn" style="background:none;border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;">Load ▶</button>`;
-      const sa=$('scoringArea');
-      sa.insertBefore(urlDiv,sa.firstChild);
-      $('inlineLoadBtn').addEventListener('click',()=>{
-        const url=$('inlineUrl').value.trim();if(!url)return;
-        set(ref(db,'training/config/clip_url'),url);
-        if(initVideo(url)){
-          $('judgeVideoWrap').style.display='flex';
-          $('judgeVideoWrap').style.flexDirection='column';
-          $('videoBar').style.display='flex';
-          $('vBtnChangeUrl').style.display='inline';
-          urlDiv.remove();
-          toast('Video loaded ✓','ok');
-        }
-      });
-    }
-    return;
-  }
-  // Trainee — check if session started
-  setKStatus('live','Connected');
-  if(config.session_started){
-    onSessionStart();return;
-  }
-  if(!config.scheduled_start_at){
-    showScreen('waitScreen');$('waitName').textContent=myName;$('cdMsg').textContent='Waiting for judge to schedule the session';setWStatus('live','Connected');return;
-  }
-  // Show countdown wait screen
-  showScreen('waitScreen');$('waitName').textContent=myName;$('waitRole').textContent='Phone · Keypad Mode';
-  setWStatus('live','Connected');updateCountdownDisplay();scheduleCountdownAlerts();
-}
-
-// ── KEYPAD ────────────────────────────────────────────
-const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
-function buildKeypad(){
-  const kp=$('kpad');kp.innerHTML='';
-  const chipClass=isJudge?'J':'';
-  KEYS.forEach(k=>{
-    const btn=document.createElement('button');
-    btn.className='key'+(k==='#'?' confirm':'');btn.dataset.key=k;btn.textContent=k==='#'?'# ▶':k;
-    btn.addEventListener('touchstart',e=>{e.preventDefault();kd(k,btn);},{passive:false});
-    btn.addEventListener('mousedown',e=>{e.preventDefault();kd(k,btn);});
-    btn.addEventListener('touchend',e=>{e.preventDefault();ku(k,btn,chipClass);},{passive:false});
-    btn.addEventListener('mouseup',e=>{e.preventDefault();ku(k,btn,chipClass);});
-    kp.appendChild(btn);
-  });
-}
-function kd(k,btn){if(ps!==null)return;ps=Date.now();pressVS=getVidSecs();btn.classList.add('flash');}
-function ku(k,btn,chipClass){
-  if(ps===null)return;const dur=Date.now()-ps;const vs=pressVS;ps=null;pressVS=null;btn.classList.remove('flash');
-  if(k==='#'){if(cState==='scoring'){toast('Double press a key first!');return;}commitBall();return;}
-  if(cState==='full-conf'||cState==='wicket')return;
-  if(cState==='run_conf'){
-    if(!EK.has(k))return;
-    cKeys.push(k);cTimings.push({key:k,duration_ms:dur,video_s:vs});
-    if(getConsec(cKeys,k)>=2){cExtraKey=k;cState='full-conf';}
-  } else {
-    cKeys.push(k);cTimings.push({key:k,duration_ms:dur,video_s:vs});
-    if(k==='*'){if(getConsec(cKeys,'*')>=3){cRunKey='*';cAt=getVidSecs();cState='wicket';}}
-    else if(RK.has(k)&&!EK.has(k)){if(cKeys.length>=2&&cKeys[cKeys.length-2]===k){cRunKey=k;cAt=getVidSecs();cState='run_conf';}}
-  }
-  renderKeys(chipClass);updateKpadUI();
-}
-function renderKeys(chipClass=''){
-  const box=$('keysBox');
-  if(!cKeys.length){box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>';return;}
-  const chips=cTimings.map(t=>`<div class="k-chip${chipClass?' '+chipClass:''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('');
-  box.innerHTML=chips+`<button id="btnClearK" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-family:var(--font-mono);font-size:10px;padding:2px 7px;cursor:pointer;flex-shrink:0;">✕</button>`;
-  $('btnClearK').addEventListener('click',()=>{resetState();renderKeys(chipClass);updateKpadUI();});
-}
-function resetState(){cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];}
-function updateKpadUI(){
-  const kp=$('kpad'),cb=kp?.querySelector('.confirm'),st=$('bStatus');
-  if(cState==='full-conf'||cState==='wicket'){
-    if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('go');}
-    st.textContent='Confirmed — press # to advance';st.className='b-status full-conf';
-  } else if(cState==='run_conf'){
-    if(kp)kp.className='keypad run-conf';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}
-    st.textContent=`[${cRunKey}] confirmed · add 7/9 or #`;st.className='b-status run-conf';
-  } else {
-    if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}
-    st.textContent='Double press to confirm';st.className='b-status';
-  }
-}
-function updateBallDisplay(){
-  const seq=isJudge?getNextRefSeq():currentSeq;
-  $('bId').textContent=seqLbl(seq);
-  $('ballLabel').textContent=isJudge?'Reference Ball':`Ball · ${refCount?currentSeq+'/'+refCount:'—'}`;
-}
-function getNextRefSeq(){const s=Object.values(allRefBalls).map(b=>b.seq||0);return s.length?Math.max(...s)+1:1;}
 
 function commitBall(){
-  const seq=isJudge?getNextRefSeq():currentSeq;
+  const seq=currentSeq;
   const keysSnap=[...cKeys],timSnap=[...cTimings];
   const runKey=cRunKey,extraKey=cExtraKey,atSnap=cAt;
   const isWide=extraKey==='7',isNoBall=extraKey==='9';
   const confidence=runKey==='*'?'certain':'confirmed';
-  const videoSecs=getVidSecs();
-  // Fix 7: use Firebase reference ball count for accurate label on reload
-  const legalBefore=isJudge
-    ?Object.values(allRefBalls).filter(b=>!b.is_wide&&!b.is_noball).length
-    :myBalls.filter(b=>!b.is_wide&&!b.is_noball).length||
-      Object.values(allRefBalls).filter(b=>b.seq<seq&&!b.is_wide&&!b.is_noball).length;
+  const videoSecs=getVS();
+  const legalBefore=myBalls.filter(b=>!b.is_wide&&!b.is_noball).length;
   const lbl=isWide?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}w`:isNoBall?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}nb`:`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}`;
+  const refBall=Object.values(allRefBalls).find(b=>b.seq===seq)||{};
   const ballData={seq,label:lbl,keys:keysSnap.join(' '),confirmed_key:runKey,confidence,is_wide:isWide,is_noball:isNoBall,
-    confirmed_at:atSnap,video_seconds:videoSecs,timings_compact:timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',')};
-  if(isJudge){
-    push(refRef,ballData);
-  } else {
-    const refBall=Object.values(allRefBalls).find(b=>b.seq===seq)||{};
-    ballData.reaction_seconds=parseFloat((videoSecs-(refBall.video_seconds||videoSecs)).toFixed(3));
-    ballData.penalty=calcPenalty(runKey,refBall.confirmed_key,confidence)||0;
-    ballData.is_correct=getOutcome(runKey)===getOutcome(refBall.confirmed_key);
-    myBalls.push(ballData);
-    if(!isWide&&!isNoBall)currentSeq++;
-    try{localStorage.setItem(LS,JSON.stringify({name:myName,balls:myBalls,seq:currentSeq,timer:sessionTimer}));}catch(e){}
-    if(refCount>0&&currentSeq>refCount){submitSession();return;}
-  }
-  resetState();renderKeys(isJudge?'J':'');updateKpadUI();updateBallDisplay();
-  if(isJudge)renderRefFeed();
-}
-
-function renderRefFeed(){
-  const feed=$('refFeed');if(!feed)return;
-  const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  // Judge control buttons
-  const controls=`<div style="display:flex;gap:6px;padding:4px 0;flex-shrink:0;">
-    <button id="btnClearRef" style="background:none;border:1px solid var(--red);border-radius:6px;color:var(--red);font-family:var(--font-mono);font-size:10px;padding:4px 10px;cursor:pointer;">🗑 Clear Reference</button>
-    <button id="btnResetSession" style="background:none;border:1px solid var(--orange);border-radius:6px;color:var(--orange);font-family:var(--font-mono);font-size:10px;padding:4px 10px;cursor:pointer;">↺ Reset Session</button>
-  </div>`;
-  if(!balls.length){
-    feed.innerHTML=controls+'<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:4px 0;">Score each ball — your timings become the reference</div>';
-  } else {
-    feed.innerHTML=controls+[...balls].reverse().slice(0,5).map(([fbKey,b])=>{
-      const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
-      return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-del="${fbKey}">✕</button></div>`;
-    }).join('');
-    feed.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.del));}));
-  }
-  // Wire control buttons
-  const cr=$('btnClearRef');if(cr)cr.addEventListener('click',()=>{if(confirm('Clear ALL reference balls? This cannot be undone.'))remove(refRef);});
-  const rs=$('btnResetSession');if(rs)rs.addEventListener('click',()=>{
-    if(!confirm('Reset session state? Trainees will need to re-login.'))return;
-    set(ref(db,'training/config/session_started'),false);
-    set(ref(db,'training/config/scheduled_start_at'),null);
-    set(ref(db,'training/config/paused_at'),null);
-    remove(readyRef);
-    toast('Session reset — trainees can now re-login','ok');
-  });
+    confirmed_at:atSnap,video_seconds:videoSecs,
+    reaction_seconds:parseFloat((videoSecs-(refBall.video_seconds||videoSecs)).toFixed(3)),
+    penalty:calcPenalty(runKey,refBall.confirmed_key,confidence)||0,
+    is_correct:getOutcome(runKey)===getOutcome(refBall.confirmed_key),
+    timings_compact:timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',')};
+  myBalls.push(ballData);
+  if(!isWide&&!isNoBall)currentSeq++;
+  // Save to localStorage on every ball
+  try{localStorage.setItem(LS,JSON.stringify({name:myName,balls:myBalls,seq:currentSeq,timer:sessionTimer}));}catch(e){}
+  resetState();renderKeys();updateKpad();
+  // Check if done
+  if(refCount>0&&currentSeq>refCount){submitSession();return;}
+  updateBallDisplay();
 }
 
 function submitSession(){
   stopTick();
   const key=myName.replace(/[^a-zA-Z0-9]/g,'_')+'_'+Date.now();
   const meta={name:myName,started_at:new Date().toISOString(),completed:true,total_pauses:pauseCount,total_balls:myBalls.length};
-  set(ref(db,'training/sessions/'+key),meta).then(()=>{myBalls.forEach(b=>push(ref(db,'training/sessions/'+key+'/balls'),b));});
+  set(ref(db,'training/sessions/'+key),meta).then(()=>{
+    myBalls.forEach(b=>push(ref(db,'training/sessions/'+key+'/balls'),b));
+  });
   localStorage.removeItem(LS);
   showScreen('doneScreen');
 }
 
-// ── JUDGE TABS ────────────────────────────────────────
-$('judgeTabs').querySelectorAll('.jtab').forEach(tab=>tab.addEventListener('click',()=>setJudgeTab(tab.dataset.tab)));
-function setJudgeTab(tab){
-  document.querySelectorAll('.jtab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
-  $('scoringArea').style.display=tab==='score'?'flex':'none';
-  $('refFeed').style.display=tab==='score'?'flex':'none';
-  $('traineesPanel').style.display=tab==='trainees'?'flex':'none';
-  $('resultsPanel').style.display=tab==='results'?'flex':'none';
-  $('keypadActions').style.display=tab==='score'?'flex':'none';
-  if(tab==='results')renderResults();
-}
-
-// ── TRAINEE MANAGEMENT ────────────────────────────────
-$('btnAddTrainee').addEventListener('click',()=>{
-  const n=$('tpName').value.trim(),p=$('tpPw').value.trim();
-  if(!n||!p){toast('Enter name and password');return;}
-  if(Object.values(allTrainees).some(t=>t.name.toLowerCase()===n.toLowerCase())){toast('Name already exists — choose a different name');return;}
-  push(traineesRef,{name:n,password:p,created_at:new Date().toISOString()});
-  $('tpName').value='';$('tpPw').value='';toast('Trainee added','ok');
-});
-$('btnSetJudgePw').addEventListener('click',()=>{
-  const p=$('judgeNewPw').value.trim();if(!p)return;
-  set(ref(db,'training/passwords/judge'),p);judgePw=p;$('judgeNewPw').value='';toast('Judge password set','ok');
-});
-function renderTraineeList(){
-  const list=$('traineeList');if(!list)return;
-  const entries=Object.entries(allTrainees);
-  if(!entries.length){list.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:8px;">No trainees yet</div>';return;}
-  list.innerHTML=entries.map(([key,t])=>`<div class="trainee-row"><span class="tr-name">${t.name}</span><span style="color:var(--muted);font-size:11px;">••••</span><button class="del-btn" data-tkey="${key}" style="padding:3px 8px;">✕</button></div>`).join('');
-  list.querySelectorAll('[data-tkey]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm(`Remove ${allTrainees[btn.dataset.tkey]?.name}?`))remove(ref(db,'training/trainees/'+btn.dataset.tkey));}));
-}
-
-// ── RESULTS ───────────────────────────────────────────
-function renderResults(){
-  const sessions=Object.entries(allSessions).filter(([,s])=>s.completed);
-  $('rpSub').textContent=`${refCount} ref balls · ${sessions.length} sessions`;
-  const tbody=$('resultsTbody');
-  if(!sessions.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;font-family:var(--font-mono);font-size:11px;">No sessions yet</td></tr>';return;}
-  const rows=sessions.map(([,s])=>{
-    const balls=Object.values(s.balls||{});if(!balls.length)return null;
-    const correct=balls.filter(b=>b.is_correct).length,acc=Math.round(correct/balls.length*100);
-    const reacts=balls.filter(b=>typeof b.reaction_seconds==='number').map(b=>b.reaction_seconds);
-    const avgR=reacts.length?reacts.reduce((a,b)=>a+b,0)/reacts.length:null;
-    const score=balls.reduce((a,b)=>a+(b.penalty||0),0);
-    return{name:s.name,balls:balls.length,acc,avgR,score,pauses:s.total_pauses||0};
-  }).filter(Boolean).sort((a,b)=>b.acc-a.acc);
-  tbody.innerHTML=rows.map(r=>`<tr><td style="font-family:var(--font-mono)">${r.name}</td><td style="font-family:var(--font-mono)">${r.balls}</td><td class="${r.acc>=80?'pos':r.acc<60?'neg':''}">${r.acc}%</td><td class="${r.avgR!==null&&r.avgR<2?'pos':r.avgR!==null&&r.avgR>4?'neg':''}">${r.avgR!==null?r.avgR.toFixed(2)+'s':'—'}</td><td class="${r.score>0?'pos':r.score<0?'neg':''}">${r.score>0?'+':''}${r.score.toFixed(1)}</td><td style="font-family:var(--font-mono)">${r.pauses}</td></tr>`).join('');
-}
-$('btnClearSessions').addEventListener('click',()=>{if(!confirm('Clear ALL sessions?'))return;remove(sessionsRef);toast('Cleared','ok');});
-$('btnExportCSV').addEventListener('click',()=>{
-  const sessions=Object.entries(allSessions).filter(([,s])=>s.completed);
-  if(!sessions.length){toast('No data');return;}
-  const rows=[['trainee','ball_num','label','keys','confirmed_key','judge_key','is_correct','penalty','reaction_s','timings_compact','pauses']];
-  sessions.forEach(([,s])=>{
-    Object.values(s.balls||{}).sort((a,b)=>(a.seq||0)-(b.seq||0)).forEach(b=>{
-      const jb=Object.values(allRefBalls).find(r=>r.seq===b.seq)||{};
-      rows.push([s.name,b.seq||'',b.label||'',b.keys||'',b.confirmed_key||'',jb.confirmed_key||'',b.is_correct?'yes':'no',b.penalty??'',b.reaction_seconds??'',b.timings_compact||'',s.total_pauses||0]);
-    });
-  });
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='training_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
-});
-
-// ── LOGOUT ────────────────────────────────────────────
-[$('btnKLogout'),$('btnWaitLogout'),$('btnVLogout')].forEach(btn=>{if(btn)btn.addEventListener('click',doLogout);});
+// LOGOUT
 function doLogout(){
   alertTimeouts.forEach(t=>clearTimeout(t));clearInterval(cdInterval);
-  videoPauseApi();stopTick();
-  ytPlayer=null;vmPlayer=null;videoPlatform=null;
-  $('playerContainer').innerHTML='';
-  sessionStarted=false;myName='';isJudge=false;resetState();
-  myBalls=[];currentSeq=1;sessionTimer=0;pauseCount=0;
-  alerted10=false;alerted2=false;alerted30=false;
+  clearInterval(heartbeatInterval);clearInterval(displayInterval);
+  videoPauseApi();stopTick();ytPlayer=null;vmPlayer=null;videoPlatform=null;
+  if($('playerContainer'))$('playerContainer').innerHTML='';
+  sessionStarted=false;myName='';resetState();myBalls=[];currentSeq=1;sessionTimer=0;pauseCount=0;
   $('loginName').value='';$('loginPw').value='';$('loginErr').textContent='';
+  $('btnReady').style.display='none';$('readyDone').style.display='none';
   $('cdDisplay').textContent='--:--';$('cdMsg').textContent='Waiting for judge to schedule the session';
-  $('btnReady').style.display='none';$('readyBadge').style.display='none';
   showScreen('loginScreen');
 }
+[$('btnWaitLogout'),$('btnVLogout'),$('btnKLogout')].forEach(btn=>{if(btn)btn.addEventListener('click',doLogout);});
 </script>
 </body>
 </html>
