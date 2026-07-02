@@ -121,12 +121,18 @@ body{display:flex;flex-direction:column;}
 
 <!-- WAIT SCREEN (countdown) -->
 <div class="screen" id="waitScreen">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px;overflow:hidden;min-height:0;">
     <div class="cd-label" id="cdLabel">Session starts in</div>
     <div class="cd-big" id="cdDisplay">--:--</div>
     <div class="cd-msg" id="cdMsg">Waiting for judge to schedule the session</div>
     <button class="ready-btn" id="btnReady">✓ I'm Ready</button>
     <div class="ready-done" id="readyDone">✓ Ready — waiting for session to start</div>
+    <!-- Practice keypad — nothing recorded, just warm up -->
+    <div style="width:100%;max-width:360px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+      <div style="font-size:10px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:0.07em;">Practice · nothing is recorded</div>
+      <div id="practiceDisplay" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 12px;min-height:36px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;"><span style="font-size:11px;color:var(--muted);">Try pressing keys below</span></div>
+      <div id="practiceKpad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0;"></div>
+    </div>
   </div>
   <div class="actions"><button class="btn danger" id="btnWaitLogout">Log Out</button></div>
 </div>
@@ -184,6 +190,8 @@ const configRef   = ref(db,'training/config');
 const refRef      = ref(db,'training/reference');
 const sessionsRef = ref(db,'training/sessions');
 const readyRef    = ref(db,'training/ready');
+function lobbyRefFor(name){return ref(db,'training/lobby/'+name.replace(/[^a-zA-Z0-9]/g,'_'));}
+function liveRefFor(name){return ref(db,'training/live/'+name.replace(/[^a-zA-Z0-9]/g,'_'));}
 
 const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
 
@@ -191,7 +199,6 @@ const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
 let myName='', allTrainees={}, allRefBalls={}, config={};
 let sessionTimer=0, timerTick=null, isPlaying=false, pauseCount=0;
 // Per-trainee playback sync (laptop video ↔ phone keypad) — keyed by trainee name
-// so multiple trainees scoring at once don't clobber each other's sync state.
 let playbackState={position:0,playing:false,updated_at:Date.now()};
 let heartbeatInterval=null, displayInterval=null;
 function playbackRefFor(name){return ref(db,'training/trainee_playback/'+name.replace(/[^a-zA-Z0-9]/g,'_'));}
@@ -203,6 +210,13 @@ let cState='scoring', cRunKey=null, cExtraKey=null, cAt=null, cKeys=[], cTimings
 let currentSeq=1, myBalls=[], refCount=0;
 let alertTimeouts=[], cdInterval=null;
 const LS='scout_v3';
+// Detailed pause tracking
+let pauseLog=[], lastPauseVideoPos=null;
+// Server time offset — calibrates this device's clock against Firebase server clock
+// so laptop and phone are always in sync even if their local clocks differ by seconds.
+let serverTimeOffset=0;
+onValue(ref(db,'.info/serverTimeOffset'),snap=>{serverTimeOffset=snap.val()||0;});
+function now(){return Date.now()+serverTimeOffset;} // use this everywhere instead of Date.now()
 
 // HELPERS
 function $(id){return document.getElementById(id);}
@@ -221,7 +235,7 @@ function formatMs(ms){const s=ms/1000,m=Math.floor(s/60),sec=(s%60).toFixed(1);r
 function getVS(){
   if(IS_VIDEO) return sessionTimer/1000;
   if(!playbackState) return 0;
-  if(playbackState.playing) return playbackState.position + (Date.now()-playbackState.updated_at)/1000;
+  if(playbackState.playing) return playbackState.position + (now()-playbackState.updated_at)/1000;
   return playbackState.position;
 }
 function getActualVideoTime(cb){
@@ -231,7 +245,7 @@ function getActualVideoTime(cb){
 }
 function pushPlaybackState(playing){
   if(!myName)return;
-  getActualVideoTime(pos=>{set(playbackRefFor(myName),{position:pos,playing,updated_at:Date.now()});});
+  getActualVideoTime(pos=>{set(playbackRefFor(myName),{position:pos,playing,updated_at:now()});});
 }
 function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$(IS_VIDEO?'vTimer':'kTimer').textContent=formatMs(sessionTimer);},100);}
 function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
@@ -284,26 +298,31 @@ function doLogin(){
   myName=account?account.name:name;
   if(IS_VIDEO){$('vName').textContent=myName;setVS('live','Connected');}
   else{$('kName').textContent=myName;setKS('live','Connected');}
-  // Check if session already started
+  // Write to lobby so judge can see this trainee and tap Go
+  set(lobbyRefFor(myName),{name:myName,status:'waiting',joined_at:new Date().toISOString()});
+  // Listen for judge tapping Go (Option C activation)
+  onValue(lobbyRefFor(myName),snap=>{
+    const lobby=snap.val();
+    if(!lobby||!myName)return;
+    if(lobby.status==='active'&&!sessionStarted)onSessionStart();
+  },()=>{});
+  // Check if session already started via schedule (fallback)
   if(config.session_started){onSessionStart();return;}
-  // Check if scheduled
-  if(config.scheduled_start_at){
-    showScreen('waitScreen');setupCountdown(config.scheduled_start_at);return;
-  }
-  // Waiting for judge
-  showScreen('waitScreen');$('cdMsg').textContent='Waiting for judge to schedule the session';
+  if(config.scheduled_start_at){showScreen('waitScreen');buildPracticeKeypad();setupCountdown(config.scheduled_start_at);return;}
+  // Waiting for judge to tap Go
+  showScreen('waitScreen');buildPracticeKeypad();$('cdMsg').textContent='Waiting for judge to start your session...';
 }
 
 // COUNTDOWN
 function setupCountdown(startAt){
   if(sessionStarted)return;
   clearInterval(cdInterval);alertTimeouts.forEach(t=>clearTimeout(t));alertTimeouts=[];
-  const now=Date.now(),rem=startAt-now;
+  const nowMs=now(),rem=startAt-nowMs;
   if(rem<=0){onSessionStart();return;}
-  showScreen('waitScreen');
+  showScreen('waitScreen');buildPracticeKeypad();
   // Update display every second
   cdInterval=setInterval(()=>{
-    const r=startAt-Date.now();
+    const r=startAt-now();
     if(r<=0){clearInterval(cdInterval);onSessionStart();return;}
     const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);
     $('cdDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
@@ -402,12 +421,46 @@ function initVideo(url){
   return true;
 }
 $('btnPausePlay').addEventListener('click',()=>{
-  if(isPlaying){videoPauseApi();pauseCount++;$('pauseInfo').textContent=`Pauses: ${pauseCount}`;}
-  else{videoPlay();}
+  if(isPlaying){
+    const pausePos=getVS();
+    lastPauseVideoPos=pausePos;
+    videoPauseApi();
+    pauseCount++;
+    pauseLog.push({at_video_s:parseFloat(pausePos.toFixed(2)),at_ball:currentSeq});
+    $('pauseInfo').textContent=`Pauses: ${pauseCount}`;
+  } else {
+    lastPauseVideoPos=null;
+    videoPlay();
+  }
 });
 
-// KEYPAD
+// Practice keypad — shown during countdown, nothing recorded
 const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
+function buildPracticeKeypad(){
+  const kp=$('practiceKpad');if(!kp)return;kp.innerHTML='';
+  let practiceKeys=[],clearTimer=null;
+  KEYS.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='key'+(k==='#'?' confirm':'');
+    btn.textContent=k==='#'?'# ▶':k;btn.style.touchAction='manipulation';
+    const onDown=()=>btn.classList.add('flash');
+    const onUp=()=>{
+      btn.classList.remove('flash');
+      practiceKeys.push(k);
+      $('practiceDisplay').innerHTML=practiceKeys.map(pk=>`<div class="k-chip">${pk}</div>`).join('');
+      clearTimeout(clearTimer);
+      clearTimer=setTimeout(()=>{
+        practiceKeys=[];
+        $('practiceDisplay').innerHTML='<span style="font-size:11px;color:var(--muted);">Try pressing keys below</span>';
+      },1500);
+    };
+    btn.addEventListener('touchstart',e=>{e.preventDefault();onDown();},{passive:false});
+    btn.addEventListener('touchend',e=>{e.preventDefault();onUp();},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();onDown();});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();onUp();});
+    kp.appendChild(btn);
+  });
+}
 function buildKeypad(){
   const kp=$('kpad');kp.innerHTML='';
   KEYS.forEach(k=>{
@@ -420,10 +473,10 @@ function buildKeypad(){
     kp.appendChild(btn);
   });
 }
-function kd(k,btn){if(ps!==null)return;ps=Date.now();pVS=getVS();btn.classList.add('flash');}
+function kd(k,btn){if(ps!==null)return;ps=now();pVS=getVS();btn.classList.add('flash');}
 function ku(k,btn){
   if(ps===null)return;
-  const dur=Math.min(Date.now()-ps,800); // cap at 800ms — anything longer is a ghost/synthetic event
+  const dur=Math.min(now()-ps,800); // cap at 800ms — anything longer is a ghost/synthetic event
   const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
   if(k==='#'){if(cState==='scoring'){toast('Double press first!');return;}commitBall();return;}
   if(cState==='full-conf'||cState==='wicket')return;
@@ -441,9 +494,7 @@ function ku(k,btn){
 function renderKeys(){
   const box=$('keysBox');
   if(!cKeys.length){box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>';return;}
-  box.innerHTML=cTimings.map(t=>`<div class="k-chip">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('')+
-    `<button id="clrK" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-size:10px;padding:2px 7px;cursor:pointer;flex-shrink:0;">✕</button>`;
-  $('clrK').addEventListener('click',()=>{resetState();renderKeys();updateKpad();});
+  box.innerHTML=cTimings.map(t=>`<div class="k-chip">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('');
 }
 function resetState(){cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];}
 function updateKpad(){
@@ -485,6 +536,9 @@ function commitBall(){
     timings_compact:timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',')};
   myBalls.push(ballData);
   if(!isWide&&!isNoBall)currentSeq++;
+  // Write to live path immediately so judge can see this ball in real time
+  set(ref(db,'training/live/'+myName.replace(/[^a-zA-Z0-9]/g,'_')+'/'+seq),{seq,label:lbl,confirmed_key:runKey,
+    is_correct:ballData.is_correct,reaction_seconds:ballData.reaction_seconds,penalty:ballData.penalty});
   // Save to localStorage on every ball
   try{localStorage.setItem(LS,JSON.stringify({name:myName,balls:myBalls,seq:currentSeq,timer:sessionTimer}));}catch(e){}
   resetState();renderKeys();updateKpad();
@@ -496,11 +550,15 @@ function commitBall(){
 function submitSession(){
   stopTick();
   const key=myName.replace(/[^a-zA-Z0-9]/g,'_')+'_'+Date.now();
-  const meta={name:myName,started_at:new Date().toISOString(),completed:true,total_pauses:pauseCount,total_balls:myBalls.length};
+  const meta={name:myName,started_at:new Date().toISOString(),completed:true,
+    total_pauses:pauseCount,total_balls:myBalls.length,
+    pause_log:pauseLog};
   set(ref(db,'training/sessions/'+key),meta).then(()=>{
     myBalls.forEach(b=>push(ref(db,'training/sessions/'+key+'/balls'),b));
   });
   localStorage.removeItem(LS);
+  // Mark lobby as done so judge can see session completed
+  set(lobbyRefFor(myName),{name:myName,status:'done',completed_at:new Date().toISOString()});
   showScreen('doneScreen');
 }
 
@@ -511,6 +569,7 @@ function doLogout(){
   videoPauseApi();stopTick();ytPlayer=null;vmPlayer=null;videoPlatform=null;
   if($('playerContainer'))$('playerContainer').innerHTML='';
   sessionStarted=false;myName='';resetState();myBalls=[];currentSeq=1;sessionTimer=0;pauseCount=0;
+  pauseLog=[];lastPauseVideoPos=null;
   $('loginName').value='';$('loginPw').value='';$('loginErr').textContent='';
   $('btnReady').style.display='none';$('readyDone').style.display='none';
   $('cdDisplay').textContent='--:--';$('cdMsg').textContent='Waiting for judge to schedule the session';

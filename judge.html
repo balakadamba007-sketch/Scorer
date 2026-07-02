@@ -10,15 +10,12 @@
 :root{
   --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--text:#f0f0f0;--muted:#555;
   --accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--red:#ff4d4d;--red-dim:rgba(255,77,77,0.1);
-  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--blue:#4da6ff;--blue-dim:rgba(77,166,255,0.1);
-  --green:#33ff99;--green-dim:rgba(51,255,153,0.1);--colJ:#ff6eb5;--colJ-dim:rgba(255,110,181,0.1);
-  --font-mono:'IBM Plex Mono',monospace;
+  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--blue:#4da6ff;--green:#33ff99;--green-dim:rgba(51,255,153,0.1);
+  --colJ:#ff6eb5;--colJ-dim:rgba(255,110,181,0.1);--font-mono:'IBM Plex Mono',monospace;
 }
 html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-mono);}
 body{display:flex;flex-direction:column;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
-
-/* SCREENS */
 .screen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 .screen.active{display:flex;}
 
@@ -64,8 +61,7 @@ body{display:flex;flex-direction:column;}
 .keypad.run-conf .key[data-key="7"],.keypad.run-conf .key[data-key="9"],.keypad.run-conf .key.confirm{opacity:1;pointer-events:all;}
 .keypad.full-conf .key{opacity:0.15;pointer-events:none;}
 .keypad.full-conf .key.confirm{opacity:1;pointer-events:all;}
-/* Ref feed */
-.ref-feed{max-height:18vh;overflow-y:auto;padding-bottom:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.ref-feed{max-height:20vh;overflow-y:auto;padding-bottom:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
 .ref-row{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;}
 .ref-label{color:var(--colJ);font-weight:600;min-width:32px;}
 .ref-keys{display:flex;gap:3px;flex:1;flex-wrap:wrap;}
@@ -74,41 +70,66 @@ body{display:flex;flex-direction:column;}
 .del-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-size:10px;cursor:pointer;padding:1px 6px;}
 .del-btn:active{border-color:var(--red);color:var(--red);}
 
-/* VIDEO SCREEN (judge.html?video) */
+/* VIDEO SCREEN */
 #videoScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 #videoScreen.active{display:flex;}
-/* Tabs */
 .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.tab{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-family:var(--font-mono);font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.05em;}
+.tab{flex:1;padding:9px 4px;border:none;background:none;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;}
 .tab.active{color:var(--colJ);border-bottom:2px solid var(--colJ);background:var(--colJ-dim);}
 .tab-panel{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 .tab-panel.active{display:flex;}
-/* Video tab */
+
+/* VIDEO TAB */
 #tabVideo{flex-direction:column;}
 #playerContainer{flex:1;background:#000;min-height:0;position:relative;}
 #playerContainer iframe,#playerContainer div{width:100%!important;height:100%!important;}
 .video-controls{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
-.vc-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:all 0.12s;}
+.vc-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:6px 12px;cursor:pointer;white-space:nowrap;}
 .vc-btn:hover{border-color:var(--colJ);color:var(--colJ);}
 .vc-btn.danger{border-color:var(--red);color:var(--red);}
 .vc-btn.warn{border-color:var(--orange);color:var(--orange);}
-.vc-time{font-size:11px;color:var(--muted);margin-left:auto;}
-/* URL setup */
-.url-setup{padding:12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.url-setup{padding:10px 12px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;border-bottom:1px solid var(--border);}
 .url-row{display:flex;gap:8px;}
 .url-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:8px 12px;outline:none;}
 .url-input:focus{border-color:var(--colJ);}
 .url-btn{background:none;border:1px solid var(--colJ);border-radius:7px;color:var(--colJ);font-family:var(--font-mono);font-size:12px;padding:8px 12px;cursor:pointer;white-space:nowrap;}
-/* Schedule tab */
-#tabSchedule{padding:12px;gap:10px;}
-.sec-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;}
-.schedule-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:8px 12px;outline:none;margin-bottom:8px;}
+
+/* SESSION TAB */
+#tabSession{overflow-y:auto;padding:12px;gap:12px;}
+.sec-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.sch-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.schedule-input{flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:12px;padding:7px 10px;outline:none;}
 .schedule-input:focus{border-color:var(--colJ);}
-.sch-btns{display:flex;gap:8px;}
-.sch-status{font-size:11px;color:var(--orange);margin-top:4px;}
-.ready-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-.ready-chip{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid var(--green);}
-/* Trainees tab */
+.sch-status{font-size:11px;color:var(--orange);margin-top:3px;}
+/* Lobby */
+.lobby-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:5px;}
+.lobby-name{font-weight:600;color:var(--accent);flex:1;}
+.lobby-badge{font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid var(--border);color:var(--muted);}
+.lobby-badge.waiting{color:var(--orange);border-color:var(--orange);}
+.lobby-badge.active{color:var(--green);border-color:var(--green);background:var(--green-dim);}
+.lobby-badge.done{color:var(--muted);border-color:var(--border);}
+.go-btn{background:none;border:1px solid var(--green);border-radius:6px;color:var(--green);font-family:var(--font-mono);font-size:11px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
+.go-btn:active{background:var(--green);color:var(--bg);}
+.go-btn:disabled{opacity:0.3;pointer-events:none;}
+/* Live scoring */
+.live-wrap{display:flex;gap:8px;overflow-x:auto;min-height:120px;padding-bottom:4px;}
+.live-col{min-width:190px;flex-shrink:0;display:flex;flex-direction:column;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.live-col-header{padding:6px 10px;font-size:11px;font-weight:600;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.live-col-name{color:var(--accent);}
+.live-col-count{font-size:10px;color:var(--muted);}
+.live-balls{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.live-ball-row{display:flex;align-items:center;gap:5px;padding:4px 8px;border-bottom:1px solid var(--border);font-size:11px;}
+.live-ball-row.correct{background:rgba(51,255,153,0.06);}
+.live-ball-row.wrong{background:rgba(255,77,77,0.06);}
+.live-lbl{color:var(--orange);font-weight:600;min-width:28px;}
+.live-key{padding:1px 5px;border-radius:4px;font-weight:600;font-size:12px;}
+.live-key.t{color:var(--accent);background:var(--accent-dim);border:1px solid rgba(200,241,53,0.2);}
+.live-key.j{color:var(--colJ);background:var(--colJ-dim);border:1px solid rgba(255,110,181,0.2);}
+.live-react{font-size:10px;margin-left:auto;}
+.live-react.fast{color:var(--green);}.live-react.slow{color:var(--red);}.live-react.mid{color:var(--muted);}
+.live-empty{font-size:11px;color:var(--muted);padding:12px;text-align:center;}
+
+/* TRAINEES TAB */
 #tabTrainees{padding:12px;gap:10px;overflow-y:auto;}
 .tp-row{display:flex;gap:6px;margin-bottom:8px;}
 .tp-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:7px 10px;outline:none;}
@@ -116,7 +137,8 @@ body{display:flex;flex-direction:column;}
 .tp-btn{background:none;border:1px solid var(--colJ);border-radius:7px;color:var(--colJ);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;}
 .trainee-row{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:5px;}
 .tr-name{font-weight:600;color:var(--accent);flex:1;}
-/* Results tab */
+
+/* RESULTS TAB */
 #tabResults{padding:12px;gap:8px;overflow:hidden;}
 .rt-wrap{flex:1;overflow-y:auto;min-height:0;}
 .rt{width:100%;border-collapse:collapse;font-size:12px;}
@@ -140,7 +162,7 @@ body{display:flex;flex-direction:column;}
 <div class="screen active" id="loginScreen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;">
     <div class="login-title">⚖ Judge</div>
-    <div class="login-sub" id="loginSub">Reference Scorer</div>
+    <div class="login-sub" id="loginSub">Reference Scorer · Control Panel</div>
     <div class="login-form">
       <input class="f-input" id="loginPw" type="password" placeholder="Judge password"/>
       <div class="f-err" id="loginErr"></div>
@@ -158,10 +180,7 @@ body{display:flex;flex-direction:column;}
   <div class="status-bar"><div class="dot" id="kDot"></div><span id="kStatus">Connecting...</span></div>
   <div class="scoring-area">
     <div class="ball-indicator">
-      <div>
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Reference Ball</div>
-        <div class="b-id" id="bId">1.1</div>
-      </div>
+      <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;">Reference Ball</div><div class="b-id" id="bId">1.1</div></div>
       <div class="b-status" id="bStatus">Double press to confirm</div>
     </div>
     <div class="keys-box" id="keysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
@@ -170,7 +189,7 @@ body{display:flex;flex-direction:column;}
   </div>
   <div class="actions">
     <button class="btn danger" id="btnClearRef">Clear Ref</button>
-    <button class="btn" id="btnExportRef">Export Ref CSV</button>
+    <button class="btn" id="btnExportRef">Export CSV</button>
     <button class="btn ok" id="btnDone">Done Scoring</button>
     <button class="btn" id="btnKLogout">Log Out</button>
   </div>
@@ -185,7 +204,7 @@ body{display:flex;flex-direction:column;}
   <div class="status-bar"><div class="dot" id="vDot"></div><span id="vStatus">Connecting...</span></div>
   <div class="tabs">
     <button class="tab active" data-tab="tabVideo">📹 Video</button>
-    <button class="tab" data-tab="tabSchedule">⏰ Schedule</button>
+    <button class="tab" data-tab="tabSession">🎯 Session</button>
     <button class="tab" data-tab="tabTrainees">👥 Trainees</button>
     <button class="tab" data-tab="tabResults">📊 Results</button>
   </div>
@@ -205,32 +224,32 @@ body{display:flex;flex-direction:column;}
       <button class="vc-btn" id="btnPlayPause">▶ Play</button>
       <button class="vc-btn warn" id="btnPauseAll">⏸ Pause All</button>
       <button class="vc-btn danger" id="btnChangeUrl">🔗 Change URL</button>
-      <span class="vc-time" id="vTime">0.0s</span>
+      <span style="font-size:11px;color:var(--muted);margin-left:auto;" id="vTime">0.0s</span>
     </div>
   </div>
 
-  <!-- SCHEDULE TAB -->
-  <div class="tab-panel" id="tabSchedule" style="overflow-y:auto;">
-    <div style="padding:12px;display:flex;flex-direction:column;gap:10px;">
-      <div>
-        <div class="sec-title">Schedule Start Time (your local time)</div>
+  <!-- SESSION TAB -->
+  <div class="tab-panel" id="tabSession">
+    <!-- Schedule (optional — for simultaneous starts) -->
+    <div style="padding:12px 12px 0;">
+      <div class="sec-title">Optional: Schedule simultaneous start</div>
+      <div class="sch-row">
         <input type="datetime-local" class="schedule-input" id="scheduleInput"/>
-        <div class="sch-btns">
-          <button class="url-btn" id="btnSchedule">Schedule ▶</button>
-          <button class="url-btn" style="border-color:var(--orange);color:var(--orange);" id="btnStartNow">Start Now</button>
-          <button class="url-btn" style="border-color:var(--red);color:var(--red);" id="btnResetSession">↺ Reset</button>
-        </div>
-        <div class="sch-status" id="schStatus">No session scheduled</div>
+        <button class="url-btn" id="btnSchedule">Schedule</button>
+        <button class="url-btn" style="border-color:var(--orange);color:var(--orange);" id="btnStartNow">Now</button>
+        <button class="url-btn" style="border-color:var(--red);color:var(--red);" id="btnResetSession">↺ Reset</button>
       </div>
-      <div>
-        <div class="sec-title">Who's Ready</div>
-        <div class="ready-list" id="readyList"><span style="font-size:11px;color:var(--muted);">No one yet</span></div>
-      </div>
-      <div>
-        <div class="sec-title">Ref balls scored</div>
-        <div style="font-size:13px;color:var(--colJ);" id="refCount">0 balls</div>
-        <div id="refViewer" style="max-height:20vh;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-top:6px;"></div>
-      </div>
+      <div class="sch-status" id="schStatus">—</div>
+    </div>
+    <!-- Lobby -->
+    <div style="padding:12px 12px 0;">
+      <div class="sec-title">Lobby — tap ▶ Go to start each trainee individually</div>
+      <div id="lobbyList"><div style="font-size:11px;color:var(--muted);">No trainees connected yet</div></div>
+    </div>
+    <!-- Live scoring -->
+    <div style="padding:12px;flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
+      <div class="sec-title">Live Scoring — updates as each trainee scores</div>
+      <div class="live-wrap" id="liveWrap"><div class="live-empty">No active sessions yet</div></div>
     </div>
   </div>
 
@@ -256,12 +275,12 @@ body{display:flex;flex-direction:column;}
       </div>
     </div>
     <div class="actions">
-      <button class="btn danger" id="btnClearSessions">Clear</button>
+      <button class="btn danger" id="btnClearSessions">Clear Sessions</button>
       <button class="btn ok" id="btnExport">Export CSV</button>
     </div>
   </div>
 
-  <div class="actions" id="vActions">
+  <div class="actions">
     <button class="btn" id="btnVLogout">Log Out</button>
   </div>
 </div>
@@ -279,21 +298,22 @@ const configRef   = ref(db,'training/config');
 const refRef      = ref(db,'training/reference');
 const sessionsRef = ref(db,'training/sessions');
 const readyRef    = ref(db,'training/ready');
-const playbackRef = ref(db,'training/judge_playback');
+const lobbyRef    = ref(db,'training/lobby');
+const liveRef     = ref(db,'training/live');
 
 const IS_VIDEO = new URLSearchParams(window.location.search).has('video');
 
 // STATE
-let judgePw='', allTrainees={}, allRefBalls={}, allSessions={}, config={}, allReady={};
+let judgePw='', allTrainees={}, allRefBalls={}, allSessions={}, config={}, allLobby={}, allLive={};
 let sessionTimer=0, timerTick=null, isPlaying=false;
 let videoPlatform=null, ytPlayer=null, vmPlayer=null;
-// Cross-device playback sync (laptop ↔ phone for solo judge reference scoring)
-let playbackState={position:0,playing:false,updated_at:Date.now()};
-let heartbeatInterval=null, displayInterval=null;
-// Ball state
 const RK=new Set(['0','1','2','3','4','6','7','9','*']), EK=new Set(['7','9']);
 let cState='scoring', cRunKey=null, cExtraKey=null, cAt=null, cKeys=[], cTimings=[], ps=null, pVS=null;
-let alertTimeouts=[], cdInterval=null;
+let heartbeatInterval=null;
+// Server time calibration
+let serverTimeOffset=0;
+onValue(ref(db,'.info/serverTimeOffset'),snap=>{serverTimeOffset=snap.val()||0;});
+function now(){return Date.now()+serverTimeOffset;}
 
 // HELPERS
 function $(id){return document.getElementById(id);}
@@ -302,52 +322,27 @@ function toast(m,type='err'){const t=$('toast');t.textContent=m;t.className='toa
 function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
 function seqLbl(seq){return`${Math.floor((seq-1)/6)+1}.${((seq-1)%6)+1}`;}
 function formatMs(ms){const s=ms/1000,m=Math.floor(s/60),sec=(s%60).toFixed(1);return`${String(m).padStart(2,'0')}:${sec.padStart(4,'0')}`;}
-// getVS() returns current "video seconds" — the single source of truth for ball timestamps.
-// On laptop (IS_VIDEO): driven directly by the actual video player, tied to play/pause events.
-// On phone (keypad): computed from the broadcasted playbackState + wall-clock extrapolation
-// since the last update. Every play/pause event on laptop resets this baseline, so drift
-// only accumulates during a single continuous play — kept small by a 2s heartbeat too.
-function getVS(){
-  if(IS_VIDEO) return sessionTimer/1000;
-  if(!playbackState) return 0;
-  if(playbackState.playing) return playbackState.position + (Date.now()-playbackState.updated_at)/1000;
-  return playbackState.position;
-}
-function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$('vTimer').textContent=formatMs(sessionTimer);},100);}
-function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
-// Get the ACTUAL current video position from the player (laptop side only)
+function getVS(){return sessionTimer/1000;}
 function getActualVideoTime(cb){
   if(videoPlatform==='youtube'&&ytPlayer&&ytPlayer.getCurrentTime)cb(ytPlayer.getCurrentTime());
   else if(videoPlatform==='vimeo'&&vmPlayer&&vmPlayer.getCurrentTime)vmPlayer.getCurrentTime().then(cb).catch(()=>cb(sessionTimer/1000));
-  else cb(sessionTimer/1000); // dailymotion fallback — wall-clock estimate
+  else cb(sessionTimer/1000);
 }
-// Broadcast current playback state to Firebase so the phone can sync to it
 function pushPlaybackState(playing){
-  getActualVideoTime(pos=>{
-    set(playbackRef,{position:pos,playing,updated_at:Date.now()});
-  });
+  getActualVideoTime(pos=>{set(ref(db,'training/judge_playback'),{position:pos,playing,updated_at:now()});});
 }
+function startTick(){if(isPlaying)return;isPlaying=true;timerTick=setInterval(()=>{sessionTimer+=100;$(IS_VIDEO?'vTimer':'kTimer').textContent=formatMs(sessionTimer);},100);}
+function stopTick(){if(!isPlaying)return;isPlaying=false;clearInterval(timerTick);}
 
 // BEEPS
 function beep(f=880,d=0.25,v=0.4){try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
 function beep2(){beep(880,0.2);setTimeout(()=>beep(880,0.2),350);}
-function beep3(){beep(660,0.15);setTimeout(()=>beep(880,0.15),220);setTimeout(()=>beep(1100,0.3),440);}
 
-// VIDEO API
+// VIDEO
 function detectPlatform(url){if(/youtube\.com|youtu\.be/.test(url))return'youtube';if(/vimeo\.com/.test(url))return'vimeo';if(/dailymotion\.com/.test(url))return'dailymotion';return null;}
 function extractId(url,p){try{if(p==='youtube'){const m=url.match(/(?:v=|youtu\.be\/)([^&?/\s]+)/);return m?m[1]:null;}if(p==='vimeo'){const m=url.match(/vimeo\.com\/(\d+)/);return m?m[1]:null;}if(p==='dailymotion'){const m=url.match(/dailymotion\.com\/video\/([^_?\s]+)/);return m?m[1]:null;}}catch(e){}return null;}
-function onVPlay(){
-  startTick();$('btnPlayPause').textContent='⏸ Pause';
-  pushPlaybackState(true);
-  // Heartbeat every 2s while playing — corrects drift from buffering on the phone's clock
-  clearInterval(heartbeatInterval);
-  heartbeatInterval=setInterval(()=>{if(isPlaying)pushPlaybackState(true);},2000);
-}
-function onVPause(){
-  stopTick();$('btnPlayPause').textContent='▶ Play';
-  pushPlaybackState(false);
-  clearInterval(heartbeatInterval);
-}
+function onVPlay(){startTick();$('btnPlayPause').textContent='⏸ Pause';pushPlaybackState(true);clearInterval(heartbeatInterval);heartbeatInterval=setInterval(()=>{if(isPlaying)pushPlaybackState(true);},2000);}
+function onVPause(){stopTick();$('btnPlayPause').textContent='▶ Play';pushPlaybackState(false);clearInterval(heartbeatInterval);}
 function vPlay(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.playVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.play();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'play'}),'*');}}
 function vPause(){if(videoPlatform==='youtube'&&ytPlayer)ytPlayer.pauseVideo();else if(videoPlatform==='vimeo'&&vmPlayer)vmPlayer.pause();else if(videoPlatform==='dailymotion'){const f=document.querySelector('#playerContainer iframe');if(f)f.contentWindow.postMessage(JSON.stringify({command:'pause'}),'*');}}
 function loadYT(id){$('playerContainer').innerHTML='<div id="ytDiv" style="width:100%;height:100%;"></div>';const init=()=>{ytPlayer=new YT.Player('ytDiv',{videoId:id,height:'100%',width:'100%',playerVars:{playsinline:1,controls:1,rel:0,modestbranding:1},events:{onReady:()=>setS('v','live','Video ready'),onStateChange:(e)=>{if(e.data===1)onVPlay();else if(e.data===2||e.data===0)onVPause();}}});};if(window.YT?.Player){init();return;}const tag=document.createElement('script');tag.src='https://www.youtube.com/iframe_api';document.head.appendChild(tag);window.onYouTubeIframeAPIReady=init;}
@@ -362,52 +357,47 @@ onValue(refRef,snap=>{
   allRefBalls=snap.val()||{};renderRefFeed();updateBallDisplay();
   const n=Object.keys(allRefBalls).length;
   if($('refCount'))$('refCount').textContent=`${n} ball${n!==1?'s':''} scored`;
-  if($('refViewer')){
-    const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-    $('refViewer').innerHTML=balls.length?[...balls].reverse().map(([fbKey,b])=>{
-      const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
-      return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-rdel="${fbKey}">✕</button></div>`;
-    }).join(''):'<div style="font-size:11px;color:var(--muted);">No reference scored yet — use judge.html on phone</div>';
-    $('refViewer').querySelectorAll('[data-rdel]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.rdel));}));
-  }
+  if($('refViewer'))renderRefViewer();
 },()=>{});
 onValue(sessionsRef,snap=>{allSessions=snap.val()||{};renderResults();},()=>{});
-onValue(readyRef,snap=>{allReady=snap.val()||{};renderReady();},()=>{});
+onValue(lobbyRef,snap=>{allLobby=snap.val()||{};renderLobby();},()=>{});
+onValue(liveRef,snap=>{allLive=snap.val()||{};renderLive();},()=>{});
 onValue(configRef,snap=>{
   config=snap.val()||{};
-  // Pause all handling
   if(IS_VIDEO&&config.paused_at&&isPlaying)vPause();
-  // Update schedule status
-  if(IS_VIDEO&&config.scheduled_start_at){
+  if(IS_VIDEO&&config.scheduled_start_at&&$('schStatus')){
     const t=new Date(config.scheduled_start_at);
-    if($('schStatus'))$('schStatus').textContent=`Scheduled: ${t.toLocaleTimeString('en-GB',{timeZone:'Europe/London'})} UK`;
+    $('schStatus').textContent=`Scheduled: ${t.toLocaleTimeString('en-GB',{timeZone:'Europe/London'})} UK`;
   }
 },()=>{});
 
 $('btnLogin').addEventListener('click',doLogin);
 $('loginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function doLogin(){
-  const pw=$('loginPw').value.trim();
-  const err=$('loginErr');
+  const pw=$('loginPw').value.trim(),err=$('loginErr');
   if(judgePw&&pw!==judgePw){err.textContent='Wrong password';return;}
   if(!pw&&judgePw){err.textContent='Enter judge password';return;}
-  // Login successful
   $('loginScreen').classList.remove('active');
   if(IS_VIDEO){$('videoScreen').classList.add('active');afterLoginVideo();}
   else{$('keypadScreen').classList.add('active');afterLoginKeypad();}
 }
 
-// KEYPAD MODE (judge.html)
+// ── KEYPAD MODE ────────────────────────────────────────
 function afterLoginKeypad(){
   setS('k','live','Connected');
   buildKeypad();renderRefFeed();updateBallDisplay();
-  // Listen for the laptop's playback state — this is what drives the phone's timer
-  onValue(playbackRef,snap=>{
-    playbackState=snap.val()||{position:0,playing:false,updated_at:Date.now()};
+  // Listen to judge playback state (laptop) to sync phone timer
+  onValue(ref(db,'training/judge_playback'),snap=>{
+    const pb=snap.val()||{position:0,playing:false,updated_at:now()};
+    // Update timer display on phone based on laptop's video position
+    if(pb.playing){
+      const pos=pb.position+(now()-pb.updated_at)/1000;
+      sessionTimer=pos*1000;
+    } else {
+      sessionTimer=pb.position*1000;
+    }
+    $('kTimer').textContent=formatMs(sessionTimer);
   },()=>{});
-  // Visual ticker — purely for display, the actual ball timestamps always use getVS() fresh
-  clearInterval(displayInterval);
-  displayInterval=setInterval(()=>{$('kTimer').textContent=formatMs(getVS()*1000);},100);
 }
 
 const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
@@ -423,11 +413,10 @@ function buildKeypad(){
     kp.appendChild(btn);
   });
 }
-function kd(k,btn){if(ps!==null)return;ps=Date.now();pVS=getVS();btn.classList.add('flash');}
+function kd(k,btn){if(ps!==null)return;ps=now();pVS=getVS();btn.classList.add('flash');}
 function ku(k,btn){
   if(ps===null)return;
-  const dur=Math.min(Date.now()-ps,800); // cap at 800ms — anything longer is a ghost/synthetic event
-  const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
+  const dur=Math.min(now()-ps,800);const vs=pVS;ps=null;pVS=null;btn.classList.remove('flash');
   if(k==='#'){if(cState==='scoring'){toast('Double press first!');return;}commitBall();return;}
   if(cState==='full-conf'||cState==='wicket')return;
   if(cState==='run_conf'){
@@ -455,9 +444,7 @@ function updateKpad(){
   else if(cState==='run_conf'){if(kp)kp.className='keypad run-conf';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}st.textContent=`[${cRunKey}] · add 7/9 or #`;st.className='b-status run-conf';}
   else{if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}st.textContent='Double press to confirm';st.className='b-status';}
 }
-function updateBallDisplay(){
-  const seq=getNextRefSeq();$('bId').textContent=seqLbl(seq);
-}
+function updateBallDisplay(){const seq=getNextRefSeq();if($('bId'))$('bId').textContent=seqLbl(seq);}
 function getNextRefSeq(){const s=Object.values(allRefBalls).map(b=>b.seq||0);return s.length?Math.max(...s)+1:1;}
 function commitBall(){
   const seq=getNextRefSeq();
@@ -466,36 +453,43 @@ function commitBall(){
   const isWide=extraKey==='7',isNoBall=extraKey==='9';
   const legalBefore=Object.values(allRefBalls).filter(b=>!b.is_wide&&!b.is_noball).length;
   const lbl=isWide?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}w`:isNoBall?`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}nb`:`${Math.floor(legalBefore/6)+1}.${(legalBefore%6)+1}`;
-  push(refRef,{seq,label:lbl,keys:keysSnap.join(' '),confirmed_key:runKey,confidence:runKey==='*'?'certain':'confirmed',
-    is_wide:isWide,is_noball:isNoBall,confirmed_at:atSnap,video_seconds:getVS(),
+  push(refRef,{seq,label:lbl,keys:keysSnap.join(' '),confirmed_key:runKey,
+    confidence:runKey==='*'?'certain':'confirmed',is_wide:isWide,is_noball:isNoBall,
+    confirmed_at:atSnap,video_seconds:getVS(),
     timings_compact:timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',')});
   resetState();renderKeys();updateKpad();
 }
 function renderRefFeed(){
   const feed=$('refFeed');if(!feed)return;
   const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  if(!balls.length){feed.innerHTML='<div style="font-size:11px;color:var(--muted);padding:4px 0;">Score each ball · double press to confirm · # to advance</div>';return;}
-  const header=`<div style="font-size:10px;color:var(--colJ);padding:2px 0 4px;text-transform:uppercase;letter-spacing:0.06em;">${balls.length} ball${balls.length!==1?'s':''} scored — scroll to see all</div>`;
+  const header=balls.length?`<div style="font-size:10px;color:var(--colJ);padding:2px 0 4px;">${balls.length} ball${balls.length!==1?'s':''} scored</div>`:'';
   feed.innerHTML=header+[...balls].reverse().map(([fbKey,b])=>{
     const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
     return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-del="${fbKey}">✕</button></div>`;
   }).join('');
   feed.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete this ball?'))remove(ref(db,'training/reference/'+btn.dataset.del));}));
 }
-$('btnClearRef').addEventListener('click',()=>{if(confirm('Clear ALL reference balls?'))remove(refRef);});
+function renderRefViewer(){
+  const viewer=$('refViewer');if(!viewer)return;
+  const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  viewer.innerHTML=[...balls].reverse().map(([fbKey,b])=>{
+    const chips=(b.keys||'').split(' ').filter(Boolean).map(k=>`<span class="ref-key">${k}</span>`).join('');
+    return`<div class="ref-row"><span class="ref-label">${b.label||''}</span><div class="ref-keys">${chips}</div><span class="ref-time">@${(b.video_seconds||0).toFixed(1)}s</span><button class="del-btn" data-rdel="${fbKey}">✕</button></div>`;
+  }).join('')||'<div style="font-size:11px;color:var(--muted);">No reference yet — score using judge.html on phone</div>';
+  viewer.querySelectorAll('[data-rdel]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm('Delete?'))remove(ref(db,'training/reference/'+btn.dataset.rdel));}));
+}
+$('btnClearRef').addEventListener('click',()=>{if(!confirm('Clear reference balls only? Trainee sessions unaffected.'))return;remove(refRef);set(ref(db,'training/config/reference_complete'),false);toast('Reference cleared','ok');});
 $('btnExportRef').addEventListener('click',()=>{
   const balls=Object.entries(allRefBalls).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  if(!balls.length){toast('No reference balls to export');return;}
+  if(!balls.length){toast('No reference balls');return;}
   const rows=[['ball','label','keys','confirmed_key','confidence','is_wide','is_noball','video_seconds','timings']];
   balls.forEach(([,b])=>rows.push([b.seq||'',b.label||'',b.keys||'',b.confirmed_key||'',b.confidence||'',b.is_wide?'yes':'no',b.is_noball?'yes':'no',(b.video_seconds||0).toFixed(2),b.timings_compact||'']));
-  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='reference_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+  exportCSVData(rows,'reference_'+new Date().toISOString().slice(0,10));
 });
 $('btnDone').addEventListener('click',()=>{set(ref(db,'training/config/reference_complete'),true);toast('Reference saved ✓','ok');});
 $('btnKLogout').addEventListener('click',doLogout);
 
-// VIDEO MODE (judge.html?video)
+// ── VIDEO MODE ─────────────────────────────────────────
 function afterLoginVideo(){
   setS('v','live','Connected');
   if(config.clip_url){$('urlSetup').style.display='none';initVideo(config.clip_url);}
@@ -515,38 +509,87 @@ $('btnChangeUrl').addEventListener('click',()=>{
 $('btnPlayPause').addEventListener('click',()=>{if(isPlaying)vPause();else vPlay();});
 $('btnPauseAll').addEventListener('click',()=>{
   if(config.paused_at){set(ref(db,'training/config/paused_at'),null);toast('Resumed for all','ok');$('btnPauseAll').textContent='⏸ Pause All';}
-  else{set(ref(db,'training/config/paused_at'),Date.now());toast('Paused for all','info');$('btnPauseAll').textContent='▶ Resume All';vPause();}
+  else{set(ref(db,'training/config/paused_at'),now());toast('Paused for all','info');$('btnPauseAll').textContent='▶ Resume All';vPause();}
 });
 $('btnSchedule').addEventListener('click',()=>{
   const val=$('scheduleInput').value;if(!val){toast('Pick a time');return;}
   const ts=new Date(val).getTime();if(isNaN(ts)||ts<Date.now()){toast('Pick a future time');return;}
   set(ref(db,'training/config/scheduled_start_at'),ts);set(ref(db,'training/config/session_started'),false);
   toast('Scheduled ✓','ok');
-  scheduleAlerts(ts);
 });
 $('btnStartNow').addEventListener('click',()=>{
-  if(!confirm('Start session now for all trainees?'))return;
-  set(ref(db,'training/config/scheduled_start_at'),Date.now());
+  if(!confirm('Start ALL connected trainees simultaneously?'))return;
+  set(ref(db,'training/config/scheduled_start_at'),now());
   set(ref(db,'training/config/session_started'),true);
-  vPlay();startTick();toast('Session started!','ok');
+  vPlay();startTick();toast('Session started for all!','ok');
 });
 $('btnResetSession').addEventListener('click',()=>{
   if(!confirm('Reset session? Trainees will need to re-login.'))return;
   set(ref(db,'training/config/session_started'),false);
   set(ref(db,'training/config/scheduled_start_at'),null);
   set(ref(db,'training/config/paused_at'),null);
-  remove(readyRef);
-  alertTimeouts.forEach(t=>clearTimeout(t));alertTimeouts=[];
-  $('schStatus').textContent='Session reset';
+  remove(readyRef);remove(lobbyRef);remove(liveRef);
+  if($('schStatus'))$('schStatus').textContent='Session reset';
   toast('Session reset ✓','ok');
 });
-// Tabs
+
+// TABS
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');$(t.dataset.tab).classList.add('active');
+  if(t.dataset.tab==='tabResults')renderResults();
 }));
-// Trainees
+
+// ── LOBBY (Option C — judge taps Go per trainee) ───────
+function renderLobby(){
+  const list=$('lobbyList');if(!list)return;
+  const entries=Object.entries(allLobby);
+  if(!entries.length){list.innerHTML='<div style="font-size:11px;color:var(--muted);">No trainees connected yet — they appear here when they log in</div>';return;}
+  list.innerHTML=entries.map(([key,t])=>{
+    const status=t.status||'waiting';
+    const badge=`<span class="lobby-badge ${status}">${status==='active'?'▶ Active':status==='done'?'✓ Done':'⏳ Waiting'}</span>`;
+    const goDisabled=status==='active'||status==='done'?'disabled':'';
+    return`<div class="lobby-row"><span class="lobby-name">${t.name||key}</span>${badge}<button class="go-btn" data-lkey="${key}" data-name="${t.name||key}" ${goDisabled}>▶ Go</button></div>`;
+  }).join('');
+  list.querySelectorAll('.go-btn:not([disabled])').forEach(btn=>btn.addEventListener('click',()=>{
+    const lkey=btn.dataset.lkey, name=btn.dataset.name;
+    set(ref(db,'training/lobby/'+lkey),{name,status:'active',started_at:now()});
+    toast(`${name} started ✓`,'ok');
+  }));
+}
+
+// ── LIVE SCORING ───────────────────────────────────────
+function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
+function renderLive(){
+  const wrap=$('liveWrap');if(!wrap)return;
+  const names=Object.keys(allLive);
+  if(!names.length){wrap.innerHTML='<div class="live-empty">No active sessions yet — trainees appear here as they score</div>';return;}
+  wrap.innerHTML=names.map(nameKey=>{
+    const traineeName=Object.values(allLobby).find(t=>t.name?.replace(/[^a-zA-Z0-9]/g,'_')===nameKey)?.name||nameKey;
+    const balls=Object.entries(allLive[nameKey]||{}).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+    const rows=balls.map(([,b])=>{
+      const refBall=Object.values(allRefBalls).find(r=>r.seq===b.seq)||{};
+      const correct=getOutcome(b.confirmed_key)===getOutcome(refBall.confirmed_key);
+      const react=b.reaction_seconds;
+      const reactCls=react<1?'fast':react>3?'slow':'mid';
+      const reactStr=react!=null?(react>0?`+${react.toFixed(1)}s`:react.toFixed(1)+'s'):'—';
+      return`<div class="live-ball-row ${correct?'correct':'wrong'}">
+        <span class="live-lbl">${b.label||seqLbl(b.seq)}</span>
+        <span class="live-key t">${b.confirmed_key||'?'}</span>
+        <span class="live-key j">${refBall.confirmed_key||'?'}</span>
+        <span>${correct?'✓':'✗'}</span>
+        <span class="live-react ${reactCls}">${reactStr}</span>
+      </div>`;
+    }).join('');
+    return`<div class="live-col">
+      <div class="live-col-header"><span class="live-col-name">${traineeName}</span><span class="live-col-count">${balls.length} balls</span></div>
+      <div class="live-balls">${rows||'<div class="live-empty">Waiting...</div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+// TRAINEES
 $('btnAdd').addEventListener('click',()=>{
   const n=$('tpName').value.trim(),p=$('tpPw').value.trim();
   if(!n||!p){toast('Enter name and password');return;}
@@ -565,13 +608,8 @@ function renderTrainees(){
   list.innerHTML=entries.map(([key,t])=>`<div class="trainee-row"><span class="tr-name">${t.name}</span><span style="color:var(--muted);font-size:11px;">••••</span><button class="del-btn" data-tk="${key}" style="padding:3px 8px;">✕</button></div>`).join('');
   list.querySelectorAll('[data-tk]').forEach(btn=>btn.addEventListener('click',()=>{if(confirm(`Remove ${allTrainees[btn.dataset.tk]?.name}?`))remove(ref(db,'training/trainees/'+btn.dataset.tk));}));
 }
-function renderReady(){
-  const list=$('readyList');if(!list)return;
-  const entries=Object.values(allReady);
-  list.innerHTML=entries.length?entries.map(r=>`<span class="ready-chip">${r.name} ✓</span>`).join(''):'<span style="font-size:11px;color:var(--muted);">No one yet</span>';
-}
-// Results
-function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
+
+// RESULTS
 function calcPenalty(sk,jk,conf){
   const s=getOutcome(sk),j=getOutcome(jk);if(s===null||j===null)return null;
   if(s===j)return conf==='certain'?5:3;
@@ -595,7 +633,13 @@ function renderResults(){
   }).filter(Boolean).sort((a,b)=>b.acc-a.acc);
   tbody.innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td>${r.balls}</td><td class="${r.acc>=80?'pos':r.acc<60?'neg':''}">${r.acc}%</td><td class="${r.avgR!==null&&r.avgR<2?'pos':r.avgR!==null&&r.avgR>4?'neg':''}">${r.avgR!==null?r.avgR.toFixed(2)+'s':'—'}</td><td class="${r.score>0?'pos':r.score<0?'neg':''}">${r.score>0?'+':''}${r.score.toFixed(1)}</td><td>${r.pauses}</td></tr>`).join('');
 }
-$('btnClearSessions').addEventListener('click',()=>{if(!confirm('Clear ALL sessions?'))return;remove(ref(db,'training/sessions'));toast('Cleared','ok');});
+$('btnClearSessions').addEventListener('click',()=>{
+  if(!confirm('Clear ALL trainee sessions? Reference balls unaffected.'))return;
+  remove(ref(db,'training/sessions'));remove(lobbyRef);remove(liveRef);remove(readyRef);
+  set(ref(db,'training/config/session_started'),false);
+  set(ref(db,'training/config/scheduled_start_at'),null);
+  toast('Sessions cleared — reference intact','ok');
+});
 $('btnExport').addEventListener('click',()=>{
   const sessions=Object.entries(allSessions).filter(([,s])=>s.completed);
   if(!sessions.length){toast('No data');return;}
@@ -606,26 +650,18 @@ $('btnExport').addEventListener('click',()=>{
       rows.push([s.name,b.seq||'',b.label||'',b.keys||'',b.confirmed_key||'',jb.confirmed_key||'',b.is_correct?'yes':'no',b.penalty??'',b.reaction_seconds??'',b.timings_compact||'',s.total_pauses||0]);
     });
   });
+  exportCSVData(rows,'results_'+new Date().toISOString().slice(0,10));
+});
+function exportCSVData(rows,filename){
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='results_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
-});
-$('btnVLogout').addEventListener('click',doLogout);
-
-// COUNTDOWN ALERTS (video mode - judge monitors)
-function scheduleAlerts(startAt){
-  alertTimeouts.forEach(t=>clearTimeout(t));alertTimeouts=[];
-  const now=Date.now(),rem=startAt-now;if(rem<=0)return;
-  const t10=rem-600000;if(t10>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('Session starts in 10 minutes','info');},t10));
-  const t2=rem-120000;if(t2>0)alertTimeouts.push(setTimeout(()=>{beep2();toast('2 minutes to go','info');},t2));
-  const t30=rem-30000;if(t30>0)alertTimeouts.push(setTimeout(()=>{toast('30 seconds!','info');},t30));
+  const a=document.createElement('a');a.href=url;a.download=filename+'.csv';a.click();URL.revokeObjectURL(url);
 }
+$('btnVLogout').addEventListener('click',doLogout);
 
 // LOGOUT
 function doLogout(){
-  alertTimeouts.forEach(t=>clearTimeout(t));clearInterval(cdInterval);
-  clearInterval(heartbeatInterval);clearInterval(displayInterval);
-  vPause();stopTick();ytPlayer=null;vmPlayer=null;videoPlatform=null;
+  clearInterval(heartbeatInterval);vPause();stopTick();ytPlayer=null;vmPlayer=null;videoPlatform=null;
   if($('playerContainer'))$('playerContainer').innerHTML='';
   resetState();sessionTimer=0;
   $('loginPw').value='';$('loginErr').textContent='';
