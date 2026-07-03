@@ -25,10 +25,11 @@ body{display:flex;flex-direction:column;}
 /* ROLE SCREEN */
 #roleScreen{align-items:center;justify-content:center;gap:16px;padding:28px;}
 .role-title{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
-.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:280px;}
-.role-btn{padding:18px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-mono);font-size:13px;font-weight:600;cursor:pointer;text-align:center;}
+.role-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;max-width:320px;}
+.role-btn{padding:18px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-mono);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
 .role-btn.a{border-color:var(--colA);color:var(--colA);}
 .role-btn.b{border-color:var(--colB);color:var(--colB);}
+.role-btn.c{border-color:#ff9dce;color:#ff9dce;}
 .role-btn.j{grid-column:1/-1;border-color:var(--orange);color:var(--orange);}
 
 /* TOP + STATUS */
@@ -36,6 +37,7 @@ body{display:flex;flex-direction:column;}
 .role-badge{font-family:var(--font-mono);font-size:12px;font-weight:600;padding:4px 10px;border-radius:5px;}
 .role-badge.A{background:var(--colA-dim);color:var(--colA);border:1px solid rgba(200,241,53,0.3);}
 .role-badge.B{background:var(--colB-dim);color:var(--colB);border:1px solid rgba(77,166,255,0.3);}
+.role-badge.C{background:rgba(255,157,206,0.1);color:#ff9dce;border:1px solid rgba(255,157,206,0.3);}
 .role-badge.judge{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,170,51,0.3);}
 .change-role{font-family:var(--font-mono);font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;}
 .status-bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
@@ -60,7 +62,7 @@ body{display:flex;flex-direction:column;}
 .k-chip{border-radius:5px;padding:2px 8px;font-family:var(--font-mono);font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;}
 .k-chip.A{background:var(--colA-dim);border:1px solid rgba(200,241,53,0.25);color:var(--colA);}
 .k-chip.B{background:var(--colB-dim);border:1px solid rgba(77,166,255,0.25);color:var(--colB);}
-.k-chip .ms{font-size:8px;color:var(--muted);font-weight:400;}
+.k-chip.C{background:rgba(255,157,206,0.1);border:1px solid rgba(255,157,206,0.25);color:#ff9dce;}.k-chip .ms{font-size:8px;color:var(--muted);font-weight:400;}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0;}
 .key{background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-mono);font-size:28px;font-weight:600;cursor:pointer;transition:background 0.06s,transform 0.06s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;min-height:0;touch-action:manipulation;}
 .key.flash-A{background:var(--colA-dim);border-color:var(--colA);color:var(--colA);transform:scale(0.94);}
@@ -95,6 +97,7 @@ body{display:flex;flex-direction:column;}
 .jb-key{font-family:var(--font-mono);font-size:13px;font-weight:600;border-radius:4px;padding:1px 5px;}
 .jb-key.A{color:var(--colA);background:var(--colA-dim);border:1px solid rgba(200,241,53,0.2);}
 .jb-key.B{color:var(--colB);background:var(--colB-dim);border:1px solid rgba(77,166,255,0.2);}
+.jb-key.C{color:#ff9dce;background:rgba(255,157,206,0.1);border:1px solid rgba(255,157,206,0.2);}
 .jb-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
 .jball-actions{display:flex;align-items:center;gap:5px;padding:5px 10px;border-top:1px solid var(--border);flex-wrap:wrap;}
 .jb-btn{background:none;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:11px;cursor:pointer;padding:4px 10px;transition:all 0.1s;}
@@ -152,6 +155,7 @@ body{display:flex;flex-direction:column;}
     <div class="role-btns">
       <button class="role-btn a" data-role="A">⌨ Scorer A</button>
       <button class="role-btn b" data-role="B">⌨ Scorer B</button>
+      <button class="role-btn c" data-role="C">⌨ Scorer C</button>
       <button class="role-btn j" data-role="judge">⚖ Judge</button>
     </div>
   </div>
@@ -161,7 +165,7 @@ body{display:flex;flex-direction:column;}
 <div class="screen" id="mainApp">
   <div class="top-bar">
     <div class="role-badge" id="roleBadge"></div>
-    <button class="change-role" id="btnChangeRole">Change</button>
+    <button class="change-role" id="btnChangeRole" style="display:none;">Change</button>
   </div>
   <div class="status-bar"><div class="dot" id="statusDot"></div><span id="statusText">Connecting...</span></div>
 
@@ -189,8 +193,10 @@ body{display:flex;flex-direction:column;}
       </div>
       <div class="judge-feed" id="judgeFeed"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for scorer submissions...</div></div>
       <div class="pw-section" id="pwSection">
-        <div class="pw-row"><span class="pw-label">Scorer PW</span><input class="pw-input" id="pwScorer" type="password" placeholder="set scorer password"/><button class="pw-btn" id="btnSetPwScorer">Set</button><span class="pw-saved" id="pwScorerSaved">✓</span></div>
-        <div class="pw-row"><span class="pw-label">Judge PW</span><input class="pw-input" id="pwJudge" type="password" placeholder="set judge password"/><button class="pw-btn" id="btnSetPwJudge">Set</button><span class="pw-saved" id="pwJudgeSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Scorer A</span><input class="pw-input" id="pwScorerA" type="password" placeholder="scorer A password"/><button class="pw-btn" id="btnSetPwScorerA">Set</button><span class="pw-saved" id="pwScorerASaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Scorer B</span><input class="pw-input" id="pwScorerB" type="password" placeholder="scorer B password"/><button class="pw-btn" id="btnSetPwScorerB">Set</button><span class="pw-saved" id="pwScorerBSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Scorer C</span><input class="pw-input" id="pwScorerC" type="password" placeholder="scorer C password"/><button class="pw-btn" id="btnSetPwScorerC">Set</button><span class="pw-saved" id="pwScorerCSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Judge</span><input class="pw-input" id="pwJudge" type="password" placeholder="judge password"/><button class="pw-btn" id="btnSetPwJudge">Set</button><span class="pw-saved" id="pwJudgeSaved">✓</span></div>
       </div>
     </div>
     <div class="actions">
@@ -274,8 +280,26 @@ function fmtPenalty(p){if(p===null||p===undefined)return'';const r=Math.round(p*
 function getCurrentBall(){
   const aS=new Set(Object.values(allEntries).filter(e=>e.scorer==='A').map(e=>e.seq));
   const bS=new Set(Object.values(allEntries).filter(e=>e.scorer==='B').map(e=>e.seq));
-  if(soloMode){const all=new Set([...aS,...bS]);let b=1;while(all.has(b))b++;return b;}
-  let b=1;while(aS.has(b)&&bS.has(b))b++;return b;
+  const cS=new Set(Object.values(allEntries).filter(e=>e.scorer==='C').map(e=>e.seq));
+  const activeScorers=[aS,bS,cS].filter(s=>s.size>0||[...Object.values(allEntries)].some(e=>
+    (e.scorer==='A'&&aS===aS)||(e.scorer==='B'&&bS===bS)||(e.scorer==='C'&&cS===cS)));
+  // Solo mode — advance when any 1 scorer submits
+  if(soloMode){const all=new Set([...aS,...bS,...cS]);let b=1;while(all.has(b))b++;return b;}
+  // Count how many distinct scorers are participating (have submitted at least 1 ball)
+  const participating=[];
+  if(aS.size>0)participating.push(aS);
+  if(bS.size>0)participating.push(bS);
+  if(cS.size>0)participating.push(cS);
+  // If only 1 scorer participating, advance on their submission
+  if(participating.length<=1){const all=new Set([...aS,...bS,...cS]);let b=1;while(all.has(b))b++;return b;}
+  // If 2 or 3 scorers participating, advance when 2 have submitted (majority)
+  let b=1;
+  while(true){
+    const submitted=[aS.has(b),bS.has(b),cS.has(b)].filter(Boolean).length;
+    if(submitted<2)break;
+    b++;
+  }
+  return b;
 }
 function hasSubmittedCurrentBall(){
   if(!myRole||myRole==='judge')return false;
@@ -310,23 +334,21 @@ onValue(deletedRef,snap=>{
 },()=>{});
 
 // ── PASSWORDS ─────────────────────────────────────────
-document.getElementById('btnSetPwScorer').addEventListener('click',()=>{
-  const v=document.getElementById('pwScorer').value.trim();if(!v)return;
-  set(ref(db,'comp/passwords/scorer'),v);
-  document.getElementById('pwScorerSaved').style.display='inline';
-  setTimeout(()=>document.getElementById('pwScorerSaved').style.display='none',2000);
-  document.getElementById('pwScorer').value='';
-});
-document.getElementById('btnSetPwJudge').addEventListener('click',()=>{
-  const v=document.getElementById('pwJudge').value.trim();if(!v)return;
-  set(ref(db,'comp/passwords/judge'),v);
-  document.getElementById('pwJudgeSaved').style.display='inline';
-  setTimeout(()=>document.getElementById('pwJudgeSaved').style.display='none',2000);
-  document.getElementById('pwJudge').value='';
-});
+function setPwHandler(inputId,savedId,path){
+  document.getElementById('btnSet'+savedId.replace('Saved','')).addEventListener('click',()=>{
+    const v=document.getElementById(inputId).value.trim();if(!v)return;
+    set(ref(db,'comp/passwords/'+path),v);
+    document.getElementById(savedId).style.display='inline';
+    setTimeout(()=>document.getElementById(savedId).style.display='none',2000);
+    document.getElementById(inputId).value='';
+  });
+}
+setPwHandler('pwScorerA','pwScorerASaved','scorerA');
+setPwHandler('pwScorerB','pwScorerBSaved','scorerB');
+setPwHandler('pwScorerC','pwScorerCSaved','scorerC');
+setPwHandler('pwJudge','pwJudgeSaved','judge');
 document.getElementById('btnPasswords').addEventListener('click',()=>{
-  const pw=document.getElementById('pwSection');
-  pw.classList.toggle('open');
+  document.getElementById('pwSection').classList.toggle('open');
 });
 
 // ── ROLE SELECTION + PASSWORD FLOW ────────────────────
@@ -335,11 +357,11 @@ if(savedRole)activateRole(savedRole);
 
 document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{
   const role=btn.dataset.role;
-  const pwKey=role==='judge'?'judge':'scorer';
+  const pwKey=role==='judge'?'judge':role==='A'?'scorerA':role==='B'?'scorerB':'scorerC';
   const stored=passwords[pwKey];
   if(!stored){activateRole(role);return;}
   pendingRole=role;
-  document.getElementById('pwModalTitle').textContent=role==='judge'?'Judge Password':'Scorer Password';
+  document.getElementById('pwModalTitle').textContent=role==='judge'?'Judge Password':`Scorer ${role} Password`;
   document.getElementById('pwModalInput').value='';
   document.getElementById('pwModalErr').textContent='';
   document.getElementById('pwModal').classList.add('open');
@@ -348,7 +370,7 @@ document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('clic
 document.getElementById('btnCancelPw').addEventListener('click',()=>{document.getElementById('pwModal').classList.remove('open');pendingRole=null;});
 document.getElementById('btnConfirmPw').addEventListener('click',()=>{
   const entered=document.getElementById('pwModalInput').value;
-  const pwKey=pendingRole==='judge'?'judge':'scorer';
+  const pwKey=pendingRole==='judge'?'judge':pendingRole==='A'?'scorerA':pendingRole==='B'?'scorerB':'scorerC';
   if(entered===passwords[pwKey]){document.getElementById('pwModal').classList.remove('open');activateRole(pendingRole);pendingRole=null;}
   else{document.getElementById('pwModalErr').textContent='Wrong password';document.getElementById('pwModalInput').value='';document.getElementById('pwModalInput').focus();}
 });
@@ -372,6 +394,8 @@ function activateRole(role){
   const badge=document.getElementById('roleBadge');
   badge.className='role-badge '+role;
   badge.textContent=role==='judge'?'⚖ Judge':'⌨ Scorer '+role;
+  // Change button only for judge
+  document.getElementById('btnChangeRole').style.display=role==='judge'?'block':'none';
   document.getElementById('panelScorer').classList.toggle('active',role!=='judge');
   document.getElementById('panelJudge').classList.toggle('active',role==='judge');
   if(role!=='judge')buildKeypad(role);
