@@ -238,6 +238,7 @@ body{display:flex;flex-direction:column;}
         <div class="video-controls" id="fredVideoControls" style="display:none;">
           <button class="vc-btn play" id="btnFredPlay">▶ Play</button>
           <button class="vc-btn" id="btnFredPause">⏸ Pause</button>
+          <button class="vc-btn" id="btnFredMute">🔇 Mute</button>
           <button class="vc-btn" id="btnFredChange">🔗 Change</button>
           <span class="vc-time" id="fredVTime">0.0s</span>
         </div>
@@ -286,6 +287,7 @@ body{display:flex;flex-direction:column;}
   <!-- Video (laptop only — hidden on phone via CSS) -->
   <div class="video-toggle" id="videoToggleBar">
     <span class="vt-status" id="vtStatus">Video: waiting for Fred...</span>
+    <button class="video-toggle-btn" id="btnTraineeMute">🔇 Mute</button>
     <button class="video-toggle-btn" id="btnToggleVideo">▼ Show Video</button>
   </div>
   <div class="trainee-video-wrap" id="traineeVideoWrap">
@@ -382,7 +384,11 @@ onValue(pbRef,s=>{
   playbackState=s.val()||{position:0,playing:false,updated_at:now()};
   // Sync trainee video to Fred's position
   if(vmPlayer&&traineeVimeoReady){
-    vmPlayer.setCurrentTime(playbackState.position).catch(()=>{});
+    // If playing, compensate for network latency — add time elapsed since Fred broadcast
+    const correctedPos=playbackState.playing
+      ? playbackState.position+(now()-playbackState.updated_at)/1000
+      : playbackState.position;
+    vmPlayer.setCurrentTime(correctedPos).catch(()=>{});
     if(playbackState.playing)vmPlayer.play().catch(()=>{showAutoplayOverlay();});
     else vmPlayer.pause().catch(()=>{});
   }
@@ -493,6 +499,13 @@ function broadcastPlayback(playing){
 function updateFredTime(){if(window._fredVimeo&&isPlaying)window._fredVimeo.getCurrentTime().then(t=>$('fredVTime').textContent=t.toFixed(1)+'s').catch(()=>{});}
 $('btnFredPlay').addEventListener('click',()=>{if(window._fredVimeo)window._fredVimeo.play();});
 $('btnFredPause').addEventListener('click',()=>{if(window._fredVimeo)window._fredVimeo.pause();});
+let fredMuted=false;
+$('btnFredMute').addEventListener('click',()=>{
+  if(!window._fredVimeo)return;
+  fredMuted=!fredMuted;
+  window._fredVimeo.setVolume(fredMuted?0:1);
+  $('btnFredMute').textContent=fredMuted?'🔊 Unmute':'🔇 Mute';
+});
 $('btnFredChange').addEventListener('click',()=>{
   if(window._fredVimeo)window._fredVimeo.pause();
   window._fredVimeo=null;isPlaying=false;clearInterval(heartbeat);
@@ -501,7 +514,13 @@ $('btnFredChange').addEventListener('click',()=>{
 });
 
 // ── TRAINEE VIDEO ──────────────────────────────────────
-let traineeVimeoReady=false;
+let traineeMuted=false;
+$('btnTraineeMute').addEventListener('click',()=>{
+  if(!vmPlayer)return;
+  traineeMuted=!traineeMuted;
+  vmPlayer.setVolume(traineeMuted?0:1);
+  $('btnTraineeMute').textContent=traineeMuted?'🔊 Unmute':'🔇 Mute';
+});
 $('btnToggleVideo').addEventListener('click',()=>{
   const wrap=$('traineeVideoWrap');
   const open=wrap.classList.toggle('open');
@@ -516,7 +535,10 @@ function initTraineeVideo(id){
     vmPlayer=new Vimeo.Player('traineeVimeoDiv',{id:parseInt(id),responsive:false,width:'100%',height:'100%',controls:false,playsinline:true});
     vmPlayer.on('loaded',()=>{
       traineeVimeoReady=true;
-      vmPlayer.setCurrentTime(playbackState.position).catch(()=>{});
+      const correctedPos=playbackState.playing
+        ? playbackState.position+(now()-playbackState.updated_at)/1000
+        : playbackState.position;
+      vmPlayer.setCurrentTime(correctedPos).catch(()=>{});
       if(playbackState.playing)vmPlayer.play().catch(()=>showAutoplayOverlay());
     });
   };
