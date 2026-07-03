@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live Scorer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--text:#f0f0f0;--muted:#555;
+  --accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--red:#ff4d4d;--red-dim:rgba(255,77,77,0.1);
+  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--blue:#4da6ff;--green:#33ff99;--green-dim:rgba(51,255,153,0.1);
+  --colA:#c8f135;--colA-dim:rgba(200,241,53,0.1);--colB:#4da6ff;--colB-dim:rgba(77,166,255,0.1);
+  --font-mono:'IBM Plex Mono',monospace;--font-sans:'IBM Plex Sans',sans-serif;
+}
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-sans);}
+body{display:flex;flex-direction:column;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+
+/* SCREENS */
+.screen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
+.screen.active{display:flex;}
+
+/* ROLE SCREEN */
+#roleScreen{align-items:center;justify-content:center;gap:16px;padding:28px;}
+.role-title{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.role-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;max-width:320px;}
+.role-btn{padding:16px 8px;border-radius:12px;border:none;background:rgba(255,255,255,0.92);color:#1a5c2a;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.role-btn:active{transform:scale(0.96);}
+.role-btn.a{color:#2d6a4f;}
+.role-btn.b{color:#1a3a5c;}
+.role-btn.c{color:#5c1a3a;}
+.role-btn.j{grid-column:1/-1;background:#c8f135;color:#1a3a1a;font-size:15px;padding:18px;}
+
+/* TOP + STATUS */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.role-badge{font-family:var(--font-mono);font-size:12px;font-weight:600;padding:4px 10px;border-radius:5px;}
+.role-badge.A{background:var(--colA-dim);color:var(--colA);border:1px solid rgba(200,241,53,0.3);}
+.role-badge.B{background:var(--colB-dim);color:var(--colB);border:1px solid rgba(77,166,255,0.3);}
+.role-badge.C{background:rgba(255,157,206,0.1);color:#ff9dce;border:1px solid rgba(255,157,206,0.3);}
+.role-badge.judge{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,170,51,0.3);}
+.change-role{font-family:var(--font-mono);font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;}
+.status-bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.dot.live{background:var(--accent);box-shadow:0 0 4px var(--accent);animation:pulse 1.5s infinite;}
+.dot.error{background:var(--red);}
+
+/* PANELS */
+.panel{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
+.panel.active{display:flex;}
+
+/* SCORER */
+.scorer-wrap{padding:8px 10px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;}
+.ball-indicator{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;flex-shrink:0;}
+.ball-id{font-family:var(--font-mono);font-size:26px;font-weight:600;}
+.ball-id.A{color:var(--colA);}.ball-id.B{color:var(--colB);}
+.ball-id-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;margin-bottom:2px;}
+.ball-status{font-family:var(--font-mono);font-size:11px;text-align:right;max-width:160px;}
+.ball-status.ready{color:var(--muted);}.ball-status.run-conf{color:var(--accent);}.ball-status.full-conf{color:var(--green);}.ball-status.waiting{color:var(--orange);}
+.current-keys-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;min-height:44px;max-height:54px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;overflow:hidden;}
+.hint{font-size:11px;color:var(--muted);font-family:var(--font-mono);}
+.k-chip{border-radius:5px;padding:2px 8px;font-family:var(--font-mono);font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;}
+.k-chip.A{background:var(--colA-dim);border:1px solid rgba(200,241,53,0.25);color:var(--colA);}
+.k-chip.B{background:var(--colB-dim);border:1px solid rgba(77,166,255,0.25);color:var(--colB);}
+.k-chip.C{background:rgba(255,157,206,0.1);border:1px solid rgba(255,157,206,0.25);color:#ff9dce;}.k-chip .ms{font-size:8px;color:var(--muted);font-weight:400;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0;}
+.key{background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-mono);font-size:28px;font-weight:600;cursor:pointer;transition:background 0.06s,transform 0.06s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;min-height:0;touch-action:manipulation;}
+.key.flash-A{background:var(--colA-dim);border-color:var(--colA);color:var(--colA);transform:scale(0.94);}
+.key.flash-B{background:var(--colB-dim);border-color:var(--colB);color:var(--colB);transform:scale(0.94);}
+.key.confirm{border-color:var(--orange);color:var(--orange);font-size:16px;border-width:2px;}
+.key.confirm.ready-to-advance{border-color:var(--accent)!important;color:var(--accent)!important;animation:pulse 1.2s infinite;}
+.keypad.run-conf .key{opacity:1;pointer-events:all;}
+.keypad.full-conf .key{opacity:0.15;pointer-events:none;}
+.keypad.full-conf .key.confirm{opacity:1;pointer-events:all;}
+.keypad.submitted .key{opacity:0.3;pointer-events:none;}
+.keypad.submitted .key.confirm{opacity:1;pointer-events:none;border-color:var(--muted);color:var(--muted);}
+
+/* JUDGE PANEL */
+.judge-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.judge-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);}
+.js-stat{display:flex;flex-direction:column;align-items:center;padding:8px 6px;border-right:1px solid var(--border);}
+.js-stat:last-child{border-right:none;}
+.js-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.js-val{font-family:var(--font-mono);font-size:17px;font-weight:600;color:var(--text);}
+.js-val.pos{color:var(--green);}.js-val.neg{color:var(--red);}
+.solo-toggle{font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;}
+.solo-toggle.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.judge-feed{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:8px 12px;min-height:0;-webkit-overflow-scrolling:touch;}
+.jball{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.jball.correct{border-color:rgba(51,255,153,0.3);background:rgba(51,255,153,0.03);}
+.jball.wrong{border-color:rgba(255,77,77,0.3);background:rgba(255,77,77,0.03);}
+.jball-header{display:flex;align-items:center;gap:6px;padding:6px 10px;flex-wrap:wrap;}
+.jb-label{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--orange);min-width:32px;}
+.jb-scorer{font-family:var(--font-mono);font-size:11px;font-weight:600;}
+.jb-scorer.A{color:var(--colA);}.jb-scorer.B{color:var(--colB);}
+.jb-keys{display:flex;gap:3px;flex-wrap:wrap;flex:1;}
+.jb-key{font-family:var(--font-mono);font-size:13px;font-weight:600;border-radius:4px;padding:1px 5px;}
+.jb-key.A{color:var(--colA);background:var(--colA-dim);border:1px solid rgba(200,241,53,0.2);}
+.jb-key.B{color:var(--colB);background:var(--colB-dim);border:1px solid rgba(77,166,255,0.2);}
+.jb-key.C{color:#ff9dce;background:rgba(255,157,206,0.1);border:1px solid rgba(255,157,206,0.2);}
+.jb-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.jball-actions{display:flex;align-items:center;gap:5px;padding:5px 10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.jb-btn{background:none;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:11px;cursor:pointer;padding:4px 10px;transition:all 0.1s;}
+.jb-btn.ok{border-color:var(--green);color:var(--green);}
+.jb-btn.ok:active{background:var(--green);color:var(--bg);}
+.jb-btn.bad{border-color:var(--red);color:var(--red);}
+.jb-btn.bad:active{background:var(--red);color:#fff;}
+.jb-btn.edit{border-color:var(--blue);color:var(--blue);}
+.jb-btn.del{color:var(--muted);}
+.jb-btn.del:active{border-color:var(--red);color:var(--red);}
+.jb-result{font-family:var(--font-mono);font-size:13px;font-weight:600;margin-left:auto;}
+.jb-result.pos{color:var(--green);}.jb-result.neg{color:var(--red);}
+/* Correct key picker — inline after ✗ */
+.correct-picker{padding:7px 10px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.cp-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.cp-key{background:none;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-mono);font-size:14px;font-weight:600;cursor:pointer;padding:4px 9px;touch-action:manipulation;}
+.cp-key:active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+/* Passwords in judge panel */
+.pw-section{padding:8px 12px;background:var(--surface2);border-top:1px solid var(--border);flex-shrink:0;display:none;}
+.pw-section.open{display:block;}
+.pw-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+.pw-row:last-child{margin-bottom:0;}
+.pw-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:50px;}
+.pw-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:4px 8px;outline:none;}
+.pw-input:focus{border-color:var(--accent);}
+.pw-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:10px;padding:4px 8px;cursor:pointer;}
+.pw-btn:active{border-color:var(--accent);color:var(--accent);}
+.pw-saved{font-size:10px;color:var(--green);font-family:var(--font-mono);display:none;}
+
+/* ACTIONS */
+.actions{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;touch-action:manipulation;}
+.btn:active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.btn.danger:active{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.btn.ok{border-color:var(--green);color:var(--green);}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#1a1a1a;border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:14px;}
+.modal-title{font-family:var(--font-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+.modal input{background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:18px;padding:10px 14px;width:100%;outline:none;}
+.modal input:focus{border-color:var(--accent);}
+.modal-btns{display:flex;gap:8px;}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:7px 16px;border-radius:8px;font-family:var(--font-mono);font-size:11px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;}
+/* SETUP SCREEN */
+.setup-row{display:flex;align-items:center;gap:8px;}
+.setup-label{font-family:var(--font-mono);font-size:11px;color:var(--muted);min-width:58px;}
+.setup-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:14px;padding:8px 10px;outline:none;}
+.setup-input:focus{border-color:var(--accent);}
+.setup-btn{background:none;border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-family:var(--font-mono);font-size:11px;padding:7px 12px;cursor:pointer;white-space:nowrap;}
+.setup-btn:active{background:var(--accent);color:var(--bg);}
+.setup-saved{font-family:var(--font-mono);font-size:10px;color:var(--green);display:none;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- ROLE SCREEN — bright cricket login -->
+<div class="screen active" id="roleScreen" style="background:#1a5c2a;position:relative;overflow:hidden;">
+  <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15;" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice">
+    <ellipse cx="200" cy="350" rx="190" ry="320" fill="none" stroke="#fff" stroke-width="2"/>
+    <ellipse cx="200" cy="350" rx="110" ry="200" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <rect x="188" y="240" width="24" height="220" fill="rgba(255,255,255,0.3)"/>
+    <line x1="178" y1="288" x2="222" y2="288" stroke="#fff" stroke-width="1.5"/>
+    <line x1="178" y1="422" x2="222" y2="422" stroke="#fff" stroke-width="1.5"/>
+    <line x1="192" y1="260" x2="192" y2="288" stroke="#fff" stroke-width="2.5"/>
+    <line x1="200" y1="258" x2="200" y2="288" stroke="#fff" stroke-width="2.5"/>
+    <line x1="208" y1="260" x2="208" y2="288" stroke="#fff" stroke-width="2.5"/>
+    <line x1="189" y1="260" x2="211" y2="260" stroke="#fff" stroke-width="3"/>
+    <line x1="192" y1="422" x2="192" y2="450" stroke="#fff" stroke-width="2.5"/>
+    <line x1="200" y1="422" x2="200" y2="452" stroke="#fff" stroke-width="2.5"/>
+    <line x1="208" y1="422" x2="208" y2="450" stroke="#fff" stroke-width="2.5"/>
+    <line x1="189" y1="450" x2="211" y2="450" stroke="#fff" stroke-width="3"/>
+  </svg>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px;position:relative;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <div style="width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:50%;border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:38px;">&#127959;</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;color:#ffffff;letter-spacing:0.05em;text-shadow:0 2px 8px rgba(0,0,0,0.3);">FullPush</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.2em;">Live Scoring System</div>
+    </div>
+    <div style="width:56px;height:3px;background:#c8f135;border-radius:2px;"></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,0.6);min-height:16px;" id="pwLoadingMsg">Connecting...</div>
+    <div class="role-btns" id="roleBtns" style="opacity:0.4;pointer-events:none;width:100%;max-width:300px;">
+      <button class="role-btn a" data-role="A">Scorer A</button>
+      <button class="role-btn b" data-role="B">Scorer B</button>
+      <button class="role-btn c" data-role="C">Scorer C</button>
+      <button class="role-btn j" data-role="judge">&#9878; Judge</button>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);text-align:center;">Powered by FullPush Ltd</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="mainApp">
+  <div class="top-bar">
+    <div class="role-badge" id="roleBadge"></div>
+    <button class="change-role" id="btnChangeRole" style="display:none;">Change</button>
+  </div>
+  <div class="status-bar"><div class="dot" id="statusDot"></div><span id="statusText">Connecting...</span></div>
+
+  <!-- SCORER PANEL -->
+  <div class="panel" id="panelScorer">
+    <div class="scorer-wrap">
+      <div class="ball-indicator">
+        <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="scorerBallId">0.1</div></div>
+        <div class="ball-status ready" id="ballStatus">Double press to confirm</div>
+      </div>
+      <div class="current-keys-box" id="currentKeysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
+      <div class="keypad" id="keypad"></div>
+    </div>
+    <div class="actions"><button class="btn" id="btnExportScorer">Export CSV</button></div>
+  </div>
+
+  <!-- JUDGE PANEL -->
+  <div class="panel" id="panelJudge">
+    <div class="judge-wrap">
+      <div class="judge-stats">
+        <div class="js-stat"><span class="js-label">Balls</span><span class="js-val" id="jBalls">0</span></div>
+        <div class="js-stat"><span class="js-label">Accuracy</span><span class="js-val" id="jAcc">—</span></div>
+        <div class="js-stat"><span class="js-label">Score</span><span class="js-val" id="jScore">0</span></div>
+        <div class="js-stat" style="justify-content:center;"><button class="solo-toggle" id="btnSolo">Solo: Off</button></div>
+      </div>
+      <div class="judge-feed" id="judgeFeed"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for scorer submissions...</div></div>
+      <!-- Password management — judge only -->
+      <div class="pw-section" id="pwSection">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">Set Passwords</div>
+        <div class="pw-row"><span class="pw-label">Scorer A</span><input class="pw-input" id="pwScorerA" type="password" placeholder="Scorer A"/><button class="pw-btn" id="btnSetPwScorerA">Set</button><span class="pw-saved" id="pwScorerASaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Scorer B</span><input class="pw-input" id="pwScorerB" type="password" placeholder="Scorer B"/><button class="pw-btn" id="btnSetPwScorerB">Set</button><span class="pw-saved" id="pwScorerBSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Scorer C</span><input class="pw-input" id="pwScorerC" type="password" placeholder="Scorer C"/><button class="pw-btn" id="btnSetPwScorerC">Set</button><span class="pw-saved" id="pwScorerCSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Judge</span><input class="pw-input" id="pwJudge" type="password" placeholder="Judge"/><button class="pw-btn" id="btnSetPwJudge">Set</button><span class="pw-saved" id="pwJudgeSaved">✓</span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnPasswords">🔑 PW</button>
+      <button class="btn danger" id="btnResetAll">Reset All</button>
+      <button class="btn" id="btnResetOver">Reset Over</button>
+      <button class="btn ok" id="btnExportJudge">Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title" id="editModalTitle">Edit entry</div>
+    <input type="text" id="editInput" placeholder="e.g. 5 6 6" maxlength="30"/>
+    <div class="modal-btns"><button class="btn" id="btnCancelEdit">Cancel</button><button class="btn ok" id="btnSaveEdit">Save</button></div>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal">
+    <div class="modal-title" id="pwModalTitle">Password</div>
+    <input type="password" id="pwModalInput" placeholder="enter password" maxlength="30"/>
+    <div style="font-size:11px;color:var(--red);font-family:var(--font-mono);min-height:16px;" id="pwModalErr"></div>
+    <div class="modal-btns"><button class="btn" id="btnCancelPw">Cancel</button><button class="btn ok" id="btnConfirmPw">Enter</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+const app = initializeApp({ databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/' });
+const db = getDatabase(app);
+const entriesRef = ref(db,'comp/entries');
+const judgeRef   = ref(db,'comp/judge');    // {entryFbKey: {correct,judge_key,penalty,marked_at}}
+const stateRef   = ref(db,'comp/state');
+const pwRef      = ref(db,'comp/passwords');
+const deletedRef = ref(db,'comp/deleted');  // {scorer_seq: timestamp} — signals scorer to re-enable
+
+// ── STATE ─────────────────────────────────────────────
+let myRole=null, allEntries={}, allJudge={}, soloMode=false, passwords={};
+let mySubmittedSeqs=new Set();
+const RESULT_KEYS=new Set(['0','1','2','3','4','6','7','9','*']);
+const EXTRA_KEYS=new Set(['7','9']);
+let confirmState='scoring', confirmedRunKey=null, confirmedExtraKey=null, confirmedAt=null;
+let currentKeys=[], currentTimings=[], pressStart=null;
+let editFbKey=null, pendingRole=null;
+
+// ── HELPERS ───────────────────────────────────────────
+function setStatus(s,m){document.getElementById('statusDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');document.getElementById('statusText').textContent=m;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function formatUKTime(iso){if(!iso)return'';const d=new Date(iso);return d.toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour12:false})+'.'+String(d.getMilliseconds()).padStart(3,'0');}
+function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
+function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
+
+// ── OVER NUMBERING (0.1 = first ball of first over) ───
+function getLegalCount(scorer){return Object.values(allEntries).filter(e=>e.scorer===scorer&&!e.is_wide&&!e.is_noball).length;}
+function getCurrentLabelForScorer(){if(!myRole||myRole==='judge')return'0.1';const n=getLegalCount(myRole);return`${Math.floor(n/6)}.${(n%6)+1}`;}
+function getNextLabelForSubmit(isWide,isNoBall){const b=getCurrentLabelForScorer();return isWide?b+'w':isNoBall?b+'nb':b;}
+function seqToLabel(seq){return`${Math.floor((seq-1)/6)}.${((seq-1)%6)+1}`;}
+
+// ── PENALTY ───────────────────────────────────────────
+function calcPenalty(scorerKey, judgeKey, confidence){
+  const s=getOutcome(scorerKey), j=getOutcome(judgeKey);
+  if(s===null||j===null)return null;
+  if(s===j)return confidence==='certain'?5:3;
+  const sw=s==='W',jw=j==='W',se=(s==='wide'||s==='nb'),je=(j==='wide'||j==='nb');
+  let base=0;
+  if(sw||jw){const r=typeof(sw?j:s)==='number'?(sw?j:s):0;base=-10-(2*r);}
+  else if(se||je){base=-4;}
+  else{base=-2*Math.abs(s-j);}
+  return base*(confidence==='certain'?2.0:1.5);
+}
+function fmtPenalty(p){if(p===null||p===undefined)return'';const r=Math.round(p*10)/10;return r>0?`+${r}`:`${r}`;}
+
+// ── SYNC ──────────────────────────────────────────────
+function getCurrentBall(){
+  const aS=new Set(Object.values(allEntries).filter(e=>e.scorer==='A').map(e=>e.seq));
+  const bS=new Set(Object.values(allEntries).filter(e=>e.scorer==='B').map(e=>e.seq));
+  const cS=new Set(Object.values(allEntries).filter(e=>e.scorer==='C').map(e=>e.seq));
+  const activeScorers=[aS,bS,cS].filter(s=>s.size>0||[...Object.values(allEntries)].some(e=>
+    (e.scorer==='A'&&aS===aS)||(e.scorer==='B'&&bS===bS)||(e.scorer==='C'&&cS===cS)));
+  // Solo mode — advance when any 1 scorer submits
+  if(soloMode){const all=new Set([...aS,...bS,...cS]);let b=1;while(all.has(b))b++;return b;}
+  // Count how many distinct scorers are participating (have submitted at least 1 ball)
+  const participating=[];
+  if(aS.size>0)participating.push(aS);
+  if(bS.size>0)participating.push(bS);
+  if(cS.size>0)participating.push(cS);
+  // If only 1 scorer participating, advance on their submission
+  if(participating.length<=1){const all=new Set([...aS,...bS,...cS]);let b=1;while(all.has(b))b++;return b;}
+  // If 2 or 3 scorers participating, advance when 2 have submitted (majority)
+  let b=1;
+  while(true){
+    const submitted=[aS.has(b),bS.has(b),cS.has(b)].filter(Boolean).length;
+    if(submitted<2)break;
+    b++;
+  }
+  return b;
+}
+function hasSubmittedCurrentBall(){
+  if(!myRole||myRole==='judge')return false;
+  const cb=getCurrentBall();
+  return mySubmittedSeqs.has(cb)||Object.values(allEntries).some(e=>e.scorer===myRole&&e.seq===cb);
+}
+
+// ── FIREBASE LISTENERS ────────────────────────────────
+onValue(query(entriesRef,orderByChild('confirmed_at')),snap=>{
+  allEntries=snap.val()||{};
+  const cb=getCurrentBall();
+  mySubmittedSeqs=new Set([...mySubmittedSeqs].filter(s=>s>=cb));
+  setStatus('live',`Connected · ${Object.keys(allEntries).length} entries`);
+  updateScorerUI();updateJudgeFeed();
+},()=>setStatus('error','Connection lost'));
+onValue(judgeRef,snap=>{allJudge=snap.val()||{};updateJudgeFeed();updateJudgeStats();},()=>{});
+onValue(stateRef,snap=>{const s=snap.val()||{};soloMode=s.soloMode||false;updateSoloBtn();updateScorerUI();},()=>{});
+onValue(pwRef,snap=>{
+  passwords=snap.val()||{};
+  // Unlock role buttons only after passwords have loaded from Firebase
+  // This prevents the race condition where buttons are clicked before passwords are known
+  const btns=document.getElementById('roleBtns');
+  const msg=document.getElementById('pwLoadingMsg');
+  btns.style.opacity='1';btns.style.pointerEvents='all';
+  msg.textContent='';
+},()=>{
+  // Even on error, unlock buttons so app doesn't get stuck
+  const btns=document.getElementById('roleBtns');
+  const msg=document.getElementById('pwLoadingMsg');
+  btns.style.opacity='1';btns.style.pointerEvents='all';
+  msg.textContent='Connection error — passwords not verified';
+  msg.style.color='var(--red)';
+});
+
+// Setup screen removed — passwords now inside judge panel
+// Deletion signal — when judge deletes a ball, scorer is notified to re-enable that seq
+onValue(deletedRef,snap=>{
+  const deleted=snap.val()||{};
+  if(!myRole||myRole==='judge')return;
+  Object.entries(deleted).forEach(([key,ts])=>{
+    // key format: A_3 or B_5 (scorer_seq)
+    const parts=key.split('_');
+    if(parts.length===2&&parts[0]===myRole){
+      const seq=parseInt(parts[1]);
+      if(!isNaN(seq)){mySubmittedSeqs.delete(seq);}
+    }
+  });
+  updateScorerUI();
+},()=>{});
+
+// ── PASSWORDS — inside judge panel only ───────────────
+function pwSet(inputId,savedId,path){
+  document.getElementById('btnSetPw'+inputId.replace('pw','')).addEventListener('click',()=>{
+    const v=document.getElementById(inputId).value.trim();if(!v)return;
+    set(ref(db,'comp/passwords/'+path),v);
+    const s=document.getElementById(savedId);s.style.display='inline';
+    setTimeout(()=>s.style.display='none',2000);
+    document.getElementById(inputId).value='';
+  });
+}
+pwSet('pwScorerA','pwScorerASaved','scorerA');
+pwSet('pwScorerB','pwScorerBSaved','scorerB');
+pwSet('pwScorerC','pwScorerCSaved','scorerC');
+pwSet('pwJudge','pwJudgeSaved','judge');
+document.getElementById('btnPasswords').addEventListener('click',()=>{
+  document.getElementById('pwSection').classList.toggle('open');
+});
+
+// ── ROLE SELECTION + PASSWORD FLOW ────────────────────
+const savedRole=localStorage.getItem('scorer_role_v5');
+if(savedRole)activateRole(savedRole);
+
+document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{
+  const role=btn.dataset.role;
+  const pwKey=role==='judge'?'judge':role==='A'?'scorerA':role==='B'?'scorerB':'scorerC';
+  const stored=passwords[pwKey];
+  if(!stored){activateRole(role);return;}
+  pendingRole=role;
+  document.getElementById('pwModalTitle').textContent=role==='judge'?'Judge Password':`Scorer ${role} Password`;
+  document.getElementById('pwModalInput').value='';
+  document.getElementById('pwModalErr').textContent='';
+  document.getElementById('pwModal').classList.add('open');
+  setTimeout(()=>document.getElementById('pwModalInput').focus(),80);
+}));
+document.getElementById('btnCancelPw').addEventListener('click',()=>{document.getElementById('pwModal').classList.remove('open');pendingRole=null;});
+document.getElementById('btnConfirmPw').addEventListener('click',()=>{
+  const entered=document.getElementById('pwModalInput').value;
+  const pwKey=pendingRole==='judge'?'judge':pendingRole==='A'?'scorerA':pendingRole==='B'?'scorerB':'scorerC';
+  if(entered===passwords[pwKey]){document.getElementById('pwModal').classList.remove('open');activateRole(pendingRole);pendingRole=null;}
+  else{document.getElementById('pwModalErr').textContent='Wrong password';document.getElementById('pwModalInput').value='';document.getElementById('pwModalInput').focus();}
+});
+document.getElementById('pwModalInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnConfirmPw').click();});
+document.getElementById('btnChangeRole').addEventListener('click',()=>{
+  localStorage.removeItem('scorer_role_v5');
+  document.getElementById('roleScreen').classList.add('active');
+  document.getElementById('mainApp').classList.remove('active');
+  myRole=null;
+});
+
+function resetScorerState(){
+  confirmState='scoring';confirmedRunKey=null;confirmedExtraKey=null;confirmedAt=null;
+  currentKeys=[];currentTimings=[];mySubmittedSeqs=new Set();
+}
+function activateRole(role){
+  myRole=role;resetScorerState();
+  localStorage.setItem('scorer_role_v5',role);
+  document.getElementById('roleScreen').classList.remove('active');
+  document.getElementById('mainApp').classList.add('active');
+  const badge=document.getElementById('roleBadge');
+  badge.className='role-badge '+role;
+  badge.textContent=role==='judge'?'⚖ Judge':'⌨ Scorer '+role;
+  // Change button only for judge
+  document.getElementById('btnChangeRole').style.display=role==='judge'?'block':'none';
+  document.getElementById('panelScorer').classList.toggle('active',role!=='judge');
+  document.getElementById('panelJudge').classList.toggle('active',role==='judge');
+  if(role!=='judge')buildKeypad(role);
+  updateScorerUI();updateJudgeFeed();updateJudgeStats();updateSoloBtn();
+}
+
+// ── SCORER KEYPAD ─────────────────────────────────────
+const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
+function buildKeypad(role){
+  const kp=document.getElementById('keypad');kp.innerHTML='';
+  const fc='flash-'+role;
+  KEYS.forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='key'+(k==='#'?' confirm':'');btn.dataset.key=k;btn.textContent=k==='#'?'# ▶':k;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();scorerDown(k,btn,fc);},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();scorerDown(k,btn,fc);});
+    btn.addEventListener('touchend',e=>{e.preventDefault();scorerUp(k,btn,fc);},{passive:false});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();scorerUp(k,btn,fc);});
+    kp.appendChild(btn);
+  });
+}
+function scorerDown(k,btn,fc){if(pressStart!==null)return;pressStart=Date.now();btn.classList.add(fc);}
+function scorerUp(k,btn,fc){
+  if(pressStart===null)return;
+  const dur=Math.min(Date.now()-pressStart,800);pressStart=null;btn.classList.remove(fc);
+  if(k==='#'){
+    if(confirmState==='scoring'){toast('Double press first!');return;}
+    if(hasSubmittedCurrentBall())return;
+    commitBall();return;
+  }
+  if(hasSubmittedCurrentBall())return;
+  if(confirmState==='full-conf'||confirmState==='wicket')return;
+  if(confirmState==='run_conf'){
+    if(!EXTRA_KEYS.has(k))return;
+    currentKeys.push(k);currentTimings.push({key:k,duration_ms:dur,video_s:Date.now()/1000});
+    if(getConsec(currentKeys,k)>=2){confirmedExtraKey=k;confirmState='full-conf';}
+  } else {
+    currentKeys.push(k);currentTimings.push({key:k,duration_ms:dur,video_s:Date.now()/1000});
+    if(k==='*'){if(getConsec(currentKeys,'*')>=3){confirmedRunKey='*';confirmedAt=new Date().toISOString();confirmState='wicket';}}
+    else if(RESULT_KEYS.has(k)&&!EXTRA_KEYS.has(k)){if(currentKeys.length>=2&&currentKeys[currentKeys.length-2]===k){confirmedRunKey=k;confirmedAt=new Date().toISOString();confirmState='run_conf';}}
+  }
+  renderCurrentKeys();updateScorerUI();
+}
+function renderCurrentKeys(){
+  const box=document.getElementById('currentKeysBox');
+  if(!currentKeys.length){box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>';return;}
+  box.innerHTML=currentTimings.map(t=>`<div class="k-chip ${myRole}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('')+
+    `<button id="btnClearK" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-size:10px;padding:2px 7px;cursor:pointer;flex-shrink:0;touch-action:manipulation;">✕</button>`;
+  document.getElementById('btnClearK').addEventListener('click',()=>{resetScorerState();renderCurrentKeys();updateScorerUI();});
+}
+function commitBall(){
+  const seq=getCurrentBall();
+  const keysSnap=[...currentKeys],timSnap=[...currentTimings];
+  const runKey=confirmedRunKey,extraKey=confirmedExtraKey,atSnap=confirmedAt;
+  const isWide=extraKey==='7',isNoBall=extraKey==='9';
+  const label=getNextLabelForSubmit(isWide,isNoBall);
+  const confidence=runKey==='*'?'certain':'confirmed';
+  const timingsCompact=timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',');
+  // Local advance immediately
+  mySubmittedSeqs.add(seq);
+  resetScorerState();renderCurrentKeys();updateScorerUI();
+  push(entriesRef,{scorer:myRole,seq,label,keys:keysSnap.join(' '),confirmed_key:runKey,confidence,
+    is_wide:isWide,is_noball:isNoBall,confirmed_at:atSnap,hash_at:new Date().toISOString(),
+    timings_compact:timingsCompact,edited:false})
+    .catch(()=>{mySubmittedSeqs.delete(seq);setStatus('error','Send failed');updateScorerUI();});
+}
+function updateScorerUI(){
+  if(!myRole||myRole==='judge')return;
+  const el=document.getElementById('scorerBallId');
+  el.textContent=getCurrentLabelForScorer();el.className='ball-id '+myRole;
+  const kp=document.getElementById('keypad');
+  const stat=document.getElementById('ballStatus');
+  const cb=kp?kp.querySelector('.confirm'):null;
+  if(hasSubmittedCurrentBall()){
+    if(kp)kp.className='keypad submitted';if(cb)cb.textContent='⏳ Wait';
+    stat.textContent='Submitted — waiting';stat.className='ball-status waiting';
+  } else if(confirmState==='full-conf'||confirmState==='wicket'){
+    if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('ready-to-advance');}
+    const extra=confirmedExtraKey?` +${confirmedExtraKey==='7'?'wide':'nb'}`:'';
+    stat.textContent=`[${confirmedRunKey==='*'?'W':confirmedRunKey}]${extra} confirmed — press #`;
+    stat.className='ball-status full-conf';
+  } else if(confirmState==='run_conf'){
+    if(kp)kp.className='keypad run-conf';if(cb){cb.textContent='# ▶';cb.classList.remove('ready-to-advance');}
+    stat.textContent=`[${confirmedRunKey}] confirmed — press # to advance`;
+    stat.className='ball-status run-conf';
+  } else {
+    if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('ready-to-advance');}
+    stat.textContent='Double press to confirm';stat.className='ball-status ready';
+  }
+}
+
+// ── JUDGE FEED ────────────────────────────────────────
+function updateJudgeFeed(){
+  if(myRole!=='judge')return;
+  const feed=document.getElementById('judgeFeed');
+  const entries=Object.entries(allEntries).sort((a,b)=>(b[1].seq||0)-(a[1].seq||0));
+  if(!entries.length){feed.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for scorer submissions...</div>';return;}
+  feed.innerHTML=entries.map(([fbKey,ball])=>{
+    const mark=allJudge[fbKey];
+    const chips=(ball.keys||'').split(' ').filter(Boolean).map(k=>`<span class="jb-key ${ball.scorer}">${k}</span>`).join('');
+    const markedClass=mark?(mark.correct?'correct':'wrong'):'';
+    let actionsHtml='';
+    if(!mark){
+      actionsHtml=`
+        <button class="jb-btn ok" data-mark="${fbKey}" data-correct="true">✓ Correct</button>
+        <button class="jb-btn bad" data-mark="${fbKey}" data-correct="false">✗ Wrong</button>
+        <button class="jb-btn edit" data-edit="${fbKey}" data-label="${ball.label||''}" data-keys="${ball.keys||''}">✏ Edit</button>
+        <button class="jb-btn del" data-del="${fbKey}" data-seq="${ball.seq||0}" data-scorer="${ball.scorer}">🗑</button>`;
+    } else {
+      const resultStr=fmtPenalty(mark.penalty);
+      const resultClass=mark.penalty>0?'pos':'neg';
+      actionsHtml=`
+        <span class="jb-result ${resultClass}">${mark.correct?'✓':'✗'} ${resultStr}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:4px;">${mark.judge_key?`→${mark.judge_key}`:''}</span>
+        <button class="jb-btn del" data-del="${fbKey}" data-seq="${ball.seq||0}" data-scorer="${ball.scorer}" style="margin-left:auto;">🗑</button>`;
+    }
+    return`<div class="jball ${markedClass}" id="jrow_${fbKey}">
+      <div class="jball-header">
+        <span class="jb-label">${ball.label||seqToLabel(ball.seq||1)}</span>
+        <span class="jb-scorer ${ball.scorer}">${ball.scorer}</span>
+        <div class="jb-keys">${chips}</div>
+        <span class="jb-time">${formatUKTime(ball.confirmed_at)}</span>
+      </div>
+      <div class="jball-actions">${actionsHtml}</div>
+    </div>`;
+  }).join('');
+  // Wire mark buttons
+  feed.querySelectorAll('[data-mark]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const fbKey=btn.dataset.mark, correct=btn.dataset.correct==='true';
+      if(correct){
+        // Correct — auto calculate penalty from scorer's own key
+        const ball=allEntries[fbKey];
+        const pen=ball.confidence==='certain'?5:3;
+        set(ref(db,'comp/judge/'+fbKey),{correct:true,judge_key:ball.confirmed_key,penalty:pen,marked_at:new Date().toISOString()});
+      } else {
+        // Wrong — show correct key picker inline
+        showCorrectPicker(fbKey);
+      }
+    });
+  });
+  // Wire edit buttons
+  feed.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      editFbKey=btn.dataset.edit;
+      document.getElementById('editModalTitle').textContent=`Edit · ${btn.dataset.label}`;
+      document.getElementById('editInput').value=btn.dataset.keys;
+      document.getElementById('editModal').classList.add('open');
+      setTimeout(()=>document.getElementById('editInput').focus(),80);
+    });
+  });
+  // Wire delete buttons
+  feed.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const fbKey=btn.dataset.del, seq=parseInt(btn.dataset.seq), scorer=btn.dataset.scorer;
+      if(!confirm('Delete this ball? Scorer can re-submit it.'))return;
+      remove(ref(db,'comp/entries/'+fbKey));
+      remove(ref(db,'comp/judge/'+fbKey));
+      // Signal scorer to re-enable this seq
+      set(ref(db,'comp/deleted/'+scorer+'_'+seq),Date.now());
+      // Clean up deletion signal after 10s
+      setTimeout(()=>remove(ref(db,'comp/deleted/'+scorer+'_'+seq)),10000);
+    });
+  });
+}
+
+function showCorrectPicker(fbKey){
+  const row=document.getElementById('jrow_'+fbKey);
+  if(!row)return;
+  // Remove any existing picker
+  row.querySelectorAll('.correct-picker').forEach(p=>p.remove());
+  const picker=document.createElement('div');
+  picker.className='correct-picker';
+  picker.innerHTML=`<span class="cp-label">Correct answer:</span>`+
+    ['0','1','2','3','4','6','*','7','9'].map(k=>`<button class="cp-key" data-ck="${k}">${k==='*'?'W':k==='7'?'Wd':k==='9'?'NB':k}</button>`).join('');
+  row.appendChild(picker);
+  picker.querySelectorAll('[data-ck]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ball=allEntries[fbKey];
+      const correctKey=btn.dataset.ck;
+      const pen=calcPenalty(ball.confirmed_key,correctKey,ball.confidence);
+      set(ref(db,'comp/judge/'+fbKey),{correct:false,judge_key:correctKey,penalty:pen,marked_at:new Date().toISOString()});
+      picker.remove();
+    });
+  });
+}
+
+// ── JUDGE STATS ───────────────────────────────────────
+function updateJudgeStats(){
+  if(myRole!=='judge')return;
+  const marked=Object.values(allJudge);
+  const total=marked.length;
+  const correct=marked.filter(m=>m.correct).length;
+  const score=marked.reduce((a,m)=>a+(m.penalty||0),0);
+  document.getElementById('jBalls').textContent=total;
+  document.getElementById('jAcc').textContent=total?Math.round(correct/total*100)+'%':'—';
+  const scoreEl=document.getElementById('jScore');
+  scoreEl.textContent=fmtPenalty(score)||'0';
+  scoreEl.className='js-val '+(score>0?'pos':score<0?'neg':'');
+}
+
+// ── SOLO + RESET + EXPORT ─────────────────────────────
+function updateSoloBtn(){
+  const btn=document.getElementById('btnSolo');if(!btn)return;
+  btn.textContent=soloMode?'Solo: On':'Solo: Off';
+  btn.className=soloMode?'solo-toggle on':'solo-toggle';
+}
+document.getElementById('btnSolo').addEventListener('click',()=>set(ref(db,'comp/state/soloMode'),!soloMode));
+document.getElementById('btnResetAll').addEventListener('click',()=>{
+  if(!confirm('Reset ALL data?'))return;
+  remove(entriesRef);remove(judgeRef);remove(deletedRef);set(ref(db,'comp/state/soloMode'),false);
+});
+document.getElementById('btnResetOver').addEventListener('click',()=>{
+  const seqs=Object.values(allEntries).map(e=>e.seq||0);if(!seqs.length){toast('Nothing to reset');return;}
+  const max=Math.max(...seqs),ov=Math.floor((max-1)/6),os=ov*6+1,oe=(ov+1)*6;
+  if(!confirm(`Reset Over ${ov}?`))return;
+  Object.entries(allEntries).forEach(([k,e])=>{if((e.seq||0)>=os&&(e.seq||0)<=oe)remove(ref(db,'comp/entries/'+k));});
+  Object.entries(allJudge).forEach(([k,j])=>{const e=allEntries[k];if(e&&(e.seq||0)>=os&&(e.seq||0)<=oe)remove(ref(db,'comp/judge/'+k));});
+});
+function exportCSV(){
+  const entries=Object.entries(allEntries).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  if(!entries.length){toast('No data yet');return;}
+  const rows=[['scorer','ball_num','label','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at','correct','judge_key','penalty']];
+  entries.forEach(([fbKey,ball])=>{
+    const mark=allJudge[fbKey]||{};
+    rows.push([ball.scorer,ball.seq||'',ball.label||'',ball.keys||'',ball.confirmed_key||'',ball.confidence||'',ball.is_wide?'yes':'no',ball.is_noball?'yes':'no',formatUKTime(ball.confirmed_at),mark.correct!=null?(mark.correct?'yes':'no'):'',mark.judge_key||'',mark.penalty!=null?mark.penalty:'']);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='scorer_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
+}
+document.getElementById('btnExportScorer').addEventListener('click',exportCSV);
+document.getElementById('btnExportJudge').addEventListener('click',exportCSV);
+
+// ── EDIT MODAL ────────────────────────────────────────
+document.getElementById('btnCancelEdit').addEventListener('click',()=>{document.getElementById('editModal').classList.remove('open');editFbKey=null;});
+document.getElementById('btnSaveEdit').addEventListener('click',()=>{
+  if(!editFbKey)return;
+  const newKeys=document.getElementById('editInput').value.trim();if(!newKeys)return;
+  const existing=allEntries[editFbKey]||{};
+  const arr=newKeys.split(' ').filter(Boolean);
+  let nk=existing.confirmed_key||null;
+  for(let i=arr.length-1;i>=0;i--){if(RESULT_KEYS.has(arr[i])){nk=arr[i];break;}}
+  set(ref(db,'comp/entries/'+editFbKey),{...existing,keys:newKeys,confirmed_key:nk,is_wide:nk==='7',is_noball:nk==='9',edited:true,edited_at:new Date().toISOString()});
+  // Clear judge mark so judge can re-mark
+  remove(ref(db,'comp/judge/'+editFbKey));
+  document.getElementById('editModal').classList.remove('open');editFbKey=null;
+});
+</script>
+</body>
+</html>
