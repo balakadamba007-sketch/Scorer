@@ -6,271 +6,198 @@
 <title>Live Scorer</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-:root {
-  --bg:#0a0a0a; --surface:#141414; --surface2:#1c1c1c;
-  --border:#2a2a2a; --text:#f0f0f0; --muted:#555;
-  --accent:#c8f135; --accent-dim:rgba(200,241,53,0.1);
-  --red:#ff4d4d; --red-dim:rgba(255,77,77,0.1);
-  --orange:#ffaa33; --orange-dim:rgba(255,170,51,0.1);
-  --blue:#4da6ff; --blue-dim:rgba(77,166,255,0.1);
-  --green:#33ff99; --green-dim:rgba(51,255,153,0.1);
-  --colA:#c8f135; --colA-dim:rgba(200,241,53,0.1);
-  --colB:#4da6ff; --colB-dim:rgba(77,166,255,0.1);
-  --colJ:#ff6eb5; --colJ-dim:rgba(255,110,181,0.1);
-  --font-mono:'IBM Plex Mono',monospace; --font-sans:'IBM Plex Sans',sans-serif;
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--text:#f0f0f0;--muted:#555;
+  --accent:#c8f135;--accent-dim:rgba(200,241,53,0.1);--red:#ff4d4d;--red-dim:rgba(255,77,77,0.1);
+  --orange:#ffaa33;--orange-dim:rgba(255,170,51,0.1);--blue:#4da6ff;--green:#33ff99;--green-dim:rgba(51,255,153,0.1);
+  --colA:#c8f135;--colA-dim:rgba(200,241,53,0.1);--colB:#4da6ff;--colB-dim:rgba(77,166,255,0.1);
+  --font-mono:'IBM Plex Mono',monospace;--font-sans:'IBM Plex Sans',sans-serif;
 }
-html,body { height:100%; height:100dvh; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font-sans); }
-body { display:flex; flex-direction:column; }
+html,body{height:100%;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-sans);}
+body{display:flex;flex-direction:column;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+
+/* SCREENS */
+.screen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
+.screen.active{display:flex;}
 
 /* ROLE SCREEN */
-#roleScreen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:28px; }
-.role-title { font-family:var(--font-mono); font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
-.role-subtitle { font-size:12px; color:var(--muted); text-align:center; font-family:var(--font-mono); line-height:1.6; }
-.role-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:280px; }
-.role-btn { padding:16px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:var(--font-mono); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; text-align:center; }
-.role-btn.a { border-color:var(--colA); color:var(--colA); }
-.role-btn.a:active { background:var(--colA-dim); }
-.role-btn.b { border-color:var(--colB); color:var(--colB); }
-.role-btn.b:active { background:var(--colB-dim); }
-.role-btn.j { border-color:var(--colJ); color:var(--colJ); }
-.role-btn.j:active { background:var(--colJ-dim); }
-.role-btn.v { border-color:var(--orange); color:var(--orange); }
-.role-btn.v:active { background:var(--orange-dim); }
+#roleScreen{align-items:center;justify-content:center;gap:16px;padding:28px;}
+.role-title{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:280px;}
+.role-btn{padding:18px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-mono);font-size:13px;font-weight:600;cursor:pointer;text-align:center;}
+.role-btn.a{border-color:var(--colA);color:var(--colA);}
+.role-btn.b{border-color:var(--colB);color:var(--colB);}
+.role-btn.j{grid-column:1/-1;border-color:var(--orange);color:var(--orange);}
 
-/* MAIN APP */
-#mainApp { flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0; }
-#mainApp.visible { display:flex; }
-.top-bar { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; background:var(--surface); border-bottom:1px solid var(--border); flex-shrink:0; }
-.role-badge { font-family:var(--font-mono); font-size:12px; font-weight:600; padding:4px 10px; border-radius:5px; letter-spacing:0.06em; }
-.role-badge.A { background:var(--colA-dim); color:var(--colA); border:1px solid rgba(200,241,53,0.3); }
-.role-badge.B { background:var(--colB-dim); color:var(--colB); border:1px solid rgba(77,166,255,0.3); }
-.role-badge.judge { background:var(--colJ-dim); color:var(--colJ); border:1px solid rgba(255,110,181,0.3); }
-.role-badge.viewer { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(255,170,51,0.3); }
-.change-role { font-family:var(--font-mono); font-size:10px; color:var(--muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.06em; border:none; background:none; padding:4px 8px; }
-.status-bar { display:flex; align-items:center; gap:8px; padding:6px 14px; font-family:var(--font-mono); font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
-.dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; }
-.dot.live { background:var(--accent); box-shadow:0 0 5px var(--accent); animation:pulse 1.5s infinite; }
-.dot.error { background:var(--red); }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+/* TOP + STATUS */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.role-badge{font-family:var(--font-mono);font-size:12px;font-weight:600;padding:4px 10px;border-radius:5px;}
+.role-badge.A{background:var(--colA-dim);color:var(--colA);border:1px solid rgba(200,241,53,0.3);}
+.role-badge.B{background:var(--colB-dim);color:var(--colB);border:1px solid rgba(77,166,255,0.3);}
+.role-badge.judge{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,170,51,0.3);}
+.change-role{font-family:var(--font-mono);font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;}
+.status-bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-family:var(--font-mono);font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.dot.live{background:var(--accent);box-shadow:0 0 4px var(--accent);animation:pulse 1.5s infinite;}
+.dot.error{background:var(--red);}
 
-/* PANEL BASE */
-.panel { flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0; }
-.panel.active { display:flex; }
+/* PANELS */
+.panel{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
+.panel.active{display:flex;}
 
-/* SCORER PANEL */
-.scorer-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; min-height:0; }
-.ball-indicator { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; flex-shrink:0; }
-.ball-id { font-family:var(--font-mono); font-size:26px; font-weight:600; }
-.ball-id.A { color:var(--colA); }
-.ball-id.B { color:var(--colB); }
-.ball-id-label { font-size:10px; color:var(--muted); font-family:var(--font-mono); text-transform:uppercase; margin-bottom:2px; }
-.ball-status { font-family:var(--font-mono); font-size:11px; text-align:right; max-width:160px; }
-.ball-status.ready { color:var(--muted); }
-.ball-status.confirmed-state { color:var(--accent); }
-.ball-status.waiting { color:var(--orange); }
-.current-keys-box { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; min-height:48px; display:flex; align-items:center; flex-wrap:wrap; gap:5px; flex-shrink:0; }
-.hint { font-size:11px; color:var(--muted); font-family:var(--font-mono); }
-.k-chip { border-radius:5px; padding:3px 9px; font-family:var(--font-mono); font-size:17px; font-weight:600; display:flex; flex-direction:column; align-items:center; }
-.k-chip.A { background:var(--colA-dim); border:1px solid rgba(200,241,53,0.25); color:var(--colA); }
-.k-chip.B { background:var(--colB-dim); border:1px solid rgba(77,166,255,0.25); color:var(--colB); }
-.k-chip.J { background:var(--colJ-dim); border:1px solid rgba(255,110,181,0.25); color:var(--colJ); }
-.k-chip.confirmed-chip { border-width:2px !important; }
-.k-chip .ms { font-size:9px; color:var(--muted); font-weight:400; }
-.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; flex:1; min-height:0; }
-.key { background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--font-mono); font-size:22px; font-weight:600; cursor:pointer; transition:background 0.08s,transform 0.08s,border-color 0.08s; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; min-height:0; }
-.key.flash-A { background:var(--colA-dim); border-color:var(--colA); color:var(--colA); transform:scale(0.95); }
-.key.flash-B { background:var(--colB-dim); border-color:var(--colB); color:var(--colB); transform:scale(0.95); }
-.key.flash-J { background:var(--colJ-dim); border-color:var(--colJ); color:var(--colJ); transform:scale(0.95); }
-.key.confirm { border-color:var(--orange); color:var(--orange); font-size:14px; }
-.key.confirm.advance { border-color:var(--accent) !important; color:var(--accent) !important; animation:pulse 1.2s infinite; font-size:13px; }
-/* Keypad states */
-.keypad.confirmed-state .key { opacity:0.2; pointer-events:none; }
-.keypad.confirmed-state .key.confirm { opacity:1; pointer-events:all; border-color:var(--accent); color:var(--accent); font-size:13px; }
-.keypad.submitted .key { opacity:0.3; pointer-events:none; }
-.keypad.submitted .key.confirm { opacity:1; pointer-events:none; border-color:var(--muted); color:var(--muted); }
+/* SCORER */
+.scorer-wrap{padding:8px 10px;flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;}
+.ball-indicator{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;flex-shrink:0;}
+.ball-id{font-family:var(--font-mono);font-size:26px;font-weight:600;}
+.ball-id.A{color:var(--colA);}.ball-id.B{color:var(--colB);}
+.ball-id-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;margin-bottom:2px;}
+.ball-status{font-family:var(--font-mono);font-size:11px;text-align:right;max-width:160px;}
+.ball-status.ready{color:var(--muted);}.ball-status.run-conf{color:var(--accent);}.ball-status.full-conf{color:var(--green);}.ball-status.waiting{color:var(--orange);}
+.current-keys-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;min-height:44px;max-height:54px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;flex-shrink:0;overflow:hidden;}
+.hint{font-size:11px;color:var(--muted);font-family:var(--font-mono);}
+.k-chip{border-radius:5px;padding:2px 8px;font-family:var(--font-mono);font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;}
+.k-chip.A{background:var(--colA-dim);border:1px solid rgba(200,241,53,0.25);color:var(--colA);}
+.k-chip.B{background:var(--colB-dim);border:1px solid rgba(77,166,255,0.25);color:var(--colB);}
+.k-chip .ms{font-size:8px;color:var(--muted);font-weight:400;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;min-height:0;}
+.key{background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-mono);font-size:28px;font-weight:600;cursor:pointer;transition:background 0.06s,transform 0.06s;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;min-height:0;touch-action:manipulation;}
+.key.flash-A{background:var(--colA-dim);border-color:var(--colA);color:var(--colA);transform:scale(0.94);}
+.key.flash-B{background:var(--colB-dim);border-color:var(--colB);color:var(--colB);transform:scale(0.94);}
+.key.confirm{border-color:var(--orange);color:var(--orange);font-size:16px;border-width:2px;}
+.key.confirm.ready-to-advance{border-color:var(--accent)!important;color:var(--accent)!important;animation:pulse 1.2s infinite;}
+.keypad.run-conf .key{opacity:1;pointer-events:all;}
+.keypad.full-conf .key{opacity:0.15;pointer-events:none;}
+.keypad.full-conf .key.confirm{opacity:1;pointer-events:all;}
+.keypad.submitted .key{opacity:0.3;pointer-events:none;}
+.keypad.submitted .key.confirm{opacity:1;pointer-events:none;border-color:var(--muted);color:var(--muted);}
 
 /* JUDGE PANEL */
-.judge-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; min-height:0; overflow:hidden; }
-.judge-ball-bar { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid rgba(255,110,181,0.25); border-radius:8px; padding:8px 14px; flex-shrink:0; }
-.judge-ball-id { font-family:var(--font-mono); font-size:26px; font-weight:600; color:var(--colJ); }
-.judge-queue-count { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
-.scorer-submissions { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; }
-.sub-row { display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px; }
-.sub-who { font-weight:600; min-width:14px; }
-.sub-who.A { color:var(--colA); }
-.sub-who.B { color:var(--colB); }
-.sub-keys { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
-.sub-key { font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; }
-.sub-key.A { color:var(--colA); background:var(--colA-dim); border:1px solid rgba(200,241,53,0.2); }
-.sub-key.B { color:var(--colB); background:var(--colB-dim); border:1px solid rgba(77,166,255,0.2); }
-.sub-time { font-size:10px; color:#c8c8c8; }
-.sub-empty { font-size:11px; color:var(--muted); font-style:italic; }
-.judge-feed { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; min-height:0; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
-.judge-feed-row { display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11px; }
-.judge-feed-row.overturned { border-color:var(--orange); background:var(--orange-dim); }
-.jf-label { color:var(--colJ); font-weight:600; min-width:36px; }
-.jf-keys { display:flex; gap:3px; flex:1; flex-wrap:wrap; }
-.jf-key { font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; color:var(--colJ); background:var(--colJ-dim); border:1px solid rgba(255,110,181,0.2); }
-.jf-ovr { font-size:9px; color:var(--orange); }
+.judge-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.judge-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);}
+.js-stat{display:flex;flex-direction:column;align-items:center;padding:8px 6px;border-right:1px solid var(--border);}
+.js-stat:last-child{border-right:none;}
+.js-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.js-val{font-family:var(--font-mono);font-size:17px;font-weight:600;color:var(--text);}
+.js-val.pos{color:var(--green);}.js-val.neg{color:var(--red);}
+.solo-toggle{font-family:var(--font-mono);font-size:10px;padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;}
+.solo-toggle.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.judge-feed{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:8px 12px;min-height:0;-webkit-overflow-scrolling:touch;}
+.jball{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.jball.correct{border-color:rgba(51,255,153,0.3);background:rgba(51,255,153,0.03);}
+.jball.wrong{border-color:rgba(255,77,77,0.3);background:rgba(255,77,77,0.03);}
+.jball-header{display:flex;align-items:center;gap:6px;padding:6px 10px;flex-wrap:wrap;}
+.jb-label{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--orange);min-width:32px;}
+.jb-scorer{font-family:var(--font-mono);font-size:11px;font-weight:600;}
+.jb-scorer.A{color:var(--colA);}.jb-scorer.B{color:var(--colB);}
+.jb-keys{display:flex;gap:3px;flex-wrap:wrap;flex:1;}
+.jb-key{font-family:var(--font-mono);font-size:13px;font-weight:600;border-radius:4px;padding:1px 5px;}
+.jb-key.A{color:var(--colA);background:var(--colA-dim);border:1px solid rgba(200,241,53,0.2);}
+.jb-key.B{color:var(--colB);background:var(--colB-dim);border:1px solid rgba(77,166,255,0.2);}
+.jb-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.jball-actions{display:flex;align-items:center;gap:5px;padding:5px 10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.jb-btn{background:none;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:11px;cursor:pointer;padding:4px 10px;transition:all 0.1s;}
+.jb-btn.ok{border-color:var(--green);color:var(--green);}
+.jb-btn.ok:active{background:var(--green);color:var(--bg);}
+.jb-btn.bad{border-color:var(--red);color:var(--red);}
+.jb-btn.bad:active{background:var(--red);color:#fff;}
+.jb-btn.edit{border-color:var(--blue);color:var(--blue);}
+.jb-btn.del{color:var(--muted);}
+.jb-btn.del:active{border-color:var(--red);color:var(--red);}
+.jb-result{font-family:var(--font-mono);font-size:13px;font-weight:600;margin-left:auto;}
+.jb-result.pos{color:var(--green);}.jb-result.neg{color:var(--red);}
+/* Correct key picker — inline after ✗ */
+.correct-picker{padding:7px 10px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.cp-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.cp-key{background:none;border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-mono);font-size:14px;font-weight:600;cursor:pointer;padding:4px 9px;touch-action:manipulation;}
+.cp-key:active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+/* Passwords in judge panel */
+.pw-section{padding:8px 12px;background:var(--surface2);border-top:1px solid var(--border);flex-shrink:0;display:none;}
+.pw-section.open{display:block;}
+.pw-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+.pw-row:last-child{margin-bottom:0;}
+.pw-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);min-width:50px;}
+.pw-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:13px;padding:4px 8px;outline:none;}
+.pw-input:focus{border-color:var(--accent);}
+.pw-btn{background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:var(--font-mono);font-size:10px;padding:4px 8px;cursor:pointer;}
+.pw-btn:active{border-color:var(--accent);color:var(--accent);}
+.pw-saved{font-size:10px;color:var(--green);font-family:var(--font-mono);display:none;}
 
-/* VIEWER PANEL */
-.viewer-wrap { padding:10px 12px; flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden; min-height:0; }
-.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; flex-shrink:0; }
-.scorer-stats { background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:9px 12px; display:flex; flex-direction:column; gap:4px; }
-.scorer-stats.A { border-color:rgba(200,241,53,0.25); }
-.scorer-stats.B { border-color:rgba(77,166,255,0.25); }
-.ss-name { font-family:var(--font-mono); font-size:11px; font-weight:600; }
-.ss-name.A { color:var(--colA); }
-.ss-name.B { color:var(--colB); }
-.ss-row { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px; }
-.ss-val { color:var(--text); font-weight:600; }
-.ss-val.pos { color:var(--green); }
-.ss-val.neg { color:var(--red); }
-.ss-label { color:var(--muted); }
-.current-ball-bar { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; flex-shrink:0; font-family:var(--font-mono); }
-.cb-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; }
-.cb-val { font-size:18px; font-weight:600; color:var(--orange); }
-.cb-status { font-size:11px; color:var(--muted); }
-.feed { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; min-height:0; padding-bottom:4px; -webkit-overflow-scrolling:touch; }
-.over-section { display:flex; flex-direction:column; gap:5px; }
-.over-section-label { font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--orange); text-transform:uppercase; letter-spacing:0.07em; padding:2px 4px; }
-.ball-card { background:var(--surface); border:1px solid var(--border); border-radius:9px; overflow:hidden; }
-.ball-card-header { display:flex; align-items:center; gap:8px; padding:5px 12px; background:var(--surface2); border-bottom:1px solid var(--border); flex-wrap:wrap; }
-.ball-card-label { font-family:var(--font-mono); font-size:13px; font-weight:600; color:var(--orange); }
-.first-badge { font-family:var(--font-mono); font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; letter-spacing:0.05em; }
-.first-badge.A { background:var(--colA-dim); color:var(--colA); border:1px solid rgba(200,241,53,0.3); }
-.first-badge.B { background:var(--colB-dim); color:var(--colB); border:1px solid rgba(77,166,255,0.3); }
-.first-badge.tie { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(255,170,51,0.3); }
-.first-badge.pending { color:var(--muted); border:1px solid var(--border); }
-.judge-badge { font-family:var(--font-mono); font-size:10px; padding:2px 8px; border-radius:4px; background:var(--colJ-dim); color:var(--colJ); border:1px solid rgba(255,110,181,0.3); margin-left:auto; }
-.scorer-row { display:flex; align-items:center; gap:6px; padding:7px 12px; border-bottom:1px solid var(--border); }
-.scorer-row:last-child { border-bottom:none; }
-.sr-who { font-family:var(--font-mono); font-size:11px; font-weight:600; min-width:14px; }
-.sr-who.A { color:var(--colA); }
-.sr-who.B { color:var(--colB); }
-.sr-keys { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
-.sr-key { font-family:var(--font-mono); font-size:13px; font-weight:600; border-radius:4px; padding:1px 5px; }
-.sr-key.A { color:var(--colA); background:var(--colA-dim); border:1px solid rgba(200,241,53,0.2); }
-.sr-key.B { color:var(--colB); background:var(--colB-dim); border:1px solid rgba(77,166,255,0.2); }
-.sr-time { font-family:var(--font-mono); font-size:10px; color:#c8c8c8; min-width:78px; text-align:right; }
-.sr-penalty { font-family:var(--font-mono); font-size:11px; font-weight:600; min-width:36px; text-align:right; }
-.sr-penalty.pos { color:var(--green); }
-.sr-penalty.neg { color:var(--red); }
-.sr-penalty.pending { color:var(--muted); }
-.sr-waiting { padding:7px 12px; font-family:var(--font-mono); font-size:10px; color:var(--muted); display:flex; align-items:center; gap:6px; }
-.mini-dot { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:pulse 1.2s infinite; }
-.ib { background:none; border:1px solid var(--border); border-radius:5px; color:var(--muted); font-size:11px; cursor:pointer; padding:2px 6px; font-family:var(--font-mono); transition:all 0.1s; }
-.ib:hover { border-color:var(--blue); color:var(--blue); }
-.empty-feed { display:flex; align-items:center; justify-content:center; padding:40px; font-family:var(--font-mono); font-size:12px; color:var(--muted); }
-.actions { display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; }
-.btn { flex:1; padding:10px; border:1px solid var(--border); border-radius:8px; background:none; color:var(--muted); font-family:var(--font-mono); font-size:11px; cursor:pointer; transition:all 0.15s; text-transform:uppercase; letter-spacing:0.04em; }
-.btn:hover,.btn:active { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
-.btn.danger:hover,.btn.danger:active { border-color:var(--red); color:var(--red); background:var(--red-dim); }
-.btn.save { border-color:var(--accent); color:var(--accent); }
-.btn.solo-on { border-color:var(--green); color:var(--green); background:var(--green-dim); }
-.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:center; justify-content:center; padding:20px; }
-.modal-overlay.open { display:flex; }
-.modal { background:#1a1a1a; border:1px solid var(--border); border-radius:12px; padding:20px; width:100%; max-width:300px; display:flex; flex-direction:column; gap:14px; }
-.modal-title { font-family:var(--font-mono); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; }
-.modal input { background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--text); font-family:var(--font-mono); font-size:20px; padding:10px 14px; width:100%; outline:none; letter-spacing:0.12em; }
-.modal input:focus { border-color:var(--accent); }
-.modal-hint { font-size:11px; color:var(--muted); font-family:var(--font-mono); }
-.modal-btns { display:flex; gap:8px; }
-.warning-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:8px 18px; border-radius:8px; font-family:var(--font-mono); font-size:12px; opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:200; white-space:nowrap; }
-.warning-toast.visible { opacity:1; }
+/* ACTIONS */
+.actions{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-transform:uppercase;letter-spacing:0.04em;touch-action:manipulation;}
+.btn:active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.btn.danger:active{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.btn.ok{border-color:var(--green);color:var(--green);}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#1a1a1a;border:1px solid var(--border);border-radius:12px;padding:20px;width:100%;max-width:300px;display:flex;flex-direction:column;gap:14px;}
+.modal-title{font-family:var(--font-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
+.modal input{background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:18px;padding:10px 14px;width:100%;outline:none;}
+.modal input:focus{border-color:var(--accent);}
+.modal-btns{display:flex;gap:8px;}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:7px 16px;border-radius:8px;font-family:var(--font-mono);font-size:11px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;}
 </style>
 </head>
 <body>
 
 <!-- ROLE SCREEN -->
-<div id="roleScreen">
-  <div class="role-title">Live Scorer</div>
-  <div class="role-subtitle">Pick your role · Double press to confirm · # to advance</div>
-  <div class="role-btns">
-    <button class="role-btn a" data-role="A">⌨ Scorer A</button>
-    <button class="role-btn b" data-role="B">⌨ Scorer B</button>
-    <button class="role-btn j" data-role="judge">⚖ Judge</button>
-    <button class="role-btn v" data-role="viewer">👁 Viewer</button>
+<div class="screen active" id="roleScreen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px;">
+    <div class="role-title">Live Scorer</div>
+    <div class="role-btns">
+      <button class="role-btn a" data-role="A">⌨ Scorer A</button>
+      <button class="role-btn b" data-role="B">⌨ Scorer B</button>
+      <button class="role-btn j" data-role="judge">⚖ Judge</button>
+    </div>
   </div>
 </div>
 
 <!-- MAIN APP -->
-<div id="mainApp">
+<div class="screen" id="mainApp">
   <div class="top-bar">
     <div class="role-badge" id="roleBadge"></div>
-    <button class="change-role" id="btnChangeRole">Change Role</button>
+    <button class="change-role" id="btnChangeRole">Change</button>
   </div>
-  <div class="status-bar">
-    <div class="dot" id="statusDot"></div>
-    <span id="statusText">Connecting...</span>
-  </div>
+  <div class="status-bar"><div class="dot" id="statusDot"></div><span id="statusText">Connecting...</span></div>
 
   <!-- SCORER PANEL -->
   <div class="panel" id="panelScorer">
     <div class="scorer-wrap">
       <div class="ball-indicator">
-        <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="scorerBallId">1.1</div></div>
+        <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="scorerBallId">0.1</div></div>
         <div class="ball-status ready" id="ballStatus">Double press to confirm</div>
       </div>
       <div class="current-keys-box" id="currentKeysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
       <div class="keypad" id="keypad"></div>
     </div>
-    <div class="actions">
-      <button class="btn danger" id="btnClear">Clear All</button>
-      <button class="btn" id="btnExportScorer">Export CSV</button>
-    </div>
+    <div class="actions"><button class="btn" id="btnExportScorer">Export CSV</button></div>
   </div>
 
   <!-- JUDGE PANEL -->
   <div class="panel" id="panelJudge">
     <div class="judge-wrap">
-      <div class="judge-ball-bar">
-        <div><div class="ball-id-label">Judging</div><div class="judge-ball-id" id="judgeBallId">1.1</div></div>
-        <div class="judge-queue-count" id="judgeQueueCount">0 to judge</div>
+      <div class="judge-stats">
+        <div class="js-stat"><span class="js-label">Balls</span><span class="js-val" id="jBalls">0</span></div>
+        <div class="js-stat"><span class="js-label">Accuracy</span><span class="js-val" id="jAcc">—</span></div>
+        <div class="js-stat"><span class="js-label">Score</span><span class="js-val" id="jScore">0</span></div>
+        <div class="js-stat" style="justify-content:center;"><button class="solo-toggle" id="btnSolo">Solo: Off</button></div>
       </div>
-      <div class="scorer-submissions" id="scorerSubmissions">
-        <div class="sub-empty">Waiting for scorer submissions...</div>
+      <div class="judge-feed" id="judgeFeed"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for scorer submissions...</div></div>
+      <div class="pw-section" id="pwSection">
+        <div class="pw-row"><span class="pw-label">Scorer PW</span><input class="pw-input" id="pwScorer" type="password" placeholder="set scorer password"/><button class="pw-btn" id="btnSetPwScorer">Set</button><span class="pw-saved" id="pwScorerSaved">✓</span></div>
+        <div class="pw-row"><span class="pw-label">Judge PW</span><input class="pw-input" id="pwJudge" type="password" placeholder="set judge password"/><button class="pw-btn" id="btnSetPwJudge">Set</button><span class="pw-saved" id="pwJudgeSaved">✓</span></div>
       </div>
-      <div class="current-keys-box" id="judgeKeysBox"><span class="hint">Double press to confirm · # to advance</span></div>
-      <div class="keypad" id="judgeKeypad"></div>
-      <div class="judge-feed" id="judgeFeed"></div>
     </div>
     <div class="actions">
-      <button class="btn" id="btnExportJudge">Export CSV</button>
-    </div>
-  </div>
-
-  <!-- VIEWER PANEL -->
-  <div class="panel" id="panelViewer">
-    <div class="viewer-wrap">
-      <div class="stats-grid">
-        <div class="scorer-stats A">
-          <div class="ss-name A">Scorer A</div>
-          <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statABalls">0</span></div>
-          <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statAAcc">—</span></div>
-          <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statAFirst">0</span></div>
-          <div class="ss-row"><span class="ss-label">Score</span><span class="ss-val" id="statAScore">0</span></div>
-        </div>
-        <div class="scorer-stats B">
-          <div class="ss-name B">Scorer B</div>
-          <div class="ss-row"><span class="ss-label">Balls</span><span class="ss-val" id="statBBalls">0</span></div>
-          <div class="ss-row"><span class="ss-label">Accuracy</span><span class="ss-val" id="statBAcc">—</span></div>
-          <div class="ss-row"><span class="ss-label">First</span><span class="ss-val" id="statBFirst">0</span></div>
-          <div class="ss-row"><span class="ss-label">Score</span><span class="ss-val" id="statBScore">0</span></div>
-        </div>
-      </div>
-      <div class="current-ball-bar">
-        <div><div class="cb-label">Current delivery</div><div class="cb-val" id="viewerCurrentBall">1.1</div></div>
-        <div class="cb-status" id="viewerBallStatus">Waiting</div>
-      </div>
-      <div class="feed" id="viewerFeed"><div class="empty-feed">Waiting for scorers...</div></div>
-    </div>
-    <div class="actions">
-      <button class="btn" id="btnSoloToggle">Solo: Off</button>
+      <button class="btn" id="btnPasswords">🔑 Passwords</button>
       <button class="btn danger" id="btnResetAll">Reset All</button>
       <button class="btn" id="btnResetOver">Reset Over</button>
-      <button class="btn" id="btnExportViewer">Export CSV</button>
+      <button class="btn ok" id="btnExportJudge">Export CSV</button>
     </div>
   </div>
 </div>
@@ -280,635 +207,419 @@ body { display:flex; flex-direction:column; }
   <div class="modal">
     <div class="modal-title" id="editModalTitle">Edit entry</div>
     <input type="text" id="editInput" placeholder="e.g. 5 6 6" maxlength="30"/>
-    <div class="modal-hint">Space-separated keys. Timings preserved.</div>
-    <div class="modal-btns">
-      <button class="btn" id="btnCancelEdit">Cancel</button>
-      <button class="btn save" id="btnSaveEdit">Save</button>
-    </div>
+    <div class="modal-btns"><button class="btn" id="btnCancelEdit">Cancel</button><button class="btn ok" id="btnSaveEdit">Save</button></div>
   </div>
 </div>
 
-<!-- WARNING TOAST -->
-<div class="warning-toast" id="warningToast"></div>
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal">
+    <div class="modal-title" id="pwModalTitle">Password</div>
+    <input type="password" id="pwModalInput" placeholder="enter password" maxlength="30"/>
+    <div style="font-size:11px;color:var(--red);font-family:var(--font-mono);min-height:16px;" id="pwModalErr"></div>
+    <div class="modal-btns"><button class="btn" id="btnCancelPw">Cancel</button><button class="btn ok" id="btnConfirmPw">Enter</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module">
-import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, push, set, remove, onValue, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-
 const app = initializeApp({ databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/' });
-const db  = getDatabase(app);
-const entriesRef = ref(db, 'comp/entries');
-const judgeRef   = ref(db, 'comp/judge');
-const stateRef   = ref(db, 'comp/state');
+const db = getDatabase(app);
+const entriesRef = ref(db,'comp/entries');
+const judgeRef   = ref(db,'comp/judge');    // {entryFbKey: {correct,judge_key,penalty,marked_at}}
+const stateRef   = ref(db,'comp/state');
+const pwRef      = ref(db,'comp/passwords');
+const deletedRef = ref(db,'comp/deleted');  // {scorer_seq: timestamp} — signals scorer to re-enable
 
-// ── STATE ────────────────────────────────────────────
-let myRole = null;
-let allEntries = {}, allJudge = {}, soloMode = false;
-let mySubmittedSeqs = new Set();
-// Scorer
-let currentKeys = [], currentTimings = [], pressStart = null;
-let ballConfirmed = false, confirmedKey = null, confirmedConfidence = null, confirmedAt = null;
-// Judge
-let currentJudgeKeys = [], currentJudgeTimings = [], judgePressStart = null;
-let judgeBallConfirmed = false, judgeConfirmedKey = null, judgeConfirmedConfidence = null, judgeConfirmedAt = null;
-// Edit modal
-let editFbKey = null, editPath = null;
+// ── STATE ─────────────────────────────────────────────
+let myRole=null, allEntries={}, allJudge={}, soloMode=false, passwords={};
+let mySubmittedSeqs=new Set();
+const RESULT_KEYS=new Set(['0','1','2','3','4','6','7','9','*']);
+const EXTRA_KEYS=new Set(['7','9']);
+let confirmState='scoring', confirmedRunKey=null, confirmedExtraKey=null, confirmedAt=null;
+let currentKeys=[], currentTimings=[], pressStart=null;
+let editFbKey=null, pendingRole=null;
 
-const RESULT_KEYS = new Set(['0','1','2','3','4','6','7','9','*']);
+// ── HELPERS ───────────────────────────────────────────
+function setStatus(s,m){document.getElementById('statusDot').className='dot '+(s==='live'?'live':s==='error'?'error':'');document.getElementById('statusText').textContent=m;}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function formatUKTime(iso){if(!iso)return'';const d=new Date(iso);return d.toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour12:false})+'.'+String(d.getMilliseconds()).padStart(3,'0');}
+function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
+function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
 
-// ── HELPERS ──────────────────────────────────────────
-function setStatus(state, msg) {
-  document.getElementById('statusDot').className = 'dot '+(state==='live'?'live':state==='error'?'error':'');
-  document.getElementById('statusText').textContent = msg;
-}
+// ── OVER NUMBERING (0.1 = first ball of first over) ───
+function getLegalCount(scorer){return Object.values(allEntries).filter(e=>e.scorer===scorer&&!e.is_wide&&!e.is_noball).length;}
+function getCurrentLabelForScorer(){if(!myRole||myRole==='judge')return'0.1';const n=getLegalCount(myRole);return`${Math.floor(n/6)}.${(n%6)+1}`;}
+function getNextLabelForSubmit(isWide,isNoBall){const b=getCurrentLabelForScorer();return isWide?b+'w':isNoBall?b+'nb':b;}
+function seqToLabel(seq){return`${Math.floor((seq-1)/6)}.${((seq-1)%6)+1}`;}
 
-function formatUKTime(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const ms = String(d.getMilliseconds()).padStart(3,'0');
-  return d.toLocaleTimeString('en-GB',{timeZone:'Europe/London',hour12:false})+'.'+ms;
-}
-
-function showWarning(msg) {
-  const t = document.getElementById('warningToast');
-  t.textContent = msg;
-  t.classList.add('visible');
-  setTimeout(()=>t.classList.remove('visible'), 2000);
-}
-
-// Outcome from confirmed key for penalty calc
-function getOutcome(k) {
-  if (k==='*') return 'WICKET';
-  if (k==='7') return 'WIDE';
-  if (k==='9') return 'NOBALL';
-  if (['0','1','2','3','4','6'].includes(k)) return parseInt(k);
-  return null;
-}
-
-function calculatePenalty(scorerKey, judgeKey, confidence) {
-  const sO = getOutcome(scorerKey), jO = getOutcome(judgeKey);
-  if (sO===null||jO===null) return null;
-  if (sO===jO) return confidence==='certain'?5:3;
-  const sW=sO==='WICKET', jW=jO==='WICKET';
-  const sE=(sO==='WIDE'||sO==='NOBALL'), jE=(jO==='WIDE'||jO==='NOBALL');
+// ── PENALTY ───────────────────────────────────────────
+function calcPenalty(scorerKey, judgeKey, confidence){
+  const s=getOutcome(scorerKey), j=getOutcome(judgeKey);
+  if(s===null||j===null)return null;
+  if(s===j)return confidence==='certain'?5:3;
+  const sw=s==='W',jw=j==='W',se=(s==='wide'||s==='nb'),je=(j==='wide'||j==='nb');
   let base=0;
-  if (sW||jW) { const runs=typeof(sW?jO:sO)==='number'?(sW?jO:sO):0; base=-10-(2*runs); }
-  else if (sE||jE) { base=-4; }
-  else { base=-2*Math.abs(sO-jO); }
+  if(sw||jw){const r=typeof(sw?j:s)==='number'?(sw?j:s):0;base=-10-(2*r);}
+  else if(se||je){base=-4;}
+  else{base=-2*Math.abs(s-j);}
   return base*(confidence==='certain'?2.0:1.5);
 }
+function fmtPenalty(p){if(p===null||p===undefined)return'';const r=Math.round(p*10)/10;return r>0?`+${r}`:`${r}`;}
 
-function formatPenalty(p) {
-  if (p===null) return '—';
-  const r=Math.round(p*10)/10;
-  return r>0?`+${r}`:`${r}`;
+// ── SYNC ──────────────────────────────────────────────
+function getCurrentBall(){
+  const aS=new Set(Object.values(allEntries).filter(e=>e.scorer==='A').map(e=>e.seq));
+  const bS=new Set(Object.values(allEntries).filter(e=>e.scorer==='B').map(e=>e.seq));
+  if(soloMode){const all=new Set([...aS,...bS]);let b=1;while(all.has(b))b++;return b;}
+  let b=1;while(aS.has(b)&&bS.has(b))b++;return b;
 }
-
-function formatPenaltyClass(p) {
-  if (p===null) return 'pending';
-  return p>0?'pos':'neg';
-}
-
-// ── LABEL CALCULATION ────────────────────────────────
-function getLegalCount(scorer) {
-  return Object.values(allEntries).filter(e=>e.scorer===scorer&&!e.is_wide&&!e.is_noball).length;
-}
-
-function getCurrentLabelForScorer() {
-  if (!myRole||myRole==='viewer'||myRole==='judge') return '1.1';
-  const n=getLegalCount(myRole);
-  return `${Math.floor(n/6)+1}.${(n%6)+1}`;
-}
-
-function getNextLabelForSubmit(isWide,isNoBall) {
-  const base=getCurrentLabelForScorer();
-  return isWide?base+'w':isNoBall?base+'nb':base;
-}
-
-function getJudgeLabelForSeq(seq) {
-  const e=Object.values(allEntries).find(en=>en.seq===seq);
-  if (e&&e.label) return e.label;
-  const n=Object.values(allJudge).filter(j=>j.seq<seq&&!j.is_wide&&!j.is_noball).length;
-  return `${Math.floor(n/6)+1}.${(n%6)+1}`;
-}
-
-// ── SYNC ─────────────────────────────────────────────
-function getCurrentBall() {
-  const aSeqs=new Set(Object.values(allEntries).filter(e=>e.scorer==='A').map(e=>e.seq));
-  const bSeqs=new Set(Object.values(allEntries).filter(e=>e.scorer==='B').map(e=>e.seq));
-  if (soloMode) {
-    const all=new Set([...aSeqs,...bSeqs]); let b=1; while(all.has(b)) b++; return b;
-  }
-  let b=1; while(aSeqs.has(b)&&bSeqs.has(b)) b++; return b;
-}
-
-function hasSubmittedCurrentBall() {
-  if (!myRole||myRole==='viewer'||myRole==='judge') return false;
+function hasSubmittedCurrentBall(){
+  if(!myRole||myRole==='judge')return false;
   const cb=getCurrentBall();
-  if (mySubmittedSeqs.has(cb)) return true;
-  return Object.values(allEntries).some(e=>e.scorer===myRole&&e.seq===cb);
+  return mySubmittedSeqs.has(cb)||Object.values(allEntries).some(e=>e.scorer===myRole&&e.seq===cb);
 }
 
-function getNextJudgeBall() {
-  const judged=new Set(Object.values(allJudge).map(j=>j.seq));
-  const scored=[...new Set(Object.values(allEntries).map(e=>e.seq))].sort((a,b)=>a-b);
-  for (const s of scored) { if (!judged.has(s)) return s; }
-  return scored.length>0?scored[scored.length-1]+1:1;
-}
+// ── FIREBASE LISTENERS ────────────────────────────────
+onValue(query(entriesRef,orderByChild('confirmed_at')),snap=>{
+  allEntries=snap.val()||{};
+  const cb=getCurrentBall();
+  mySubmittedSeqs=new Set([...mySubmittedSeqs].filter(s=>s>=cb));
+  setStatus('live',`Connected · ${Object.keys(allEntries).length} entries`);
+  updateScorerUI();updateJudgeFeed();
+},()=>setStatus('error','Connection lost'));
+onValue(judgeRef,snap=>{allJudge=snap.val()||{};updateJudgeFeed();updateJudgeStats();},()=>{});
+onValue(stateRef,snap=>{const s=snap.val()||{};soloMode=s.soloMode||false;updateSoloBtn();updateScorerUI();},()=>{});
+onValue(pwRef,snap=>{passwords=snap.val()||{};},()=>{});
+// Deletion signal — when judge deletes a ball, scorer is notified to re-enable that seq
+onValue(deletedRef,snap=>{
+  const deleted=snap.val()||{};
+  if(!myRole||myRole==='judge')return;
+  Object.entries(deleted).forEach(([key,ts])=>{
+    // key format: A_3 or B_5 (scorer_seq)
+    const parts=key.split('_');
+    if(parts.length===2&&parts[0]===myRole){
+      const seq=parseInt(parts[1]);
+      if(!isNaN(seq)){mySubmittedSeqs.delete(seq);}
+    }
+  });
+  updateScorerUI();
+},()=>{});
 
-function seqToSimpleLabel(seq) {
-  const over=Math.floor((seq-1)/6)+1, b=((seq-1)%6)+1;
-  return `${over}.${b}`;
-}
+// ── PASSWORDS ─────────────────────────────────────────
+document.getElementById('btnSetPwScorer').addEventListener('click',()=>{
+  const v=document.getElementById('pwScorer').value.trim();if(!v)return;
+  set(ref(db,'comp/passwords/scorer'),v);
+  document.getElementById('pwScorerSaved').style.display='inline';
+  setTimeout(()=>document.getElementById('pwScorerSaved').style.display='none',2000);
+  document.getElementById('pwScorer').value='';
+});
+document.getElementById('btnSetPwJudge').addEventListener('click',()=>{
+  const v=document.getElementById('pwJudge').value.trim();if(!v)return;
+  set(ref(db,'comp/passwords/judge'),v);
+  document.getElementById('pwJudgeSaved').style.display='inline';
+  setTimeout(()=>document.getElementById('pwJudgeSaved').style.display='none',2000);
+  document.getElementById('pwJudge').value='';
+});
+document.getElementById('btnPasswords').addEventListener('click',()=>{
+  const pw=document.getElementById('pwSection');
+  pw.classList.toggle('open');
+});
 
-// ── DOUBLE PRESS DETECTION ───────────────────────────
-function getConsecutiveTrailing(arr, val) {
-  let n=0; for(let i=arr.length-1;i>=0;i--) { if(arr[i]===val) n++; else break; } return n;
-}
+// ── ROLE SELECTION + PASSWORD FLOW ────────────────────
+const savedRole=localStorage.getItem('scorer_role_v5');
+if(savedRole)activateRole(savedRole);
 
-function checkConfirmation(keys) {
-  if (keys.length<2) return null;
-  const last=keys[keys.length-1];
-  if (!RESULT_KEYS.has(last)) return null;
-  if (last==='*') {
-    return getConsecutiveTrailing(keys,'*')>=3 ? {key:'*',confidence:'certain'} : null;
-  }
-  if (keys[keys.length-2]===last) return {key:last,confidence:'confirmed'};
-  return null;
-}
-
-// ── ROLE MANAGEMENT ──────────────────────────────────
-const savedRole=localStorage.getItem('scorer_role_v3');
-if (savedRole) activateRole(savedRole);
-
-document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>activateRole(btn.dataset.role)));
+document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{
+  const role=btn.dataset.role;
+  const pwKey=role==='judge'?'judge':'scorer';
+  const stored=passwords[pwKey];
+  if(!stored){activateRole(role);return;}
+  pendingRole=role;
+  document.getElementById('pwModalTitle').textContent=role==='judge'?'Judge Password':'Scorer Password';
+  document.getElementById('pwModalInput').value='';
+  document.getElementById('pwModalErr').textContent='';
+  document.getElementById('pwModal').classList.add('open');
+  setTimeout(()=>document.getElementById('pwModalInput').focus(),80);
+}));
+document.getElementById('btnCancelPw').addEventListener('click',()=>{document.getElementById('pwModal').classList.remove('open');pendingRole=null;});
+document.getElementById('btnConfirmPw').addEventListener('click',()=>{
+  const entered=document.getElementById('pwModalInput').value;
+  const pwKey=pendingRole==='judge'?'judge':'scorer';
+  if(entered===passwords[pwKey]){document.getElementById('pwModal').classList.remove('open');activateRole(pendingRole);pendingRole=null;}
+  else{document.getElementById('pwModalErr').textContent='Wrong password';document.getElementById('pwModalInput').value='';document.getElementById('pwModalInput').focus();}
+});
+document.getElementById('pwModalInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnConfirmPw').click();});
 document.getElementById('btnChangeRole').addEventListener('click',()=>{
-  localStorage.removeItem('scorer_role_v3');
-  document.getElementById('roleScreen').style.display='flex';
-  document.getElementById('mainApp').classList.remove('visible');
+  localStorage.removeItem('scorer_role_v5');
+  document.getElementById('roleScreen').classList.add('active');
+  document.getElementById('mainApp').classList.remove('active');
   myRole=null;
 });
 
-function activateRole(role) {
-  myRole=role;
-  mySubmittedSeqs=new Set();
-  currentKeys=[]; currentTimings=[];
-  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
-  currentJudgeKeys=[]; currentJudgeTimings=[];
-  judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
-  localStorage.setItem('scorer_role_v3',role);
-  document.getElementById('roleScreen').style.display='none';
-  document.getElementById('mainApp').classList.add('visible');
+function resetScorerState(){
+  confirmState='scoring';confirmedRunKey=null;confirmedExtraKey=null;confirmedAt=null;
+  currentKeys=[];currentTimings=[];mySubmittedSeqs=new Set();
+}
+function activateRole(role){
+  myRole=role;resetScorerState();
+  localStorage.setItem('scorer_role_v5',role);
+  document.getElementById('roleScreen').classList.remove('active');
+  document.getElementById('mainApp').classList.add('active');
   const badge=document.getElementById('roleBadge');
   badge.className='role-badge '+role;
-  badge.textContent=role==='viewer'?'👁 Viewer':role==='judge'?'⚖ Judge':'⌨ Scorer '+role;
-  ['Scorer','Judge','Viewer'].forEach(p=>{
-    const el=document.getElementById('panel'+p);
-    if(el) { el.classList.remove('active'); }
-  });
-  if (role==='A'||role==='B') { document.getElementById('panelScorer').classList.add('active'); buildKeypad(role); }
-  else if (role==='judge')    { document.getElementById('panelJudge').classList.add('active'); buildJudgeKeypad(); }
-  else if (role==='viewer')   { document.getElementById('panelViewer').classList.add('active'); renderViewer(); }
-  updateScorerUI();
-  updateJudgeUI();
-  updateSoloBtn();
+  badge.textContent=role==='judge'?'⚖ Judge':'⌨ Scorer '+role;
+  document.getElementById('panelScorer').classList.toggle('active',role!=='judge');
+  document.getElementById('panelJudge').classList.toggle('active',role==='judge');
+  if(role!=='judge')buildKeypad(role);
+  updateScorerUI();updateJudgeFeed();updateJudgeStats();updateSoloBtn();
 }
 
-// ── SCORER KEYPAD ────────────────────────────────────
+// ── SCORER KEYPAD ─────────────────────────────────────
 const KEYS=['1','2','3','4','5','6','7','8','9','*','0','#'];
-function buildKeypad(role) {
-  const kp=document.getElementById('keypad'); kp.innerHTML='';
+function buildKeypad(role){
+  const kp=document.getElementById('keypad');kp.innerHTML='';
   const fc='flash-'+role;
   KEYS.forEach(k=>{
     const btn=document.createElement('button');
-    btn.className='key'+(k==='#'?' confirm':'');
-    btn.textContent=k==='#'?'# ▶':k;
-    btn.addEventListener('touchstart',e=>{e.preventDefault();scorerKeyDown(k,btn,fc);},{passive:false});
-    btn.addEventListener('mousedown',e=>{e.preventDefault();scorerKeyDown(k,btn,fc);});
-    btn.addEventListener('touchend',e=>{e.preventDefault();scorerKeyUp(k,btn,fc);},{passive:false});
-    btn.addEventListener('mouseup',e=>{e.preventDefault();scorerKeyUp(k,btn,fc);});
+    btn.className='key'+(k==='#'?' confirm':'');btn.dataset.key=k;btn.textContent=k==='#'?'# ▶':k;
+    btn.addEventListener('touchstart',e=>{e.preventDefault();scorerDown(k,btn,fc);},{passive:false});
+    btn.addEventListener('mousedown',e=>{e.preventDefault();scorerDown(k,btn,fc);});
+    btn.addEventListener('touchend',e=>{e.preventDefault();scorerUp(k,btn,fc);},{passive:false});
+    btn.addEventListener('mouseup',e=>{e.preventDefault();scorerUp(k,btn,fc);});
     kp.appendChild(btn);
   });
 }
-
-function scorerKeyDown(k,btn,fc) {
-  if (pressStart!==null) return;
-  pressStart=Date.now(); btn.classList.add(fc);
-}
-
-function scorerKeyUp(k,btn,fc) {
-  if (pressStart===null) return;
-  const dur=Date.now()-pressStart; pressStart=null; btn.classList.remove(fc);
-  if (k==='#') {
-    if (!ballConfirmed) { showWarning('Double press a key first!'); return; }
-    if (hasSubmittedCurrentBall()) return;
-    commitBall(); return;
+function scorerDown(k,btn,fc){if(pressStart!==null)return;pressStart=Date.now();btn.classList.add(fc);}
+function scorerUp(k,btn,fc){
+  if(pressStart===null)return;
+  const dur=Math.min(Date.now()-pressStart,800);pressStart=null;btn.classList.remove(fc);
+  if(k==='#'){
+    if(confirmState==='scoring'){toast('Double press first!');return;}
+    if(hasSubmittedCurrentBall())return;
+    commitBall();return;
   }
-  if (ballConfirmed||hasSubmittedCurrentBall()) return;
-  currentKeys.push(k);
-  currentTimings.push({key:k,duration_ms:dur,time:new Date().toISOString()});
-  const conf=checkConfirmation(currentKeys);
-  if (conf) {
-    ballConfirmed=true; confirmedKey=conf.key;
-    confirmedConfidence=conf.confidence; confirmedAt=new Date().toISOString();
-    updateScorerUI();
+  if(hasSubmittedCurrentBall())return;
+  if(confirmState==='full-conf'||confirmState==='wicket')return;
+  if(confirmState==='run_conf'){
+    if(!EXTRA_KEYS.has(k))return;
+    currentKeys.push(k);currentTimings.push({key:k,duration_ms:dur,video_s:Date.now()/1000});
+    if(getConsec(currentKeys,k)>=2){confirmedExtraKey=k;confirmState='full-conf';}
+  } else {
+    currentKeys.push(k);currentTimings.push({key:k,duration_ms:dur,video_s:Date.now()/1000});
+    if(k==='*'){if(getConsec(currentKeys,'*')>=3){confirmedRunKey='*';confirmedAt=new Date().toISOString();confirmState='wicket';}}
+    else if(RESULT_KEYS.has(k)&&!EXTRA_KEYS.has(k)){if(currentKeys.length>=2&&currentKeys[currentKeys.length-2]===k){confirmedRunKey=k;confirmedAt=new Date().toISOString();confirmState='run_conf';}}
   }
-  renderCurrentKeys();
+  renderCurrentKeys();updateScorerUI();
 }
-
-function renderCurrentKeys() {
+function renderCurrentKeys(){
   const box=document.getElementById('currentKeysBox');
-  if (!currentKeys.length) { box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>'; return; }
-  box.innerHTML=currentTimings.map((t,i)=>{
-    const isLast=i===currentTimings.length-1;
-    const confirmed=ballConfirmed&&isLast;
-    return `<div class="k-chip ${myRole}${confirmed?' confirmed-chip':''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`;
-  }).join('');
+  if(!currentKeys.length){box.innerHTML='<span class="hint">Press keys · double press to confirm · # to advance</span>';return;}
+  box.innerHTML=currentTimings.map(t=>`<div class="k-chip ${myRole}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`).join('')+
+    `<button id="btnClearK" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-size:10px;padding:2px 7px;cursor:pointer;flex-shrink:0;touch-action:manipulation;">✕</button>`;
+  document.getElementById('btnClearK').addEventListener('click',()=>{resetScorerState();renderCurrentKeys();updateScorerUI();});
 }
-
-function commitBall() {
+function commitBall(){
   const seq=getCurrentBall();
-  const keysSnap=[...currentKeys], timingsSnap=[...currentTimings];
-  const keySnap=confirmedKey, confSnap=confirmedConfidence, atSnap=confirmedAt;
-  const isWide=keySnap==='7', isNoBall=keySnap==='9';
+  const keysSnap=[...currentKeys],timSnap=[...currentTimings];
+  const runKey=confirmedRunKey,extraKey=confirmedExtraKey,atSnap=confirmedAt;
+  const isWide=extraKey==='7',isNoBall=extraKey==='9';
   const label=getNextLabelForSubmit(isWide,isNoBall);
+  const confidence=runKey==='*'?'certain':'confirmed';
+  const timingsCompact=timSnap.map(t=>`${t.key}:${t.duration_ms}:${(t.video_s||0).toFixed(2)}`).join(',');
+  // Local advance immediately
   mySubmittedSeqs.add(seq);
-  currentKeys=[]; currentTimings=[];
-  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
-  renderCurrentKeys(); updateScorerUI();
-  push(entriesRef,{
-    scorer:myRole,seq,label,keys:keysSnap.join(' '),
-    confirmed_key:keySnap,confidence:confSnap,
-    is_wide:isWide,is_noball:isNoBall,
-    confirmed_at:atSnap,hash_at:new Date().toISOString(),edited:false
-  }).catch(()=>{ mySubmittedSeqs.delete(seq); updateScorerUI(); setStatus('error','Send failed'); });
+  resetScorerState();renderCurrentKeys();updateScorerUI();
+  push(entriesRef,{scorer:myRole,seq,label,keys:keysSnap.join(' '),confirmed_key:runKey,confidence,
+    is_wide:isWide,is_noball:isNoBall,confirmed_at:atSnap,hash_at:new Date().toISOString(),
+    timings_compact:timingsCompact,edited:false})
+    .catch(()=>{mySubmittedSeqs.delete(seq);setStatus('error','Send failed');updateScorerUI();});
 }
-
-function updateScorerUI() {
-  if (!myRole||myRole==='viewer'||myRole==='judge') return;
+function updateScorerUI(){
+  if(!myRole||myRole==='judge')return;
   const el=document.getElementById('scorerBallId');
-  el.textContent=getCurrentLabelForScorer(); el.className='ball-id '+myRole;
+  el.textContent=getCurrentLabelForScorer();el.className='ball-id '+myRole;
   const kp=document.getElementById('keypad');
   const stat=document.getElementById('ballStatus');
-  const confirmBtn=kp?kp.querySelector('.confirm'):null;
-  if (hasSubmittedCurrentBall()) {
-    if(kp)kp.className='keypad submitted';
-    if(confirmBtn)confirmBtn.textContent='⏳ Wait';
-    stat.textContent='Submitted — waiting for other scorer';
-    stat.className='ball-status waiting';
-  } else if (ballConfirmed) {
-    if(kp)kp.className='keypad confirmed-state';
-    if(confirmBtn){confirmBtn.textContent='# ▶ Next'; confirmBtn.classList.add('advance');}
-    stat.textContent=`Confirmed ${confirmedKey==='*'?'wicket':'['+confirmedKey+']'} — press # to advance`;
-    stat.className='ball-status confirmed-state';
+  const cb=kp?kp.querySelector('.confirm'):null;
+  if(hasSubmittedCurrentBall()){
+    if(kp)kp.className='keypad submitted';if(cb)cb.textContent='⏳ Wait';
+    stat.textContent='Submitted — waiting';stat.className='ball-status waiting';
+  } else if(confirmState==='full-conf'||confirmState==='wicket'){
+    if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('ready-to-advance');}
+    const extra=confirmedExtraKey?` +${confirmedExtraKey==='7'?'wide':'nb'}`:'';
+    stat.textContent=`[${confirmedRunKey==='*'?'W':confirmedRunKey}]${extra} confirmed — press #`;
+    stat.className='ball-status full-conf';
+  } else if(confirmState==='run_conf'){
+    if(kp)kp.className='keypad run-conf';if(cb){cb.textContent='# ▶';cb.classList.remove('ready-to-advance');}
+    stat.textContent=`[${confirmedRunKey}] confirmed — press # to advance`;
+    stat.className='ball-status run-conf';
   } else {
-    if(kp)kp.className='keypad';
-    if(confirmBtn){confirmBtn.textContent='# ▶'; confirmBtn.classList.remove('advance');}
-    stat.textContent='Double press to confirm';
-    stat.className='ball-status ready';
+    if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('ready-to-advance');}
+    stat.textContent='Double press to confirm';stat.className='ball-status ready';
   }
 }
 
-// ── JUDGE KEYPAD ─────────────────────────────────────
-function buildJudgeKeypad() {
-  const kp=document.getElementById('judgeKeypad'); kp.innerHTML='';
-  KEYS.forEach(k=>{
-    const btn=document.createElement('button');
-    btn.className='key'+(k==='#'?' confirm':'');
-    btn.textContent=k==='#'?'# ▶':k;
-    btn.addEventListener('touchstart',e=>{e.preventDefault();judgeKeyDown(k,btn);},{passive:false});
-    btn.addEventListener('mousedown',e=>{e.preventDefault();judgeKeyDown(k,btn);});
-    btn.addEventListener('touchend',e=>{e.preventDefault();judgeKeyUp(k,btn);},{passive:false});
-    btn.addEventListener('mouseup',e=>{e.preventDefault();judgeKeyUp(k,btn);});
-    kp.appendChild(btn);
-  });
-}
-
-function judgeKeyDown(k,btn) {
-  if (judgePressStart!==null) return;
-  judgePressStart=Date.now(); btn.classList.add('flash-J');
-}
-
-function judgeKeyUp(k,btn) {
-  if (judgePressStart===null) return;
-  const dur=Date.now()-judgePressStart; judgePressStart=null; btn.classList.remove('flash-J');
-  if (k==='#') {
-    if (!judgeBallConfirmed) { showWarning('Double press a key first!'); return; }
-    commitJudge(); return;
-  }
-  if (judgeBallConfirmed) return;
-  currentJudgeKeys.push(k);
-  currentJudgeTimings.push({key:k,duration_ms:dur,time:new Date().toISOString()});
-  const conf=checkConfirmation(currentJudgeKeys);
-  if (conf) {
-    judgeBallConfirmed=true; judgeConfirmedKey=conf.key;
-    judgeConfirmedConfidence=conf.confidence; judgeConfirmedAt=new Date().toISOString();
-    updateJudgeUI();
-  }
-  renderJudgeCurrentKeys();
-}
-
-function renderJudgeCurrentKeys() {
-  const box=document.getElementById('judgeKeysBox');
-  if (!currentJudgeKeys.length) { box.innerHTML='<span class="hint">Double press to confirm · # to advance</span>'; return; }
-  const chips=currentJudgeTimings.map((t,i)=>{
-    const isLast=i===currentJudgeTimings.length-1;
-    return `<div class="k-chip J${judgeBallConfirmed&&isLast?' confirmed-chip':''}">${t.key}<span class="ms">${t.duration_ms}ms</span></div>`;
-  }).join('');
-  // Always show a clear button so judge can undo at any point before #
-  box.innerHTML=chips+`<button id="btnJudgeClearKeys" style="margin-left:auto;background:none;border:1px solid var(--red);border-radius:5px;color:var(--red);font-family:var(--font-mono);font-size:11px;padding:3px 8px;cursor:pointer;flex-shrink:0;">✕ Clear</button>`;
-  document.getElementById('btnJudgeClearKeys').addEventListener('click',()=>{
-    currentJudgeKeys=[]; currentJudgeTimings=[];
-    judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
-    renderJudgeCurrentKeys(); updateJudgeUI();
-  });
-}
-
-function commitJudge() {
-  const seq=getNextJudgeBall();
-  const keysSnap=[...currentJudgeKeys];
-  const keySnap=judgeConfirmedKey, confSnap=judgeConfirmedConfidence, atSnap=judgeConfirmedAt;
-  const isWide=keySnap==='7', isNoBall=keySnap==='9';
-  currentJudgeKeys=[]; currentJudgeTimings=[];
-  judgeBallConfirmed=false; judgeConfirmedKey=null; judgeConfirmedConfidence=null; judgeConfirmedAt=null;
-  renderJudgeCurrentKeys(); updateJudgeUI();
-  push(judgeRef,{
-    seq,label:getJudgeLabelForSeq(seq),keys:keysSnap.join(' '),
-    confirmed_key:keySnap,confidence:confSnap,
-    is_wide:isWide,is_noball:isNoBall,
-    confirmed_at:atSnap,overturned:false,overturn_from:null,overturn_at:null
-  });
-}
-
-function updateJudgeUI() {
-  if (myRole!=='judge') return;
-  const seq=getNextJudgeBall();
-  const label=getJudgeLabelForSeq(seq);
-  document.getElementById('judgeBallId').textContent=label;
-  const judged=Object.values(allJudge).length;
-  const total=new Set(Object.values(allEntries).map(e=>e.seq)).size;
-  const toJudge=Math.max(0,total-judged);
-  document.getElementById('judgeQueueCount').textContent=`${toJudge} to judge`;
-  // Show scorer submissions for current seq
-  const sub=document.getElementById('scorerSubmissions');
-  const aEntry=Object.values(allEntries).find(e=>e.scorer==='A'&&e.seq===seq);
-  const bEntry=Object.values(allEntries).find(e=>e.scorer==='B'&&e.seq===seq);
-  if (!aEntry&&!bEntry) { sub.innerHTML='<div class="sub-empty">Waiting for scorer submissions...</div>'; }
-  else {
-    sub.innerHTML=[['A',aEntry],['B',bEntry]].map(([s,e])=>{
-      if (!e) return `<div class="sub-row"><span class="sub-who ${s}">${s}</span><span class="sub-empty">not submitted</span></div>`;
-      const chips=(e.keys||'').split(' ').filter(Boolean).map(k=>`<span class="sub-key ${s}">${k}</span>`).join('');
-      return `<div class="sub-row"><span class="sub-who ${s}">${s}</span><div class="sub-keys">${chips}</div><span class="sub-time">${formatUKTime(e.confirmed_at)}</span></div>`;
-    }).join('');
-  }
-  // Judge keypad state
-  const kp=document.getElementById('judgeKeypad');
-  const confirmBtn=kp?kp.querySelector('.confirm'):null;
-  if (judgeBallConfirmed) {
-    if(kp)kp.className='keypad confirmed-state';
-    if(confirmBtn){confirmBtn.textContent='# ▶ Next';confirmBtn.classList.add('advance');}
-  } else {
-    if(kp)kp.className='keypad';
-    if(confirmBtn){confirmBtn.textContent='# ▶';confirmBtn.classList.remove('advance');}
-  }
-  // Recent judge feed
+// ── JUDGE FEED ────────────────────────────────────────
+function updateJudgeFeed(){
+  if(myRole!=='judge')return;
   const feed=document.getElementById('judgeFeed');
-  const judgeEntries=Object.entries(allJudge).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  if (!judgeEntries.length) { feed.innerHTML=''; return; }
-  feed.innerHTML=[...judgeEntries].reverse().slice(0,8).map(([fbKey,j])=>{
-    const chips=(j.keys||'').split(' ').filter(Boolean).map(k=>`<span class="jf-key">${k}</span>`).join('');
-    const ovrTag=j.overturned?`<span class="jf-ovr">OVR</span>`:'';
-    return `<div class="judge-feed-row${j.overturned?' overturned':''}">
-      <span class="jf-label">${j.label||''}</span>
-      <div class="jf-keys">${chips}${ovrTag}</div>
-      <button class="ib" data-overturn="${fbKey}" data-label="${j.label}" data-keys="${j.keys||''}">✏</button>
+  const entries=Object.entries(allEntries).sort((a,b)=>(b[1].seq||0)-(a[1].seq||0));
+  if(!entries.length){feed.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for scorer submissions...</div>';return;}
+  feed.innerHTML=entries.map(([fbKey,ball])=>{
+    const mark=allJudge[fbKey];
+    const chips=(ball.keys||'').split(' ').filter(Boolean).map(k=>`<span class="jb-key ${ball.scorer}">${k}</span>`).join('');
+    const markedClass=mark?(mark.correct?'correct':'wrong'):'';
+    let actionsHtml='';
+    if(!mark){
+      actionsHtml=`
+        <button class="jb-btn ok" data-mark="${fbKey}" data-correct="true">✓ Correct</button>
+        <button class="jb-btn bad" data-mark="${fbKey}" data-correct="false">✗ Wrong</button>
+        <button class="jb-btn edit" data-edit="${fbKey}" data-label="${ball.label||''}" data-keys="${ball.keys||''}">✏ Edit</button>
+        <button class="jb-btn del" data-del="${fbKey}" data-seq="${ball.seq||0}" data-scorer="${ball.scorer}">🗑</button>`;
+    } else {
+      const resultStr=fmtPenalty(mark.penalty);
+      const resultClass=mark.penalty>0?'pos':'neg';
+      actionsHtml=`
+        <span class="jb-result ${resultClass}">${mark.correct?'✓':'✗'} ${resultStr}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:4px;">${mark.judge_key?`→${mark.judge_key}`:''}</span>
+        <button class="jb-btn del" data-del="${fbKey}" data-seq="${ball.seq||0}" data-scorer="${ball.scorer}" style="margin-left:auto;">🗑</button>`;
+    }
+    return`<div class="jball ${markedClass}" id="jrow_${fbKey}">
+      <div class="jball-header">
+        <span class="jb-label">${ball.label||seqToLabel(ball.seq||1)}</span>
+        <span class="jb-scorer ${ball.scorer}">${ball.scorer}</span>
+        <div class="jb-keys">${chips}</div>
+        <span class="jb-time">${formatUKTime(ball.confirmed_at)}</span>
+      </div>
+      <div class="jball-actions">${actionsHtml}</div>
     </div>`;
   }).join('');
-  feed.querySelectorAll('[data-overturn]').forEach(btn=>{
-    btn.addEventListener('click',()=>openEdit(btn.dataset.overturn,'judge',btn.dataset.label,btn.dataset.keys));
-  });
-}
-
-// ── FIREBASE LISTENERS ───────────────────────────────
-onValue(query(entriesRef,orderByChild('confirmed_at')),snap=>{
-  allEntries=snap.val()||{};
-  const count=Object.keys(allEntries).length;
-  setStatus('live',`Connected · ${count} entries`);
-  const cb=getCurrentBall();
-  mySubmittedSeqs=new Set([...mySubmittedSeqs].filter(s=>s>=cb));
-  updateScorerUI(); updateJudgeUI();
-  if (myRole==='viewer') renderViewer();
-},()=>setStatus('error','Connection lost — retrying...'));
-
-onValue(judgeRef,snap=>{
-  allJudge=snap.val()||{};
-  updateJudgeUI();
-  if (myRole==='viewer') renderViewer();
-},()=>{});
-
-onValue(stateRef,snap=>{
-  const s=snap.val()||{};
-  soloMode=s.soloMode||false;
-  updateSoloBtn();
-  updateScorerUI();
-  if (myRole==='viewer') renderViewer();
-},()=>{});
-
-// ── VIEWER RENDER ─────────────────────────────────────
-function renderViewer() {
-  const feed=document.getElementById('viewerFeed');
-  const aEntries=Object.entries(allEntries).filter(([,e])=>e.scorer==='A').sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  const bEntries=Object.entries(allEntries).filter(([,e])=>e.scorer==='B').sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
-  const maxSeq=Math.max(aEntries.length,bEntries.length,0);
-
-  // Stats
-  document.getElementById('statABalls').textContent=aEntries.length;
-  document.getElementById('statBBalls').textContent=bEntries.length;
-  let aFirst=0,bFirst=0;
-  for(let i=0;i<Math.min(aEntries.length,bEntries.length);i++){
-    const at=aEntries[i][1].confirmed_at,bt=bEntries[i][1].confirmed_at;
-    if(at<bt)aFirst++;else if(bt<at)bFirst++;
-  }
-  document.getElementById('statAFirst').textContent=aFirst;
-  document.getElementById('statBFirst').textContent=bFirst;
-
-  // Accuracy & score
-  function scorerStats(scorer,entries) {
-    let right=0,judged=0,total=0;
-    entries.forEach(([,e])=>{
-      const j=Object.values(allJudge).find(jj=>jj.seq===e.seq);
-      if(!j)return; judged++;
-      if(getOutcome(e.confirmed_key)===getOutcome(j.confirmed_key))right++;
-      total+=calculatePenalty(e.confirmed_key,j.confirmed_key,e.confidence)||0;
+  // Wire mark buttons
+  feed.querySelectorAll('[data-mark]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const fbKey=btn.dataset.mark, correct=btn.dataset.correct==='true';
+      if(correct){
+        // Correct — auto calculate penalty from scorer's own key
+        const ball=allEntries[fbKey];
+        const pen=ball.confidence==='certain'?5:3;
+        set(ref(db,'comp/judge/'+fbKey),{correct:true,judge_key:ball.confirmed_key,penalty:pen,marked_at:new Date().toISOString()});
+      } else {
+        // Wrong — show correct key picker inline
+        showCorrectPicker(fbKey);
+      }
     });
-    return {acc:judged?Math.round(right/judged*100)+'%':'—',score:total};
-  }
-  const sA=scorerStats('A',aEntries), sB=scorerStats('B',bEntries);
-  document.getElementById('statAAcc').textContent=sA.acc;
-  document.getElementById('statBAcc').textContent=sB.acc;
-  const scoreAEl=document.getElementById('statAScore');
-  scoreAEl.textContent=formatPenalty(sA.score||null);
-  scoreAEl.className='ss-val '+(sA.score>0?'pos':sA.score<0?'neg':'');
-  const scoreBEl=document.getElementById('statBScore');
-  scoreBEl.textContent=formatPenalty(sB.score||null);
-  scoreBEl.className='ss-val '+(sB.score>0?'pos':sB.score<0?'neg':'');
-
-  // Current ball bar
-  const cb=getCurrentBall();
-  document.getElementById('viewerCurrentBall').textContent=seqToSimpleLabel(cb);
-  const aHas=aEntries.some(([,e])=>e.seq===cb),bHas=bEntries.some(([,e])=>e.seq===cb);
-  document.getElementById('viewerBallStatus').textContent=(aHas?'A✓ ':'A… ')+(bHas?'B✓':'B…');
-
-  if (!maxSeq){feed.innerHTML='<div class="empty-feed">Waiting for scorers...</div>';return;}
-
-  // Group by over
-  const overGroups={};
-  for(let seq=1;seq<=maxSeq;seq++){
-    const o=Math.floor((seq-1)/6)+1;
-    if(!overGroups[o])overGroups[o]=[];
-    overGroups[o].push(seq);
-  }
-
-  function scorerRow(entry,scorer,seq) {
-    if(!entry) return `<div class="sr-waiting"><div class="mini-dot"></div>${scorer} pending...</div>`;
-    const [fbKey,ball]=entry;
-    const chips=(ball.keys||'').split(' ').filter(Boolean).map(k=>`<span class="sr-key ${scorer}">${k}</span>`).join('');
-    const t=formatUKTime(ball.confirmed_at);
-    const judgeEntry=Object.values(allJudge).find(j=>j.seq===seq);
-    const p=judgeEntry?calculatePenalty(ball.confirmed_key,judgeEntry.confirmed_key,ball.confidence):null;
-    const pStr=formatPenalty(p), pCls=formatPenaltyClass(p);
-    const editedTag=ball.edited?`<span style="color:var(--orange);font-size:9px;margin-left:2px">ed</span>`:'';
-    return `<div class="scorer-row">
-      <div class="sr-who ${scorer}">${scorer}</div>
-      <div class="sr-keys">${chips}${editedTag}</div>
-      <div class="sr-time">${t}</div>
-      <div class="sr-penalty ${pCls}">${pStr}</div>
-      <button class="ib" data-edit="${fbKey}" data-path="entries" data-label="${ball.label||''}" data-keys="${ball.keys||''}">✏</button>
-    </div>`;
-  }
-
-  let html='';
-  Object.keys(overGroups).map(Number).sort((a,b)=>b-a).forEach(over=>{
-    const ballsHtml=overGroups[over].map(seq=>{
-      const aE=aEntries.find(([,e])=>e.seq===seq);
-      const bE=bEntries.find(([,e])=>e.seq===seq);
-      const label=aE?aE[1].label:bE?bE[1].label:seqToSimpleLabel(seq);
-      let firstBadge='<span class="first-badge pending">Waiting</span>';
-      if(aE&&bE){
-        const at=aE[1].confirmed_at,bt=bE[1].confirmed_at;
-        if(at<bt)firstBadge='<span class="first-badge A">A First</span>';
-        else if(bt<at)firstBadge='<span class="first-badge B">B First</span>';
-        else firstBadge='<span class="first-badge tie">Tied</span>';
-      } else if(aE) firstBadge='<span class="first-badge A">A only</span>';
-      else if(bE) firstBadge='<span class="first-badge B">B only</span>';
-      const jEntry=Object.values(allJudge).find(j=>j.seq===seq);
-      const jBadge=jEntry?`<span class="judge-badge">J: ${jEntry.keys||''}${jEntry.overturned?' OVR':''}</span>`:'';
-      return `<div class="ball-card">
-        <div class="ball-card-header">
-          <span class="ball-card-label">${label}</span>${firstBadge}${jBadge}
-        </div>
-        ${scorerRow(aE,'A',seq)}
-        ${scorerRow(bE,'B',seq)}
-      </div>`;
-    }).join('');
-    html+=`<div class="over-section"><div class="over-section-label">Over ${over} · ${overGroups[over].length}/6 balls</div>${ballsHtml}</div>`;
   });
-  feed.innerHTML=html;
+  // Wire edit buttons
   feed.querySelectorAll('[data-edit]').forEach(btn=>{
-    btn.addEventListener('click',()=>openEdit(btn.dataset.edit,btn.dataset.path,btn.dataset.label,btn.dataset.keys));
+    btn.addEventListener('click',()=>{
+      editFbKey=btn.dataset.edit;
+      document.getElementById('editModalTitle').textContent=`Edit · ${btn.dataset.label}`;
+      document.getElementById('editInput').value=btn.dataset.keys;
+      document.getElementById('editModal').classList.add('open');
+      setTimeout(()=>document.getElementById('editInput').focus(),80);
+    });
+  });
+  // Wire delete buttons
+  feed.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const fbKey=btn.dataset.del, seq=parseInt(btn.dataset.seq), scorer=btn.dataset.scorer;
+      if(!confirm('Delete this ball? Scorer can re-submit it.'))return;
+      remove(ref(db,'comp/entries/'+fbKey));
+      remove(ref(db,'comp/judge/'+fbKey));
+      // Signal scorer to re-enable this seq
+      set(ref(db,'comp/deleted/'+scorer+'_'+seq),Date.now());
+      // Clean up deletion signal after 10s
+      setTimeout(()=>remove(ref(db,'comp/deleted/'+scorer+'_'+seq)),10000);
+    });
   });
 }
 
-// ── EDIT / OVERTURN ──────────────────────────────────
-function openEdit(fbKey,path,label,keys) {
-  editFbKey=fbKey; editPath=path;
-  document.getElementById('editModalTitle').textContent=path==='judge'?`Overturn · ${label}`:`Edit · ${label}`;
-  document.getElementById('editInput').value=keys;
-  document.getElementById('editModal').classList.add('open');
-  setTimeout(()=>document.getElementById('editInput').focus(),80);
+function showCorrectPicker(fbKey){
+  const row=document.getElementById('jrow_'+fbKey);
+  if(!row)return;
+  // Remove any existing picker
+  row.querySelectorAll('.correct-picker').forEach(p=>p.remove());
+  const picker=document.createElement('div');
+  picker.className='correct-picker';
+  picker.innerHTML=`<span class="cp-label">Correct answer:</span>`+
+    ['0','1','2','3','4','6','*','7','9'].map(k=>`<button class="cp-key" data-ck="${k}">${k==='*'?'W':k==='7'?'Wd':k==='9'?'NB':k}</button>`).join('');
+  row.appendChild(picker);
+  picker.querySelectorAll('[data-ck]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ball=allEntries[fbKey];
+      const correctKey=btn.dataset.ck;
+      const pen=calcPenalty(ball.confirmed_key,correctKey,ball.confidence);
+      set(ref(db,'comp/judge/'+fbKey),{correct:false,judge_key:correctKey,penalty:pen,marked_at:new Date().toISOString()});
+      picker.remove();
+    });
+  });
 }
-document.getElementById('btnCancelEdit').addEventListener('click',()=>{ document.getElementById('editModal').classList.remove('open'); editFbKey=null; });
-document.getElementById('btnSaveEdit').addEventListener('click',()=>{
-  if(!editFbKey) return;
-  const newKeys=document.getElementById('editInput').value.trim();
-  if(!newKeys) return;
-  const path=editPath==='judge'?'comp/judge/':('comp/entries/');
-  const existing=editPath==='judge'?(allJudge[editFbKey]||{}):(allEntries[editFbKey]||{});
-  let updates;
-  if (editPath==='judge') {
-    // Parse the new confirmed_key from the last result key in the new sequence
-    const keyArr=newKeys.split(' ').filter(Boolean);
-    let newConfirmedKey=existing.confirmed_key||null;
-    for(let i=keyArr.length-1;i>=0;i--) {
-      if(RESULT_KEYS.has(keyArr[i])){newConfirmedKey=keyArr[i];break;}
-    }
-    updates={...existing,keys:newKeys,confirmed_key:newConfirmedKey,
-      is_wide:newConfirmedKey==='7',is_noball:newConfirmedKey==='9',
-      overturned:true,overturn_from:existing.keys||'',overturn_at:new Date().toISOString()};
-  } else {
-    updates={...existing,keys:newKeys,edited:true,edited_at:new Date().toISOString()};
-  }
-  set(ref(db,path+editFbKey),updates);
-  document.getElementById('editModal').classList.remove('open'); editFbKey=null;
-});
 
-// ── SOLO MODE ─────────────────────────────────────────
-function updateSoloBtn() {
-  const btn=document.getElementById('btnSoloToggle');
-  if(!btn) return;
+// ── JUDGE STATS ───────────────────────────────────────
+function updateJudgeStats(){
+  if(myRole!=='judge')return;
+  const marked=Object.values(allJudge);
+  const total=marked.length;
+  const correct=marked.filter(m=>m.correct).length;
+  const score=marked.reduce((a,m)=>a+(m.penalty||0),0);
+  document.getElementById('jBalls').textContent=total;
+  document.getElementById('jAcc').textContent=total?Math.round(correct/total*100)+'%':'—';
+  const scoreEl=document.getElementById('jScore');
+  scoreEl.textContent=fmtPenalty(score)||'0';
+  scoreEl.className='js-val '+(score>0?'pos':score<0?'neg':'');
+}
+
+// ── SOLO + RESET + EXPORT ─────────────────────────────
+function updateSoloBtn(){
+  const btn=document.getElementById('btnSolo');if(!btn)return;
   btn.textContent=soloMode?'Solo: On':'Solo: Off';
-  btn.className=soloMode?'btn solo-on':'btn';
+  btn.className=soloMode?'solo-toggle on':'solo-toggle';
 }
-document.getElementById('btnSoloToggle').addEventListener('click',()=>{
-  set(ref(db,'comp/state/soloMode'),!soloMode);
-});
-
-// ── RESET / CLEAR ─────────────────────────────────────
-document.getElementById('btnClear').addEventListener('click',()=>{
-  if(!confirm('Delete ALL data? Clears for everyone.')) return;
-  remove(entriesRef); remove(judgeRef); set(ref(db,'comp/state/soloMode'),false);
-  currentKeys=[]; currentTimings=[];
-  ballConfirmed=false; confirmedKey=null; confirmedConfidence=null; confirmedAt=null;
-  renderCurrentKeys();
-});
+document.getElementById('btnSolo').addEventListener('click',()=>set(ref(db,'comp/state/soloMode'),!soloMode));
 document.getElementById('btnResetAll').addEventListener('click',()=>{
-  if(!confirm('Reset ALL data? Fresh start for everyone.')) return;
-  remove(entriesRef); remove(judgeRef); set(ref(db,'comp/state/soloMode'),false);
+  if(!confirm('Reset ALL data?'))return;
+  remove(entriesRef);remove(judgeRef);remove(deletedRef);set(ref(db,'comp/state/soloMode'),false);
 });
 document.getElementById('btnResetOver').addEventListener('click',()=>{
-  const allSeqs=Object.values(allEntries).map(e=>e.seq||0);
-  if(!allSeqs.length){alert('Nothing to reset.');return;}
-  const maxSeq=Math.max(...allSeqs);
-  const curOver=Math.floor((maxSeq-1)/6)+1;
-  const overStart=(curOver-1)*6+1, overEnd=curOver*6;
-  if(!confirm(`Reset Over ${curOver}? Deletes balls ${seqToSimpleLabel(overStart)}–${seqToSimpleLabel(overEnd)} for everyone.`)) return;
-  Object.entries(allEntries).forEach(([k,e])=>{ if((e.seq||0)>=overStart&&(e.seq||0)<=overEnd) remove(ref(db,'comp/entries/'+k)); });
-  Object.entries(allJudge).forEach(([k,j])=>{ if((j.seq||0)>=overStart&&(j.seq||0)<=overEnd) remove(ref(db,'comp/judge/'+k)); });
+  const seqs=Object.values(allEntries).map(e=>e.seq||0);if(!seqs.length){toast('Nothing to reset');return;}
+  const max=Math.max(...seqs),ov=Math.floor((max-1)/6),os=ov*6+1,oe=(ov+1)*6;
+  if(!confirm(`Reset Over ${ov}?`))return;
+  Object.entries(allEntries).forEach(([k,e])=>{if((e.seq||0)>=os&&(e.seq||0)<=oe)remove(ref(db,'comp/entries/'+k));});
+  Object.entries(allJudge).forEach(([k,j])=>{const e=allEntries[k];if(e&&(e.seq||0)>=os&&(e.seq||0)<=oe)remove(ref(db,'comp/judge/'+k));});
 });
-
-// ── EXPORT CSV ───────────────────────────────────────
-function exportCSV() {
-  const entries=Object.entries(allEntries).sort((a,b)=>{
-    if(a[1].scorer!==b[1].scorer) return a[1].scorer<b[1].scorer?-1:1;
-    return (a[1].seq||0)-(b[1].seq||0);
-  });
-  if(!entries.length){alert('No data yet.');return;}
-  const rows=[['scorer','ball_num','over_ball','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at_uk','hash_at_uk','edited','judge_keys','judge_confirmed_key','penalty']];
-  entries.forEach(([,ball])=>{
-    const j=Object.values(allJudge).find(jj=>jj.seq===ball.seq);
-    const p=j?calculatePenalty(ball.confirmed_key,j.confirmed_key,ball.confidence):null;
-    rows.push([ball.scorer,ball.seq||'',ball.label||'',ball.keys||'',ball.confirmed_key||'',ball.confidence||'',ball.is_wide?'yes':'no',ball.is_noball?'yes':'no',formatUKTime(ball.confirmed_at),formatUKTime(ball.hash_at),ball.edited?'yes':'no',j?j.keys||'':'',j?j.confirmed_key||'':'',p!==null?p:'']);
+function exportCSV(){
+  const entries=Object.entries(allEntries).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  if(!entries.length){toast('No data yet');return;}
+  const rows=[['scorer','ball_num','label','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at','correct','judge_key','penalty']];
+  entries.forEach(([fbKey,ball])=>{
+    const mark=allJudge[fbKey]||{};
+    rows.push([ball.scorer,ball.seq||'',ball.label||'',ball.keys||'',ball.confirmed_key||'',ball.confidence||'',ball.is_wide?'yes':'no',ball.is_noball?'yes':'no',formatUKTime(ball.confirmed_at),mark.correct!=null?(mark.correct?'yes':'no'):'',mark.judge_key||'',mark.penalty!=null?mark.penalty:'']);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url;
-  a.download='scorer_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click(); URL.revokeObjectURL(url);
+  const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='scorer_'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(url);
 }
 document.getElementById('btnExportScorer').addEventListener('click',exportCSV);
 document.getElementById('btnExportJudge').addEventListener('click',exportCSV);
-document.getElementById('btnExportViewer').addEventListener('click',exportCSV);
+
+// ── EDIT MODAL ────────────────────────────────────────
+document.getElementById('btnCancelEdit').addEventListener('click',()=>{document.getElementById('editModal').classList.remove('open');editFbKey=null;});
+document.getElementById('btnSaveEdit').addEventListener('click',()=>{
+  if(!editFbKey)return;
+  const newKeys=document.getElementById('editInput').value.trim();if(!newKeys)return;
+  const existing=allEntries[editFbKey]||{};
+  const arr=newKeys.split(' ').filter(Boolean);
+  let nk=existing.confirmed_key||null;
+  for(let i=arr.length-1;i>=0;i--){if(RESULT_KEYS.has(arr[i])){nk=arr[i];break;}}
+  set(ref(db,'comp/entries/'+editFbKey),{...existing,keys:newKeys,confirmed_key:nk,is_wide:nk==='7',is_noball:nk==='9',edited:true,edited_at:new Date().toISOString()});
+  // Clear judge mark so judge can re-mark
+  remove(ref(db,'comp/judge/'+editFbKey));
+  document.getElementById('editModal').classList.remove('open');editFbKey=null;
+});
 </script>
 </body>
 </html>
