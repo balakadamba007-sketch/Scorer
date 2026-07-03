@@ -210,7 +210,7 @@ body{display:flex;flex-direction:column;}
       <div class="current-keys-box" id="currentKeysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
       <div class="keypad" id="keypad"></div>
     </div>
-    <div class="actions"><button class="btn" id="btnExportScorer">Export CSV</button></div>
+    <div class="actions"><button class="btn" id="btnExportScorer">Export CSV</button><button class="btn danger" id="btnScorerLogout">Log Out</button></div>
   </div>
 
   <!-- JUDGE PANEL -->
@@ -402,13 +402,14 @@ document.getElementById('btnPasswords').addEventListener('click',()=>{
 });
 
 // ── ROLE SELECTION + PASSWORD FLOW ────────────────────
-const savedRole=localStorage.getItem('scorer_role_v5');
-if(savedRole)activateRole(savedRole);
+// Never auto-login from localStorage — always require password
+localStorage.removeItem('scorer_role_v5');
 
 document.querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{
   const role=btn.dataset.role;
   const pwKey=role==='judge'?'judge':role==='A'?'scorerA':role==='B'?'scorerB':'scorerC';
-  const stored=passwords[pwKey];
+  // Check specific role password, also fall back to old generic 'scorer' path for backward compat
+  const stored=passwords[pwKey]||passwords['scorer'];
   if(!stored){activateRole(role);return;}
   pendingRole=role;
   document.getElementById('pwModalTitle').textContent=role==='judge'?'Judge Password':`Scorer ${role} Password`;
@@ -421,16 +422,20 @@ document.getElementById('btnCancelPw').addEventListener('click',()=>{document.ge
 document.getElementById('btnConfirmPw').addEventListener('click',()=>{
   const entered=document.getElementById('pwModalInput').value;
   const pwKey=pendingRole==='judge'?'judge':pendingRole==='A'?'scorerA':pendingRole==='B'?'scorerB':'scorerC';
-  if(entered===passwords[pwKey]){document.getElementById('pwModal').classList.remove('open');activateRole(pendingRole);pendingRole=null;}
+  const stored=passwords[pwKey]||passwords['scorer'];
+  if(entered===stored){document.getElementById('pwModal').classList.remove('open');activateRole(pendingRole);pendingRole=null;}
   else{document.getElementById('pwModalErr').textContent='Wrong password';document.getElementById('pwModalInput').value='';document.getElementById('pwModalInput').focus();}
 });
 document.getElementById('pwModalInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnConfirmPw').click();});
-document.getElementById('btnChangeRole').addEventListener('click',()=>{
+document.getElementById('btnChangeRole').addEventListener('click',doLogout);
+document.getElementById('btnScorerLogout').addEventListener('click',doLogout);
+function doLogout(){
   localStorage.removeItem('scorer_role_v5');
-  document.getElementById('roleScreen').classList.add('active');
-  document.getElementById('mainApp').classList.remove('active');
   myRole=null;
-});
+  resetScorerState();
+  document.getElementById('mainApp').classList.remove('active');
+  document.getElementById('roleScreen').classList.add('active');
+}
 
 function resetScorerState(){
   confirmState='scoring';confirmedRunKey=null;confirmedExtraKey=null;confirmedAt=null;
@@ -438,7 +443,6 @@ function resetScorerState(){
 }
 function activateRole(role){
   myRole=role;resetScorerState();
-  localStorage.setItem('scorer_role_v5',role);
   document.getElementById('roleScreen').classList.remove('active');
   document.getElementById('mainApp').classList.add('active');
   const badge=document.getElementById('roleBadge');
