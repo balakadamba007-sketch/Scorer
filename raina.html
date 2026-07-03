@@ -472,6 +472,9 @@ function initFredVimeo(id){
   window._fredVimeo=player;
   player.on('play',()=>{isPlaying=true;$('btnFredPlay').style.display='none';$('btnFredPause').style.display='';broadcastPlayback(true);clearInterval(heartbeat);heartbeat=setInterval(()=>{if(isPlaying)broadcastPlayback(true);},2000);updateFredTime();});
   player.on('pause',()=>{isPlaying=false;$('btnFredPlay').style.display='';$('btnFredPause').style.display='none';broadcastPlayback(false);clearInterval(heartbeat);});
+  // Rewind/seek — debounced 500ms so rapid dragging doesn't spam Firebase
+  let seekTimer=null;
+  player.on('seeked',d=>{clearTimeout(seekTimer);seekTimer=setTimeout(()=>{broadcastPlayback(isPlaying);},500);});
   player.on('loaded',()=>{$('fredVideoControls').style.display='flex';toast('Video loaded','ok');});
   player.on('timeupdate',d=>{$('fredVTime').textContent=d.seconds.toFixed(1)+'s';});
 }
