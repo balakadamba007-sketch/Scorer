@@ -36,6 +36,11 @@ body{display:flex;flex-direction:column;}
 .role-btn.fred{color:#1a3a5c;grid-column:1/-1;background:#c8f135;font-size:15px;padding:18px;}
 .role-btn.trainee{color:#2d4a1a;}
 .login-hint{font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.35);text-align:center;}
+.login-input{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:10px;color:#fff;font-family:var(--font-mono);font-size:15px;padding:12px 16px;width:100%;outline:none;}
+.login-input::placeholder{color:rgba(255,255,255,0.45);}
+.login-input:focus{border-color:#c8f135;background:rgba(255,255,255,0.2);}
+.login-btn{background:#c8f135;border:none;border-radius:10px;color:#1a3a1a;font-family:var(--font-mono);font-size:15px;font-weight:600;padding:14px;cursor:pointer;touch-action:manipulation;}
+.login-btn:active{background:#b5d62e;}
 
 /* TOP BAR */
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -205,11 +210,13 @@ body{display:flex;flex-direction:column;}
     <div class="login-sub">Coaching Session</div>
     <div class="login-divider"></div>
     <div class="login-status" id="loginStatus">Connecting...</div>
-    <div class="role-btns" id="loginBtns" style="opacity:0.4;pointer-events:none;">
-      <button class="role-btn trainee" data-role="trainee">⌨ Trainee</button>
-      <button class="role-btn fred" data-role="fred">⚖ Fred (Coach)</button>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
+      <input class="login-input" id="loginEmail" type="email" placeholder="Email address" autocomplete="email"/>
+      <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"/>
+      <div style="font-size:11px;color:#ff4d4d;font-family:'IBM Plex Mono',monospace;min-height:16px;text-align:center;" id="loginErr"></div>
+      <button class="login-btn" id="btnLogin">Sign In →</button>
     </div>
-    <div class="login-hint">Double press to confirm · # to advance</div>
+    <div class="login-hint">FullPush · Powered by Firebase Auth</div>
   </div>
 </div>
 
@@ -223,7 +230,7 @@ body{display:flex;flex-direction:column;}
   <!-- Tabs -->
   <div class="fred-tabs">
     <button class="f-tab active" data-ftab="ftSession">📋 Session</button>
-    <button class="f-tab" data-ftab="ftPasswords">🔑 Passwords</button>
+    <button class="f-tab" data-ftab="ftUsers">👥 Users</button>
   </div>
   <!-- Session tab -->
   <div class="f-tab-panel active" id="ftSession">
@@ -266,13 +273,20 @@ body{display:flex;flex-direction:column;}
       </div>
     </div>
   </div>
-  <!-- Passwords tab -->
-  <div class="f-tab-panel" id="ftPasswords">
-    <div style="padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">Set passwords. Trainee cannot log in until their password is set here.</div>
-      <div class="pw-row"><span class="pw-label">Trainee</span><input class="pw-input" id="pwTrainee" type="password" placeholder="Trainee password"/><button class="pw-btn" id="btnSetPwTrainee">Set</button><span class="pw-saved" id="pwTraineeSaved">✓ Saved</span></div>
-      <div class="pw-row"><span class="pw-label">Fred</span><input class="pw-input" id="pwFred" type="password" placeholder="Fred password"/><button class="pw-btn" id="btnSetPwFred">Set</button><span class="pw-saved" id="pwFredSaved">✓ Saved</span></div>
-      <button class="btn danger" id="btnClearPasswords" style="margin-top:8px;">Clear All Passwords</button>
+  <!-- Users tab — Fred assigns roles by UID -->
+  <div class="f-tab-panel" id="ftUsers">
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">Assign roles to users. Find the UID in Firebase console → Authentication → Users.</div>
+      <div class="pw-row"><span class="pw-label">UID</span><input class="pw-input" id="roleUid" placeholder="User UID from Firebase"/></div>
+      <div class="pw-row"><span class="pw-label">Role</span>
+        <select class="pw-input" id="roleSelect" style="cursor:pointer;">
+          <option value="fred">fred (Coach)</option>
+          <option value="trainee">trainee</option>
+        </select>
+      </div>
+      <button class="btn ok" id="btnAssignRole">Assign Role</button>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--green);display:none;" id="roleAssigned">✓ Role assigned</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">Passwords are managed in Firebase console → Authentication → Users.<br>To add a user: Firebase console → Authentication → Add user.</div>
     </div>
   </div>
 </div>
@@ -310,32 +324,23 @@ body{display:flex;flex-direction:column;}
   </div>
 </div>
 
-<!-- PASSWORD MODAL -->
-<div class="modal-overlay" id="pwModal">
-  <div class="modal">
-    <div class="modal-title" id="pwModalTitle">Password</div>
-    <input type="password" id="pwModalInput" placeholder="enter password" maxlength="30"/>
-    <div class="modal-err" id="pwModalErr"></div>
-    <div class="modal-btns">
-      <button class="btn" id="btnCancelPw">Cancel</button>
-      <button class="btn ok" id="btnConfirmPw">Enter →</button>
-    </div>
-  </div>
-</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getDatabase,ref,set,push,remove,onValue}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import{getDatabase,ref,set,push,remove,onValue,get}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 const app=initializeApp({databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/'});
 const db=getDatabase(app);
+const auth=getAuth(app);
 const entriesRef=ref(db,'raina/entries');
 const judgeRef=ref(db,'raina/judge');
-const pbRef=ref(db,'raina/playback');  // Fred's video position broadcast
-const pwRef=ref(db,'raina/passwords');
+const pbRef=ref(db,'raina/playback');
+// passwords path removed — Firebase Auth handles authentication now
 
 // ── STATE ──────────────────────────────────────────────
-let myRole=null,passwords={},allEntries={},allJudge={},pendingRole=null;
+let myRole=null,allEntries={},allJudge={};
 let vmPlayer=null,isPlaying=false,heartbeat=null;
 let playbackState={position:0,playing:false,updated_at:Date.now()};
 let serverOffset=0;
@@ -366,25 +371,63 @@ function calcPenalty(sk,jk,conf){
   return b*(conf==='certain'?2.0:1.5);
 }
 
-// ── FIREBASE LISTENERS ─────────────────────────────────
-onValue(pwRef,s=>{
-  passwords=s.val()||{};
-  const btns=$('loginBtns');
-  btns.style.opacity='1';btns.style.pointerEvents='all';
-  $('loginStatus').textContent='';
-},()=>{
-  $('loginBtns').style.opacity='1';$('loginBtns').style.pointerEvents='all';
-  $('loginStatus').textContent='Connection error';$('loginStatus').style.color='#ff4d4d';
+// ── FIREBASE AUTH ──────────────────────────────────────
+onAuthStateChanged(auth,async user=>{
+  if(user){
+    $('loginStatus').textContent='Loading...';
+    try{
+      const snap=await get(ref(db,'users/'+user.uid+'/role'));
+      const role=snap.val();
+      if(!role){
+        $('loginStatus').textContent='No role assigned. Contact admin.';
+        $('loginStatus').style.color='#ff4d4d';
+        await signOut(auth);return;
+      }
+      activateRole(role);
+    }catch(e){
+      $('loginStatus').textContent='Error loading role. Try again.';
+      $('loginStatus').style.color='#ff4d4d';
+    }
+  } else {
+    ['fredScreen','traineeScreen'].forEach(id=>$(id).classList.remove('active'));
+    $('loginScreen').classList.add('active');
+    $('loginStatus').textContent='';
+    if($('loginErr'))$('loginErr').textContent='';
+    if($('btnLogin')){$('btnLogin').textContent='Sign In →';$('btnLogin').disabled=false;}
+  }
 });
+
+$('btnLogin').addEventListener('click',doLogin);
+$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginPassword').focus();});
+
+async function doLogin(){
+  const email=$('loginEmail').value.trim();
+  const password=$('loginPassword').value;
+  if(!email||!password){$('loginErr').textContent='Enter email and password';return;}
+  $('btnLogin').textContent='Signing in...';$('btnLogin').disabled=true;
+  $('loginErr').textContent='';
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+  }catch(e){
+    $('btnLogin').textContent='Sign In →';$('btnLogin').disabled=false;
+    if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found'){
+      $('loginErr').textContent='Wrong email or password';
+    }else if(e.code==='auth/too-many-requests'){
+      $('loginErr').textContent='Too many attempts. Try again later.';
+    }else{
+      $('loginErr').textContent='Login failed. Check connection.';
+    }
+  }
+}
+
+// ── FIREBASE LISTENERS ─────────────────────────────────
 onValue(entriesRef,s=>{allEntries=s.val()||{};updateTraineeBall();updateFredFeed();},()=>{});
 onValue(judgeRef,s=>{allJudge=s.val()||{};updateFredFeed();updateFredStats();},()=>{});
-// Trainee listens to Fred's video position
 onValue(pbRef,s=>{
   if(myRole!=='trainee')return;
   playbackState=s.val()||{position:0,playing:false,updated_at:now()};
-  // Sync trainee video to Fred's position
   if(vmPlayer&&traineeVimeoReady){
-    // If playing, compensate for network latency — add time elapsed since Fred broadcast
     const correctedPos=playbackState.playing
       ? playbackState.position+(now()-playbackState.updated_at)/1000
       : playbackState.position;
@@ -395,55 +438,17 @@ onValue(pbRef,s=>{
   $('vtStatus').textContent=playbackState.playing?'▶ Playing':'⏸ Paused by Fred';
 },()=>{});
 
-// ── LOGIN ──────────────────────────────────────────────
-localStorage.removeItem('raina_role');
-$('loginBtns').querySelectorAll('[data-role]').forEach(btn=>btn.addEventListener('click',()=>{
-  const role=btn.dataset.role;
-  const stored=passwords[role];
-  if(role==='fred'&&!stored){activateRole('fred');return;} // Fred first time — no pw yet
-  if(!stored){
-    $('pwModalTitle').textContent='No Password Set';
-    $('pwModalInput').style.display='none';
-    $('pwModalErr').textContent='Fred must set a trainee password first.';
-    $('btnConfirmPw').style.display='none';
-    $('pwModal').classList.add('open');return;
-  }
-  pendingRole=role;
-  $('pwModalTitle').textContent=role==='fred'?'Fred (Coach) Password':'Trainee Password';
-  $('pwModalInput').style.display='';$('btnConfirmPw').style.display='';
-  $('pwModalInput').value='';$('pwModalErr').textContent='';
-  $('pwModal').classList.add('open');
-  setTimeout(()=>$('pwModalInput').focus(),80);
-}));
-$('btnCancelPw').addEventListener('click',()=>{
-  $('pwModal').classList.remove('open');
-  $('pwModalInput').style.display='';$('btnConfirmPw').style.display='';
-  pendingRole=null;
-});
-$('btnConfirmPw').addEventListener('click',()=>{
-  const entered=$('pwModalInput').value;
-  if(entered===passwords[pendingRole]){
-    $('pwModal').classList.remove('open');
-    $('pwModalInput').style.display='';$('btnConfirmPw').style.display='';
-    activateRole(pendingRole);pendingRole=null;
-  } else {
-    $('pwModalErr').textContent='Wrong password';$('pwModalInput').value='';$('pwModalInput').focus();
-  }
-});
-$('pwModalInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnConfirmPw').click();});
-
 function activateRole(role){
   myRole=role;
   $('loginScreen').classList.remove('active');
   if(role==='fred'){$('fredScreen').classList.add('active');setDot('fred','live','Connected');startFredLiveWatch();}
   else{$('traineeScreen').classList.add('active');setDot('trainee','live','Connected');buildKeypad();startTraineeVideoWatch();}
 }
-function doLogout(){
-  myRole=null;cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];mySubmitted=new Set();
+async function doLogout(){
+  myRole=null;cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
   if(vmPlayer){vmPlayer.pause().catch(()=>{});vmPlayer=null;}traineeVimeoReady=false;isPlaying=false;
   clearInterval(heartbeat);
-  ['fredScreen','traineeScreen'].forEach(id=>$(id).classList.remove('active'));
-  $('loginScreen').classList.add('active');
+  await signOut(auth);
 }
 $('btnFredLogout').addEventListener('click',doLogout);
 $('btnTraineeLogout').addEventListener('click',doLogout);
@@ -455,17 +460,14 @@ document.querySelectorAll('.f-tab').forEach(t=>t.addEventListener('click',()=>{
   t.classList.add('active');$(t.dataset.ftab).classList.add('active');
 }));
 
-// ── FRED PASSWORDS ─────────────────────────────────────
-function setPw(inputId,savedId,path){
-  $('btnSetPw'+inputId.replace('pw','')).addEventListener('click',()=>{
-    const v=$(inputId).value.trim();if(!v)return;
-    set(ref(db,'raina/passwords/'+path),v);
-    const s=$(savedId);s.style.display='inline';setTimeout(()=>s.style.display='none',2500);
-    $(inputId).value='';
-  });
-}
-setPw('pwTrainee','pwTraineeSaved','trainee');
-setPw('pwFred','pwFredSaved','fred');
+// ── ROLE ASSIGNMENT (Fred assigns roles by UID) ────────
+$('btnAssignRole').addEventListener('click',async()=>{
+  const uid=$('roleUid').value.trim();const role=$('roleSelect').value;
+  if(!uid){toast('Enter a UID');return;}
+  await set(ref(db,'users/'+uid+'/role'),role);
+  $('roleUid').value='';
+  const el=$('roleAssigned');el.style.display='block';setTimeout(()=>el.style.display='none',2500);
+});
 
 // ── FRED VIDEO ─────────────────────────────────────────
 $('btnFredLoad').addEventListener('click',loadFredVideo);
@@ -571,11 +573,7 @@ function startFredLiveWatch(){
   });
 }
 
-// Clear all passwords — Fred only
-$('btnClearPasswords').addEventListener('click',()=>{
-  if(!confirm('Clear ALL passwords? Everyone will need new passwords set.'))return;
-  remove(pwRef);toast('Passwords cleared','ok');
-});
+// Passwords managed via Firebase console — no longer stored in database
 
 // Store video ID when Fred loads
 $('btnFredLoad').addEventListener('click',()=>{
@@ -607,16 +605,37 @@ function kUp(k,btn){
     commitBall();return;
   }
   if(cState==='full-conf'||cState==='wicket')return;
-  if(cState==='run_conf'){
-    if(!EXTRA_KEYS.has(k))return;
+
+  // * always works — escape from any state for wicket
+  if(k==='*'){
+    if(cState==='run_conf'){cState='scoring';cRunKey=null;cExtraKey=null;}
     cKeys.push(k);cTimings.push({key:k,dur,vs:now()/1000});
-    if(getConsec(cKeys,k)>=2){cExtraKey=k;cState='full-conf';}
-  } else {
-    cKeys.push(k);cTimings.push({key:k,dur,vs:now()/1000});
-    if(k==='*'&&getConsec(cKeys,'*')>=3){cRunKey='*';cAt=new Date().toISOString();cState='wicket';}
-    else if(RESULT_KEYS.has(k)&&!EXTRA_KEYS.has(k)&&cKeys.length>=2&&cKeys[cKeys.length-2]===k){cRunKey=k;cAt=new Date().toISOString();cState='run_conf';}
+    if(getConsec(cKeys,'*')>=3){cRunKey='*';cAt=new Date().toISOString();cState='wicket';}
+    set(ref(db,'raina/live_keys'),{keys:cKeys.join(' '),state:cState,confirmed:cRunKey||'',at:new Date().toISOString()});
+    renderKeys();updateKpad();return;
   }
-  // Broadcast live keypresses to Fred in real time
+
+  cKeys.push(k);cTimings.push({key:k,dur,vs:now()/1000});
+
+  if(EXTRA_KEYS.has(k)){
+    // Wide or no-ball — double press confirms the extra regardless of run state
+    if(getConsec(cKeys,k)>=2){
+      cExtraKey=k;
+      // If no run confirmed yet, treat as dot extra (0 runs)
+      if(!cRunKey)cRunKey='0';
+      cAt=cAt||new Date().toISOString();
+      cState='full-conf';
+    }
+  } else if(RESULT_KEYS.has(k)){
+    // Run key — double press confirms the run
+    if(getConsec(cKeys,k)>=2){
+      cRunKey=k;cAt=new Date().toISOString();
+      // If extra already confirmed, go straight to full-conf
+      if(cExtraKey)cState='full-conf';
+      else cState='run_conf';
+    }
+  }
+
   set(ref(db,'raina/live_keys'),{keys:cKeys.join(' '),state:cState,confirmed:cRunKey||'',at:new Date().toISOString()});
   renderKeys();updateKpad();
 }
@@ -627,12 +646,17 @@ function renderKeys(){
 }
 function updateKpad(){
   const kp=$('traineeKeypad'),stat=$('traineeBallStatus'),cb=kp?.querySelector('.confirm');
-  if(cState==='full-conf'||cState==='wicket'){
+  if(cState==='wicket'){
     if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('go');}
-    stat.textContent=`[${cRunKey==='*'?'W':cRunKey}] confirmed — press #`;stat.className='ball-status full';
+    stat.textContent='[W] confirmed — press #';stat.className='ball-status full';
+  } else if(cState==='full-conf'){
+    if(kp)kp.className='keypad full-conf';if(cb){cb.textContent='# ▶ Next';cb.classList.add('go');}
+    const runStr=cRunKey==='0'?'dot':cRunKey;
+    const extraStr=cExtraKey==='7'?'+wide':cExtraKey==='9'?'+nb':'';
+    stat.textContent=`[${runStr}${extraStr}] confirmed — press #`;stat.className='ball-status full';
   } else if(cState==='run_conf'){
     if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}
-    stat.textContent=`[${cRunKey}] confirmed — press # to advance`;stat.className='ball-status conf';
+    stat.textContent=`[${cRunKey}] confirmed — add extra or press #`;stat.className='ball-status conf';
   } else {
     if(kp)kp.className='keypad';if(cb){cb.textContent='# ▶';cb.classList.remove('go');}
     stat.textContent='Double press to confirm';stat.className='ball-status';
@@ -645,9 +669,13 @@ function commitBall(){
   const lbl=isWide?`${Math.floor(legalN/6)}.${(legalN%6)+1}w`:isNoBall?`${Math.floor(legalN/6)}.${(legalN%6)+1}nb`:`${Math.floor(legalN/6)}.${(legalN%6)+1}`;
   const conf=cRunKey==='*'?'certain':'confirmed';
   const tc=cTimings.map(t=>`${t.key}:${t.dur}:${t.vs.toFixed(2)}`).join(',');
+  const traineeEmail=auth.currentUser?.email||'unknown';
   push(entriesRef,{seq,label:lbl,keys:cKeys.join(' '),confirmed_key:cRunKey,confidence:conf,
-    is_wide:isWide,is_noball:isNoBall,confirmed_at:cAt,hash_at:new Date().toISOString(),timings_compact:tc});
+    is_wide:isWide,is_noball:isNoBall,confirmed_at:cAt,hash_at:new Date().toISOString(),
+    timings_compact:tc,trainee:traineeEmail});
   cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
+  // Clear live keys display on Fred's screen immediately
+  set(ref(db,'raina/live_keys'),{keys:'',state:'scoring',confirmed:'',at:new Date().toISOString()});
   renderKeys();updateKpad();
 }
 function updateTraineeBall(){
@@ -659,7 +687,8 @@ function updateTraineeBall(){
 function updateFredFeed(){
   if(myRole!=='fred')return;
   const feed=$('liveFeed');
-  const entries=Object.entries(allEntries).sort((a,b)=>(b[1].seq||0)-(a[1].seq||0));
+  // Cap at 20 most recent balls — rest are in CSV export
+  const entries=Object.entries(allEntries).sort((a,b)=>(b[1].seq||0)-(a[1].seq||0)).slice(0,20);
   if(!entries.length){feed.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for trainee...</div>';return;}
   feed.innerHTML=entries.map(([fbKey,ball])=>{
     const mark=allJudge[fbKey];
@@ -679,7 +708,7 @@ function updateFredFeed(){
       <div class="ball-row-header">
         <span class="ball-lbl">${ball.label||seqLabel(ball.seq||1)}</span>
         <div class="ball-keys">${chips}</div>
-        <span class="ball-time">${ball.confirmed_key||'?'}</span>
+        <span class="ball-time" style="font-size:10px;color:var(--muted);">${ball.trainee||''}</span>
       </div>
       <div class="ball-actions">${actions}</div>
     </div>`;
@@ -731,10 +760,10 @@ $('btnFredReset').addEventListener('click',()=>{
 function exportCSV(){
   const entries=Object.entries(allEntries).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
   if(!entries.length){toast('No data yet');return;}
-  const rows=[['ball','label','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at','correct','judge_key','penalty']];
+  const rows=[['ball','label','trainee','keys','confirmed_key','confidence','is_wide','is_noball','confirmed_at','correct','judge_key','penalty']];
   entries.forEach(([k,b])=>{
     const m=allJudge[k]||{};
-    rows.push([b.seq||'',b.label||'',b.keys||'',b.confirmed_key||'',b.confidence||'',b.is_wide?'yes':'no',b.is_noball?'yes':'no',b.confirmed_at||'',m.correct!=null?(m.correct?'yes':'no'):'',m.judge_key||'',m.penalty??'']);
+    rows.push([b.seq||'',b.label||'',b.trainee||'',b.keys||'',b.confirmed_key||'',b.confidence||'',b.is_wide?'yes':'no',b.is_noball?'yes':'no',b.confirmed_at||'',m.correct!=null?(m.correct?'yes':'no'):'',m.judge_key||'',m.penalty??'']);
   });
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
