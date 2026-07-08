@@ -209,7 +209,7 @@ body{display:flex;flex-direction:column;}
     <div class="login-title">FullPush</div>
     <div class="login-sub">Coaching Session</div>
     <div class="login-divider"></div>
-    <div class="login-status" id="loginStatus">Connecting...</div>
+    <div class="login-status" id="loginStatus"></div>
     <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
       <input class="login-input" id="loginEmail" type="email" placeholder="Email address" autocomplete="email"/>
       <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password"/>
@@ -331,7 +331,15 @@ body{display:flex;flex-direction:column;}
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getDatabase,ref,set,push,remove,onValue,get}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-const app=initializeApp({databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com/'});
+const app=initializeApp({
+  apiKey:'AIzaSyB9wTjDqHXqtgemaNvOmDxnpz_UgW8Mgpg',
+  authDomain:'scorer-b9fd6.firebaseapp.com',
+  databaseURL:'https://scorer-b9fd6-default-rtdb.firebaseio.com',
+  projectId:'scorer-b9fd6',
+  storageBucket:'scorer-b9fd6.firebasestorage.app',
+  messagingSenderId:'423273351410',
+  appId:'1:423273351410:web:95a02a1657704e4740686b'
+});
 const db=getDatabase(app);
 const auth=getAuth(app);
 const entriesRef=ref(db,'raina/entries');
