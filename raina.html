@@ -438,17 +438,12 @@ function activateRole(role){
   else{$('traineeScreen').classList.add('active');setDot('trainee','live','Connected');buildKeypad();startTraineeVideoWatch();}
 }
 async function doLogout(){
-  myRole=null;cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
+  myRole=null;
   if(vmPlayer){try{vmPlayer.pause();}catch(e){}vmPlayer=null;}
-  traineeVimeoReady=false;isPlaying=false;
   clearInterval(heartbeat);
-  // Force screen switch immediately — don't wait for Firebase
-  ['fredScreen','traineeScreen'].forEach(id=>$(id).classList.remove('active'));
-  $('loginScreen').classList.add('active');
-  if($('loginErr'))$('loginErr').textContent='';
-  if($('btnLogin')){$('btnLogin').textContent='Sign In →';$('btnLogin').disabled=false;}
-  // Then sign out from Firebase
-  try{await signOut(auth);}catch(e){console.log('signOut error:',e);}
+  try{await signOut(auth);}catch(e){}
+  // Reload the page — cleanest way to clear all state and listeners
+  window.location.reload();
 }
 $('btnFredLogout').addEventListener('click',()=>doLogout());
 $('btnTraineeLogout').addEventListener('click',()=>doLogout());
