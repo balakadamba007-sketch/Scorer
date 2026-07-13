@@ -339,6 +339,8 @@ const pbRef=ref(db,'raina/playback');
 
 // ── STATE ──────────────────────────────────────────────
 let myRole=null,allEntries={},allJudge={};
+// Local counters for label calculation — independent of Firebase sync timing
+let localBallSeq=0, localLegalCount=0;
 let vmPlayer=null,isPlaying=false,heartbeat=null;
 let playbackState={position:0,playing:false,updated_at:Date.now()};
 let serverOffset=0;
@@ -358,7 +360,7 @@ function fmtP(p){if(p==null)return'';const r=Math.round(p*10)/10;return r>0?'+'+
 function getConsec(arr,v){let n=0;for(let i=arr.length-1;i>=0;i--){if(arr[i]===v)n++;else break;}return n;}
 function legalCount(){return Object.values(allEntries).filter(e=>!e.is_wide&&!e.is_noball).length;}
 function currentLabel(){const n=legalCount();return`${Math.floor(n/6)}.${(n%6)+1}`;}
-function seqLabel(seq){return`${Math.floor((seq-1)/6)}.${((seq-1)%6)+1}`;}
+function seqLabel(seq){return`${Math.floor((seq-1)/6)}.${(seq-1)%6}`;}
 function getOutcome(k){if(k==='*')return'W';if(k==='7')return'wide';if(k==='9')return'nb';const n=parseInt(k);return isNaN(n)?null:n;}
 function calcPenalty(sk,jk,conf){
   const s=getOutcome(sk),j=getOutcome(jk);if(s===null||j===null)return null;
@@ -457,7 +459,7 @@ function activateRole(role){
   }
 }
 async function doLogout(){
-  myRole=null;
+  myRole=null;localBallSeq=0;localLegalCount=0;
   if(vmPlayer){try{vmPlayer.pause();}catch(e){}vmPlayer=null;}
   clearInterval(heartbeat);
   try{await signOut(auth);}catch(e){}
@@ -681,26 +683,28 @@ function updateKpad(){
   }
 }
 function commitBall(){
-  const seq=Object.values(allEntries).length+1;
   const isWide=cExtraKey==='7',isNoBall=cExtraKey==='9';
-  const legalN=legalCount();
-  const lbl=isWide?`${Math.floor(legalN/6)}.${(legalN%6)+1}w`:isNoBall?`${Math.floor(legalN/6)}.${(legalN%6)+1}nb`:`${Math.floor(legalN/6)}.${(legalN%6)+1}`;
+  localBallSeq++;
+  const seq=localBallSeq;
+  const n=localLegalCount;
+  const lbl=isWide?`${Math.floor(n/6)}.${n%6}w`:isNoBall?`${Math.floor(n/6)}.${n%6}nb`:`${Math.floor(n/6)}.${n%6}`;
+  if(!isWide&&!isNoBall)localLegalCount++;
   const conf=cRunKey==='*'?'certain':'confirmed';
-  const tc=cTimings.map(t=>`${t.key}:${t.dur}:${t.vs.toFixed(2)}`).join(',');
+  const keysSnap=[...cKeys],timSnap=[...cTimings],runKey=cRunKey,atSnap=cAt;
+  const tc=timSnap.map(t=>`${t.key}:${t.dur}:${t.vs.toFixed(2)}`).join(',');
   const traineeEmail=auth.currentUser?.email||'unknown';
-  push(entriesRef,{seq,label:lbl,keys:cKeys.join(' '),confirmed_key:cRunKey,confidence:conf,
-    is_wide:isWide,is_noball:isNoBall,confirmed_at:cAt,hash_at:new Date().toISOString(),
+  cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
+  set(ref(db,'raina/live_keys'),{keys:'',state:'scoring',confirmed:'',at:new Date().toISOString()});
+  renderKeys();updateKpad();
+  $('traineeBallId').textContent=`${Math.floor(localLegalCount/6)}.${localLegalCount%6}`;
+  push(entriesRef,{seq,label:lbl,keys:keysSnap.join(' '),confirmed_key:runKey,confidence:conf,
+    is_wide:isWide,is_noball:isNoBall,confirmed_at:atSnap,hash_at:new Date().toISOString(),
     timings_compact:tc,trainee:traineeEmail})
   .then(()=>toast('Ball saved ✓','ok'))
   .catch(e=>{toast('Save failed — check connection');console.error('commitBall error:',e);});
-  cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
-  // Clear live keys display on Fred's screen immediately
-  set(ref(db,'raina/live_keys'),{keys:'',state:'scoring',confirmed:'',at:new Date().toISOString()});
-  renderKeys();updateKpad();
 }
 function updateTraineeBall(){
-  const n=legalCount();
-  $('traineeBallId').textContent=`${Math.floor(n/6)}.${(n%6)+1}`;
+  $('traineeBallId').textContent=`${Math.floor(localLegalCount/6)}.${localLegalCount%6}`;
 }
 
 // ── FRED FEED ──────────────────────────────────────────
