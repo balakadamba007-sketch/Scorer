@@ -419,31 +419,34 @@ async function doLogin(){
   }
 }
 
-// ── FIREBASE LISTENERS ─────────────────────────────────
-onValue(entriesRef,s=>{allEntries=s.val()||{};updateTraineeBall();updateFredFeed();},()=>{});
-onValue(judgeRef,s=>{allJudge=s.val()||{};updateFredFeed();updateFredStats();},()=>{});
-onValue(pbRef,s=>{
-  if(myRole!=='trainee')return;
-  playbackState=s.val()||{position:0,playing:false,updated_at:now()};
-  if(vmPlayer&&traineeVimeoReady){
-    const correctedPos=playbackState.playing
-      ? playbackState.position+(now()-playbackState.updated_at)/1000
-      : playbackState.position;
-    vmPlayer.setCurrentTime(correctedPos).catch(()=>{});
-    if(playbackState.playing)vmPlayer.play().catch(()=>{showAutoplayOverlay();});
-    else vmPlayer.pause().catch(()=>{});
-  }
-  $('vtStatus').textContent=playbackState.playing?'▶ Playing':'⏸ Paused by Fred';
-},()=>{});
+// Firebase listeners are started after login in activateRole — not at page load
+// This ensures auth token is valid when listeners connect
 
 function activateRole(role){
   myRole=role;
   $('loginScreen').classList.remove('active');
+
+  // Start Firebase listeners NOW — auth token is valid at this point
+  onValue(entriesRef,s=>{allEntries=s.val()||{};updateTraineeBall();updateFredFeed();},()=>{});
+  onValue(judgeRef,s=>{allJudge=s.val()||{};updateFredFeed();updateFredStats();},()=>{});
+  onValue(pbRef,s=>{
+    if(myRole!=='trainee')return;
+    playbackState=s.val()||{position:0,playing:false,updated_at:now()};
+    if(vmPlayer&&traineeVimeoReady){
+      const correctedPos=playbackState.playing
+        ? playbackState.position+(now()-playbackState.updated_at)/1000
+        : playbackState.position;
+      vmPlayer.setCurrentTime(correctedPos).catch(()=>{});
+      if(playbackState.playing)vmPlayer.play().catch(()=>{showAutoplayOverlay();});
+      else vmPlayer.pause().catch(()=>{});
+    }
+    $('vtStatus').textContent=playbackState.playing?'▶ Playing':'⏸ Paused by Fred';
+  },()=>{});
+
   if(role==='fred'){
     $('fredScreen').classList.add('active');
     setDot('fred','live','Connected');
     startFredLiveWatch();
-    // Explicitly render feed now that myRole is set
     updateFredFeed();
     updateFredStats();
   } else {
