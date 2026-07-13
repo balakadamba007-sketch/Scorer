@@ -82,22 +82,22 @@ body{display:flex;flex-direction:column;}
 .live-feed{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:8px 10px;min-height:0;-webkit-overflow-scrolling:touch;}
 /* Ball rows */
 .ball-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.ball-row.correct{border-color:rgba(51,255,153,0.3);background:rgba(51,255,153,0.03);}
-.ball-row.wrong{border-color:rgba(255,77,77,0.3);background:rgba(255,77,77,0.03);}
-.ball-row-header{display:flex;align-items:center;gap:6px;padding:6px 10px;flex-wrap:wrap;}
-.ball-lbl{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--orange);min-width:32px;}
+.ball-row.correct{border-color:rgba(51,255,153,0.5);background:rgba(51,255,153,0.06);}
+.ball-row.wrong{border-color:rgba(255,77,77,0.5);background:rgba(255,77,77,0.06);}
+.ball-row-header{display:flex;align-items:center;gap:6px;padding:7px 10px;flex-wrap:wrap;background:var(--surface2);}
+.ball-lbl{font-family:var(--font-mono);font-size:14px;font-weight:600;color:#ffaa33;min-width:36px;}
 .ball-keys{display:flex;gap:3px;flex-wrap:wrap;flex:1;}
-.ball-key{font-family:var(--font-mono);font-size:13px;font-weight:600;border-radius:4px;padding:1px 6px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,241,53,0.2);}
-.ball-time{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
-.ball-actions{display:flex;align-items:center;gap:5px;padding:5px 10px;border-top:1px solid var(--border);flex-wrap:wrap;}
-.ba-btn{background:none;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:11px;cursor:pointer;padding:4px 10px;touch-action:manipulation;}
-.ba-btn.ok{border-color:var(--green);color:var(--green);}
-.ba-btn.ok:active{background:var(--green);color:var(--bg);}
-.ba-btn.bad{border-color:var(--red);color:var(--red);}
-.ba-btn.bad:active{background:var(--red);color:#fff;}
-.ba-btn.del{color:var(--muted);}
-.ba-result{font-family:var(--font-mono);font-size:13px;font-weight:600;margin-left:auto;}
-.ba-result.pos{color:var(--green);}.ba-result.neg{color:var(--red);}
+.ball-key{font-family:var(--font-mono);font-size:14px;font-weight:600;border-radius:4px;padding:2px 8px;background:rgba(200,241,53,0.15);color:#c8f135;border:1px solid rgba(200,241,53,0.3);}
+.ball-time{font-size:11px;color:#888;}
+.ball-actions{display:flex;align-items:center;gap:6px;padding:6px 10px;border-top:1px solid var(--border);flex-wrap:wrap;background:var(--surface);}
+.ba-btn{background:none;border:1px solid var(--border);border-radius:5px;font-family:var(--font-mono);font-size:12px;cursor:pointer;padding:5px 12px;touch-action:manipulation;font-weight:600;}
+.ba-btn.ok{border-color:#33ff99;color:#33ff99;background:rgba(51,255,153,0.08);}
+.ba-btn.ok:active{background:#33ff99;color:#000;}
+.ba-btn.bad{border-color:#ff4d4d;color:#ff4d4d;background:rgba(255,77,77,0.08);}
+.ba-btn.bad:active{background:#ff4d4d;color:#fff;}
+.ba-btn.del{color:#666;border-color:#333;}
+.ba-result{font-family:var(--font-mono);font-size:14px;font-weight:600;margin-left:auto;}
+.ba-result.pos{color:#33ff99;}.ba-result.neg{color:#ff4d4d;}
 /* Correct key picker */
 .correct-picker{padding:6px 10px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
 .cp-lbl{font-family:var(--font-mono);font-size:10px;color:var(--muted);}
@@ -265,15 +265,15 @@ body{display:flex;flex-direction:column;}
           </div>
         </div>
         <!-- Live keypresses -->
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;">
-          <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Live:</span>
-          <span id="liveKeysDisplay" style="font-family:var(--font-mono);font-size:13px;color:var(--muted);">—</span>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#1a1a1a;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <span style="font-family:var(--font-mono);font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.06em;">Live:</span>
+          <span id="liveKeysDisplay" style="font-family:var(--font-mono);font-size:15px;color:#c8f135;font-weight:600;letter-spacing:0.1em;">—</span>
         </div>
         <div class="live-feed" id="liveFeed"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for trainee...</div></div>
         <div class="fred-actions">
-          <button class="btn" id="btnClearOver">Clear Over</button>
-          <button class="btn danger" id="btnFredReset">Reset All</button>
-          <button class="btn ok" id="btnFredExport">Export CSV</button>
+          <button class="btn" id="btnClearOver" style="border-color:#ffaa33;color:#ffaa33;font-weight:600;">Clear Over</button>
+          <button class="btn danger" id="btnFredReset" style="border-color:#ff4d4d;color:#ff4d4d;font-weight:600;">Reset All</button>
+          <button class="btn ok" id="btnFredExport" style="font-weight:600;">Export CSV</button>
         </div>
       </div>
     </div>
