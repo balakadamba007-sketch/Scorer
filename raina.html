@@ -116,8 +116,10 @@ body{display:flex;flex-direction:column;}
 #traineeScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 #traineeScreen.active{display:flex;}
 /* Video section — shown on laptop, hidden on phone */
-.trainee-video-wrap{background:#000;flex-shrink:0;position:relative;height:0;overflow:hidden;transition:height 0.3s;}
-.trainee-video-wrap.open{height:220px;}
+.trainee-video-wrap{background:#000;flex:1;min-height:200px;position:relative;transition:flex 0.3s;overflow:hidden;}
+.trainee-video-wrap.collapsed{flex:0;height:0;overflow:hidden;}
+.trainee-scoring{display:flex;flex-direction:column;gap:6px;padding:8px 10px;flex-shrink:0;height:320px;transition:height 0.3s;overflow:hidden;}
+.trainee-scoring.hidden{height:0;padding:0;overflow:hidden;}
 #traineePlayerWrap{width:100%;height:100%;}
 #traineePlayerWrap iframe{width:100%;height:100%;border:0;display:block;}
 .video-toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -292,18 +294,18 @@ body{display:flex;flex-direction:column;}
   <div class="video-toggle" id="videoToggleBar">
     <span class="vt-status" id="vtStatus">Video: waiting for Fred...</span>
     <button class="video-toggle-btn" id="btnTraineeMute">🔇 Mute</button>
-    <button class="video-toggle-btn" id="btnToggleVideo">▼ Show Video</button>
+    <button class="video-toggle-btn" id="btnToggleVideo">▲ Hide Keypad</button>
   </div>
-  <div class="trainee-video-wrap" id="traineeVideoWrap">
+  <div class="trainee-video-wrap open" id="traineeVideoWrap">
     <div id="traineePlayerWrap"></div>
     <div class="autoplay-overlay" id="autoplayOverlay" style="display:none;">
       <div class="autoplay-overlay-inner">▶ Tap to start video<br><span style="font-size:11px;color:var(--muted);">Browser blocked autoplay</span></div>
     </div>
   </div>
-  <!-- Scoring area -->
-  <div class="trainee-scoring">
+  <!-- Scoring area — hidden/shown by toggle -->
+  <div class="trainee-scoring" id="traineeScoring">
     <div class="ball-indicator">
-      <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="traineeBallId">0.1</div></div>
+      <div><div class="ball-id-label">Delivery</div><div class="ball-id" id="traineeBallId">0.0</div></div>
       <div class="ball-status" id="traineeBallStatus">Double press to confirm</div>
     </div>
     <div class="keys-box" id="traineeKeysBox"><span class="hint">Press keys · double press to confirm · # to advance</span></div>
@@ -544,17 +546,15 @@ $('btnTraineeMute').addEventListener('click',()=>{
   $('btnTraineeMute').textContent=traineeMuted?'🔊 Unmute':'🔇 Mute';
 });
 $('btnToggleVideo').addEventListener('click',()=>{
-  const wrap=$('traineeVideoWrap');
-  const open=wrap.classList.toggle('open');
-  $('btnToggleVideo').textContent=open?'▲ Hide Video':'▼ Show Video';
+  const scoring=$('traineeScoring');
+  const hidden=scoring.classList.toggle('hidden');
+  $('btnToggleVideo').textContent=hidden?'▼ Show Keypad':'▲ Hide Keypad';
 });
 function initTraineeVideo(id){
   if(vmPlayer||!id)return;
-  $('traineeVideoWrap').classList.add('open');
-  $('btnToggleVideo').textContent='▲ Hide Video';
   $('traineePlayerWrap').innerHTML=`<div id="traineeVimeoDiv" style="width:100%;height:100%;"></div>`;
   const doLoad=()=>{
-    vmPlayer=new Vimeo.Player('traineeVimeoDiv',{id:parseInt(id),responsive:false,width:'100%',height:'100%',controls:false,playsinline:true});
+    vmPlayer=new Vimeo.Player('traineeVimeoDiv',{id:parseInt(id),responsive:true,controls:false,playsinline:true});
     vmPlayer.on('loaded',()=>{
       traineeVimeoReady=true;
       const correctedPos=playbackState.playing
