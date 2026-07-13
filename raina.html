@@ -245,6 +245,10 @@ body{display:flex;flex-direction:column;}
         <div class="video-controls" id="fredVideoControls" style="display:none;">
           <button class="vc-btn play" id="btnFredPlay">▶ Play</button>
           <button class="vc-btn" id="btnFredPause">⏸ Pause</button>
+          <button class="vc-btn" id="btnFredRew10">⏪ -10s</button>
+          <button class="vc-btn" id="btnFredRew5">-5s</button>
+          <button class="vc-btn" id="btnFredFwd5">+5s</button>
+          <button class="vc-btn" id="btnFredFwd10">+10s ⏩</button>
           <button class="vc-btn" id="btnFredMute">🔇 Mute</button>
           <button class="vc-btn" id="btnFredChange">🔗 Change</button>
           <span class="vc-time" id="fredVTime">0.0s</span>
@@ -260,13 +264,14 @@ body{display:flex;flex-direction:column;}
             <div class="feed-stat">Score: <span id="fStatScore" class="pos">0</span></div>
           </div>
         </div>
-        <!-- Live keypresses as trainee presses them -->
+        <!-- Live keypresses -->
         <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;">
           <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Live:</span>
           <span id="liveKeysDisplay" style="font-family:var(--font-mono);font-size:13px;color:var(--muted);">—</span>
         </div>
         <div class="live-feed" id="liveFeed"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for trainee...</div></div>
         <div class="fred-actions">
+          <button class="btn" id="btnClearOver">Clear Over</button>
           <button class="btn danger" id="btnFredReset">Reset All</button>
           <button class="btn ok" id="btnFredExport">Export CSV</button>
         </div>
@@ -434,8 +439,19 @@ onValue(pbRef,s=>{
 function activateRole(role){
   myRole=role;
   $('loginScreen').classList.remove('active');
-  if(role==='fred'){$('fredScreen').classList.add('active');setDot('fred','live','Connected');startFredLiveWatch();}
-  else{$('traineeScreen').classList.add('active');setDot('trainee','live','Connected');buildKeypad();startTraineeVideoWatch();}
+  if(role==='fred'){
+    $('fredScreen').classList.add('active');
+    setDot('fred','live','Connected');
+    startFredLiveWatch();
+    // Explicitly render feed now that myRole is set
+    updateFredFeed();
+    updateFredStats();
+  } else {
+    $('traineeScreen').classList.add('active');
+    setDot('trainee','live','Connected');
+    buildKeypad();
+    startTraineeVideoWatch();
+  }
 }
 async function doLogout(){
   myRole=null;
@@ -489,6 +505,17 @@ function broadcastPlayback(playing){
 function updateFredTime(){if(window._fredVimeo&&isPlaying)window._fredVimeo.getCurrentTime().then(t=>$('fredVTime').textContent=t.toFixed(1)+'s').catch(()=>{});}
 $('btnFredPlay').addEventListener('click',()=>{if(window._fredVimeo)window._fredVimeo.play();});
 $('btnFredPause').addEventListener('click',()=>{if(window._fredVimeo)window._fredVimeo.pause();});
+function seekBy(secs){
+  if(!window._fredVimeo)return;
+  window._fredVimeo.getCurrentTime().then(t=>{
+    const newT=Math.max(0,t+secs);
+    window._fredVimeo.setCurrentTime(newT).then(()=>broadcastPlayback(isPlaying));
+  });
+}
+$('btnFredRew10').addEventListener('click',()=>seekBy(-10));
+$('btnFredRew5').addEventListener('click',()=>seekBy(-5));
+$('btnFredFwd5').addEventListener('click',()=>seekBy(5));
+$('btnFredFwd10').addEventListener('click',()=>seekBy(10));
 let fredMuted=false;
 $('btnFredMute').addEventListener('click',()=>{
   if(!window._fredVimeo)return;
@@ -741,6 +768,17 @@ function updateFredStats(){
 }
 
 // ── RESET + EXPORT ─────────────────────────────────────
+$('btnClearOver').addEventListener('click',()=>{
+  const entries=Object.entries(allEntries).sort((a,b)=>(a[1].seq||0)-(b[1].seq||0));
+  if(!entries.length){toast('No balls to clear');return;}
+  const seqs=entries.map(([,e])=>e.seq||0);
+  const maxSeq=Math.max(...seqs);
+  const overNum=Math.floor((maxSeq-1)/6);
+  const overStart=overNum*6+1;
+  const overEntries=entries.filter(([,e])=>(e.seq||0)>=overStart);
+  if(!confirm(`Clear over ${overNum} (${overEntries.length} balls)?`))return;
+  overEntries.forEach(([k])=>{remove(ref(db,'raina/entries/'+k));remove(ref(db,'raina/judge/'+k));});
+});
 $('btnFredReset').addEventListener('click',()=>{
   if(!confirm('Reset all entries and marks?'))return;
   remove(entriesRef);remove(judgeRef);
