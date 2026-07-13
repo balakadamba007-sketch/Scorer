@@ -687,7 +687,9 @@ function commitBall(){
   const traineeEmail=auth.currentUser?.email||'unknown';
   push(entriesRef,{seq,label:lbl,keys:cKeys.join(' '),confirmed_key:cRunKey,confidence:conf,
     is_wide:isWide,is_noball:isNoBall,confirmed_at:cAt,hash_at:new Date().toISOString(),
-    timings_compact:tc,trainee:traineeEmail});
+    timings_compact:tc,trainee:traineeEmail})
+  .then(()=>toast('Ball saved ✓','ok'))
+  .catch(e=>{toast('Save failed — check connection');console.error('commitBall error:',e);});
   cState='scoring';cRunKey=null;cExtraKey=null;cAt=null;cKeys=[];cTimings=[];
   // Clear live keys display on Fred's screen immediately
   set(ref(db,'raina/live_keys'),{keys:'',state:'scoring',confirmed:'',at:new Date().toISOString()});
@@ -700,8 +702,7 @@ function updateTraineeBall(){
 
 // ── FRED FEED ──────────────────────────────────────────
 function updateFredFeed(){
-  if(myRole!=='fred')return;
-  const feed=$('liveFeed');
+  const feed=$('liveFeed');if(!feed)return; // Not on Fred's screen — safe guard
   // Cap at 20 most recent balls — rest are in CSV export
   const entries=Object.entries(allEntries).sort((a,b)=>(b[1].seq||0)-(a[1].seq||0)).slice(0,20);
   if(!entries.length){feed.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:12px;">Waiting for trainee...</div>';return;}
@@ -758,7 +759,7 @@ function showPicker(fbKey){
   }));
 }
 function updateFredStats(){
-  if(myRole!=='fred')return;
+  if(!$('fStatBalls'))return; // Not on Fred's screen
   const marks=Object.values(allJudge);const total=marks.length;
   const correct=marks.filter(m=>m.correct).length;
   const score=marks.reduce((a,m)=>a+(m.penalty||0),0);
