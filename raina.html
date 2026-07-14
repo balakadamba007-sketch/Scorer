@@ -55,7 +55,7 @@ body{display:flex;flex-direction:column;}
 /* ── FRED LAYOUT ── */
 #fredScreen{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 #fredScreen.active{display:flex;}
-.fred-body{flex:1;display:grid;grid-template-columns:1fr 380px;gap:0;overflow:hidden;min-height:0;}
+.fred-body{flex:1;display:grid;grid-template-columns:1fr 380px;gap:0;overflow:hidden;min-height:0;max-height:100%;}
 /* Fred video side */
 .fred-video-side{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;min-height:0;}
 .url-bar{display:flex;gap:8px;padding:8px 10px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -71,7 +71,7 @@ body{display:flex;flex-direction:column;}
 .vc-btn.play{border-color:var(--green);color:var(--green);}
 .vc-time{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-left:auto;}
 /* Fred feed side */
-.fred-feed-side{display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.fred-feed-side{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
 .feed-header{padding:8px 12px;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
 .feed-title{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;}
 .feed-stats{display:flex;gap:12px;}
@@ -79,7 +79,11 @@ body{display:flex;flex-direction:column;}
 .feed-stat span{font-weight:600;}
 .feed-stat .pos{color:var(--green);}
 .feed-stat .neg{color:var(--red);}
-.live-feed{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding:8px 10px;min-height:0;-webkit-overflow-scrolling:touch;}
+.live-feed{flex:1;overflow-y:scroll;display:flex;flex-direction:column;gap:5px;padding:8px 10px;min-height:0;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#444 transparent;}
+.live-feed::-webkit-scrollbar{width:6px;}
+.live-feed::-webkit-scrollbar-track{background:transparent;}
+.live-feed::-webkit-scrollbar-thumb{background:#444;border-radius:3px;}
+.live-feed::-webkit-scrollbar-thumb:hover{background:#666;}
 /* Ball rows */
 .ball-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
 .ball-row.correct{border-color:rgba(51,255,153,0.5);background:rgba(51,255,153,0.06);}
@@ -180,11 +184,19 @@ body{display:flex;flex-direction:column;}
 
 /* Fred and trainee screens need full height */
 #fredScreen,#traineeScreen{height:100%;height:100dvh;}
+/* PHONE — keypad only, hide everything video related */
 @media(max-width:600px){
   .trainee-video-wrap,.video-toggle{display:none!important;}
-  .trainee-scoring{padding:8px;}
+  .trainee-scoring{flex:1;padding:8px;}
   .fred-body{grid-template-columns:1fr;}
   .fred-feed-side{display:none;}
+}
+/* LAPTOP — video fills screen, hide keypad entirely */
+@media(min-width:601px){
+  #traineeScreen .trainee-scoring,
+  #traineeScreen .actions,
+  #traineeScreen .video-toggle{display:none!important;}
+  #traineeScreen .trainee-video-wrap{flex:1 !important;min-height:0;}
 }
 </style>
 </head>
@@ -554,7 +566,7 @@ function initTraineeVideo(id){
   if(vmPlayer||!id)return;
   $('traineePlayerWrap').innerHTML=`<div id="traineeVimeoDiv" style="width:100%;height:100%;"></div>`;
   const doLoad=()=>{
-    vmPlayer=new Vimeo.Player('traineeVimeoDiv',{id:parseInt(id),responsive:true,controls:false,playsinline:true});
+    vmPlayer=new Vimeo.Player('traineeVimeoDiv',{id:parseInt(id),responsive:false,width:'100%',height:'100%',controls:false,playsinline:true});
     vmPlayer.on('loaded',()=>{
       traineeVimeoReady=true;
       const correctedPos=playbackState.playing
